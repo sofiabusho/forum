@@ -1,0 +1,20 @@
+#shared-header nav {
+    border-bottom-color: transparent !important;
+}
+
+.logo-text {
+    font-family: 'BestienyaYulistiani', sans-serif;
+    color: #3a9727;
+    font-size: 4rem;
+    letter-spacing: 0.05em; }
+
+#shared-footer footer {
+    border-top-color: transparent !important;
+}
+
+@font-face {
+    font-family: 'BestienyaYulistiani';
+    src: url('../fonts/BestienyaYulistiani.ttf') format('truetype');
+    font-weight: lighter;
+    font-style: normal;
+}

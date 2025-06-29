@@ -1,0 +1,21 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: url('../images/background.jpg') no-repeat center center / cover;
+}
+
+main {
+    flex: 1 0 auto;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.topbar {
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
+}
+
+.topbar .nav-link.active {
+    font-weight: bold;
+}
