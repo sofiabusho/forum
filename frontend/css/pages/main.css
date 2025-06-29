@@ -2,6 +2,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    padding-top: calc((2 * 0.5rem) + 32px);
     background: url('../images/background.jpg') no-repeat center center / cover;
 }
 
