@@ -66,7 +66,7 @@
 <!-- Load shared partials -->
 <script>
     // header
-    fetch('shared/header-unsigned.html').then(r => r.text())
+    fetch('shared/header.html').then(r => r.text())
         .then(html => document.getElementById('shared-header').innerHTML = html);
 
     // social buttons
