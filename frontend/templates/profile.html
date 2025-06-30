@@ -10,9 +10,8 @@
     <link rel="stylesheet" href="../css/pages/main.css">
     <link rel="stylesheet" href="../css/pages/shared.css">
     <link rel="stylesheet" href="../css/pages/profile.css">
-
-
 </head>
+
 <body>
 <!-- Shared Header -->
 <div id="shared-header"></div>
@@ -23,43 +22,46 @@
         <aside class="profile-sidebar">
             <div class="list-group">
                 <button class="list-group-item list-group-item-action active" id="tab-bio">
-                    <i class="bi bi-person"></i> Your Bio
+                    <i class="bi bi-person"></i> My Bio
                 </button>
                 <button class="list-group-item list-group-item-action" id="tab-questions">
-                    <i class="bi bi-question-circle"></i> Your Questions
+                    <i class="bi bi-question-circle"></i> My Posts
                 </button>
                 <button class="list-group-item list-group-item-action" id="tab-comments">
-                    <i class="bi bi-chat-left-text"></i> Your Comments
+                    <i class="bi bi-chat-left-text"></i> My Comments
                 </button>
                 <button class="list-group-item list-group-item-action" id="tab-likes">
-                    <i class="bi bi-heart"></i> Your Likes & Votes
+                    <i class="bi bi-heart"></i> My Likes
                 </button>
             </div>
         </aside>
 
-        <!-- Detail Pane -->
-        <section id="detailPane">
-            <!-- default content: bio -->
-            <h3>Your Bio</h3>
-            <p>No bio set yet.</p>
-        </section>
+    <!-- Detail Pane -->
+    <section id="detailPane" class="flex-fill bg-white rounded shadow-sm p-4 position-relative">
+        <h3>My Bio</h3>
+        <p id="bioText">No bio set yet.</p>
+        <!-- Edit button positioned bottom-right -->
+        <button id="btn-edit-bio" class="btn btn-outline-primary position-absolute" style="bottom:1rem; right:1rem;">
+            <i class="bi bi-pencil"></i> Edit Bio
+        </button>
+    </section>
 
-        <!-- Profile Box -->
-        <aside class="profile-box">
-            <img src="../css/images/avatar.png" alt="Avatar">
-            <h5>@janeDoe</h5>
-            <div class="actions">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">Member Since <strong>May 21, 2025</strong></li>
-                    <li class="list-group-item">
-                        <button class="btn btn-outline-primary" id="btn-change-name">Change my display name</button>
-                    </li>
-                    <li class="list-group-item">
-                        <button class="btn btn-outline-primary" id="btn-change-photo">Change my profile photo</button>
-                    </li>
-                </ul>
-            </div>
-        </aside>
+    <!-- Profile Box -->
+    <aside class="profile-box ms-4">
+        <img src="../css/images/avatar.png" alt="Avatar">
+        <h5 class="mt-3">@janeDoe</h5>
+        <div class="actions mt-3">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Member Since <strong>May 21, 2025</strong></li>
+                <li class="list-group-item">
+                    <button class="btn btn-outline-primary w-100" id="btn-change-name">Change my display name</button>
+                </li>
+                <li class="list-group-item">
+                    <button class="btn btn-outline-primary w-100" id="btn-change-photo">Change my profile photo</button>
+                </li>
+            </ul>
+        </div>
+    </aside>
     </div>
 </main>
 
@@ -78,6 +80,37 @@
     // footer
     fetch('shared/footer.html').then(r => r.text())
         .then(html => document.getElementById('shared-footer').innerHTML = html);
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabs = document.querySelectorAll('.list-group-item');
+        const detailPane = document.getElementById('detailPane');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                switch (tab.id) {
+                    case 'tab-bio':
+                        detailPane.innerHTML = `<h3>My Bio</h3><p id="bioText">No bio set yet.</p>
+                <button id="btn-edit-bio" class="btn btn-outline-primary position-absolute" style="bottom:1rem; right:1rem;">
+                  <i class="bi bi-pencil"></i> Edit Bio
+                </button>`;
+                        break;
+                    case 'tab-questions':
+                        detailPane.innerHTML = `<h3>My Posts</h3><p>No questions asked yet.</p>`;
+                        break;
+                    case 'tab-comments':
+                        detailPane.innerHTML = `<h3>My Comments</h3><p>No comments made yet.</p>`;
+                        break;
+                    case 'tab-likes':
+                        detailPane.innerHTML = `<h3>My Likes</h3><p>No likes recorded yet.</p>`;
+                        break;
+                }
+            });
+        });
+    });             
 </script>
 
 </body>

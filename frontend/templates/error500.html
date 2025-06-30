@@ -12,6 +12,8 @@
 
 
 </head>
+<!-- Shared Header -->
+<div id="shared-header"></div>
 
 <body class="error-500">
     <div class="content-box">
@@ -25,6 +27,12 @@
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Load shared partials -->
+<script>
+    // header
+    fetch('shared/header-error.html').then(r => r.text())
+        .then(html => document.getElementById('shared-header').innerHTML = html);
+</script>
 </body>
 
 </html>
