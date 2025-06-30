@@ -1,0 +1,67 @@
+<!-- header.html -->
+<nav class="navbar bg-transparent border-bottom py-2 fixed-top">
+    <div class="container d-flex justify-content-between align-items-center">
+        <!-- Logo / Brand -->
+        <a class="navbar-brand text-dark fw-bold d-flex align-items-center" href="/">
+            <img src="../css/images/cactus.png" alt="Plant Talk Logo" height="32" class="me-2">
+            <span class="logo-text">Plant Talk</span>
+        </a>
+
+        <!-- Unsigned state -->
+        <div id="nav-unsigned" class="d-flex">
+            <a href="/register.html" class="btn btn-outline-secondary me-2">Register</a>
+            <a href="/login.html" class="btn btn-outline-secondary">Login</a>
+        </div>
+
+        <!-- Signed-in state -->
+        <div id="nav-signed" class="d-flex d-none align-items-center">
+            <a href="/new-post.html" class="btn btn-outline-secondary me-3">Create Post</a>
+            <a href="/notifications" class="position-relative me-3 p-0">
+                <img src="../css/images/notification.png" alt="Notifications" width="24" height="24">
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+            </a>
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle p-0" id="profileMenu"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="../css/images/avatar.png" alt="Profile" width="32" height="32"
+                        class="rounded-circle img-thumbnail">
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
+                    <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                    <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Error state -->
+        <div id="nav-error" class="d-flex d-none text-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>Unable to load user data</span>
+        </div>
+    </div>
+</nav>
+
+<script>
+    // replace this with your real check (cookie, fetch, global var, etc.)
+    async function detectUserState() {
+        try {
+            // example: hit your auth/status endpoint
+            const res = await fetch('/api/auth/status');
+            if (!res.ok) throw new Error();
+            const { loggedIn } = await res.json();
+            return loggedIn ? 'signed' : 'unsigned';
+        } catch {
+            return 'error';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const state = await detectUserState();            // 'signed' | 'unsigned' | 'error'
+        document.getElementById(`nav-${state}`).classList.remove('d-none');
+    });
+</script>
+  
