@@ -17,19 +17,20 @@ body {
     transform: translate(-50%, -50%);
     text-align: center;
     color: rgb(192, 36, 82);
-    text-shadow: 0px 2px 4px rgb(109, 214, 40);
 }
 
 .content-box h1 {
     font-size: 2rem;
     font-family: 'BebasNeue-Regular', sans-serif;
     font-weight: lighter;
+    text-shadow: 0px 2px 4px rgb(109, 214, 40);
 }
 
 .content-box p {
     font-size: 2em;
     font-family: 'BebasNeue-Regular', sans-serif;
     font-weight: lighter;
+    text-shadow: 0px 2px 4px rgb(109, 214, 40);
 }
 
 

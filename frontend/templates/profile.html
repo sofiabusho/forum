@@ -37,27 +37,27 @@
         </aside>
 
     <!-- Detail Pane -->
-    <section id="detailPane" class="flex-fill bg-white rounded shadow-sm p-4 position-relative">
+    <section id="detailPane" class="flex-fill rounded shadow-sm p-4 position-relative">
         <h3>My Bio</h3>
         <p id="bioText">No bio set yet.</p>
         <!-- Edit button positioned bottom-right -->
-        <button id="btn-edit-bio" class="btn btn-outline-primary position-absolute" style="bottom:1rem; right:1rem;">
+        <button id="btn-edit-bio" class="btn btn-outline-light position-absolute" style="bottom:1rem; right:1rem;">
             <i class="bi bi-pencil"></i> Edit Bio
         </button>
     </section>
 
     <!-- Profile Box -->
-    <aside class="profile-box ms-4">
+    <aside class="profile-box bg-transparent ms-4">
         <img src="../css/images/avatar.png" alt="Avatar">
         <h5 class="mt-3">@janeDoe</h5>
         <div class="actions mt-3">
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">Member Since <strong>May 21, 2025</strong></li>
                 <li class="list-group-item">
-                    <button class="btn btn-outline-primary w-100" id="btn-change-name">Change my display name</button>
+                    <button class="btn btn-outline-light w-100" id="btn-change-name">Change my display name</button>
                 </li>
                 <li class="list-group-item">
-                    <button class="btn btn-outline-primary w-100" id="btn-change-photo">Change my profile photo</button>
+                    <button class="btn btn-outline-light w-100" id="btn-change-photo">Change my profile photo</button>
                 </li>
             </ul>
         </div>
@@ -94,7 +94,7 @@
                 switch (tab.id) {
                     case 'tab-bio':
                         detailPane.innerHTML = `<h3>My Bio</h3><p id="bioText">No bio set yet.</p>
-                <button id="btn-edit-bio" class="btn btn-outline-primary position-absolute" style="bottom:1rem; right:1rem;">
+                <button id="btn-edit-bio" class="btn btn-outline-light position-absolute" style="bottom:1rem; right:1rem;">
                   <i class="bi bi-pencil"></i> Edit Bio
                 </button>`;
                         break;

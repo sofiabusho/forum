@@ -23,19 +23,19 @@
     
 }
 
-/* plant-themed green for the “About”/“Terms” links */
+/* “About”/“Terms” links */
 #shared-footer .container a.fw-bold {
-    color: #388e3c;
+    color: #ffffff;
     /* SeaGreen—swap in any hex you like */
     transition: color .2s ease;
 }
 
 #shared-footer .container a.fw-bold:hover {
-    color: #2e7d32;
+    color: #78ff7e;
     /* Darker green on hover */ }
 
 /* Login and register button, loaded after bootstrap.css */
-.btn.btn-primary.btn-lg.w-100 {
+/* .btn.btn-primary.btn-lg.w-100 {
     background-color: #388e3c !important;
     border-color: #388e3c !important;
     color: #fafafa !important;
@@ -45,8 +45,21 @@
 .btn.btn-primary.btn-lg.w-100:hover {
     background-color: #2e7d32 !important;
     transform: translateY(-2px); 
+} */
+
+/* Notifications Read- Unread Tab  */
+.nav-link {
+    color : #ffffff !important;      
 }
 
+.nav-link:hover {
+    color : #000000 !important; 
+    background-color: rgb(255, 255, 255);
+}
+
+.nav-link.active {
+    color : #000000 !important; 
+}
 
 /* About - Terms & Conditions */
 .card.shadow-sm {

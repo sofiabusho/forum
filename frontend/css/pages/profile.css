@@ -13,8 +13,7 @@ body {
 main {
     flex: 1;
     padding-top: 56px;
-    background-color: rgba(227, 227, 227, 0.482);
-    backdrop-filter: blur(6px);
+
 }
 
 .profile-wrapper {
@@ -29,15 +28,18 @@ main {
 }
 
 .profile-sidebar .list-group-item {
+    color: #ffffff;
     border: none;
     border-radius: .25rem;
     margin-bottom: .5rem;
-    background: #fff;
-}
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
+    }
 
 .profile-sidebar .list-group-item.active {
-    background-color: #252a1a;
-    color: #fff;
+    color: #000;
+    background-color: #ffffff;
+    backdrop-filter: blur(6px);
 }
 
 .profile-sidebar .list-group-item i {
@@ -45,9 +47,11 @@ main {
 }
 
 #detailPane {
+    color: #ffffff;
     flex-grow: 1;
     margin: 0 2rem;
-    background: #fff;
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
     border-radius: .5rem;
     box-shadow: 0 0 .5rem rgba(0, 0, 0, 0.1);
     padding: 1.5rem;
@@ -55,7 +59,8 @@ main {
 
 .profile-box {
     width: 260px;
-    background: #fff;
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
     border-radius: .5rem;
     box-shadow: 0 0 .5rem rgba(0, 0, 0, 0.1);
     padding: 1.5rem;
@@ -69,10 +74,14 @@ main {
 }
 
 .profile-box h5 {
+    color: #ffffff;
     margin: 1rem 0;
 }
 
 .profile-box .actions .list-group-item {
+    color: #ffffff;
+    background-color: transparent;
+    border-radius: .5rem;
     border: none;
     padding: .5rem 0;
 }
