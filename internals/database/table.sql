@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS PostCategories (
 
 -- LikesDislikes Table: stores user reactions (likes or dislikes) to posts
 CREATE TABLE IF NOT EXISTS LikesDislikes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    likeDislike_id INTEGER PRIMARY KEY AUTOINCREMENT,
     post_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     vote INTEGER NOT NULL CHECK (vote IN (1, -1)),
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS LikesDislikes (
 
 -- CommentLikes Table: stores user reactions (likes or dislikes) to comments
 CREATE TABLE IF NOT EXISTS CommentLikes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commentlikes_id INTEGER PRIMARY KEY AUTOINCREMENT,
     comment_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     vote INTEGER NOT NULL CHECK (vote IN (1, -1)),
