@@ -7,8 +7,6 @@ import (
 type User struct {
 	UserID           int
 	Username         string
-	Firstname        string
-	Lastname         string
 	Email            string
 	PasswordHash     string
 	RegistrationDate time.Time
@@ -35,8 +33,6 @@ type Comment struct {
 	PostID       int
 	UserID       int
 	Username     string
-	Firstname    string
-	Lastname     string
 	Content      string
 	NbrLike      int
 	NbrDislike   int
