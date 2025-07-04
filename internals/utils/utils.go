@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"forum/internals/database"
 	"html/template"
 	"math/rand"
 	"net/http"
@@ -34,4 +35,20 @@ func GenerateCookieValue() string {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
+}
+
+// isValid returns true if the given session cookie exists and is not expired.
+func IsValidSession(cookieValue string) bool {
+	db := database.CreateTable()
+	defer db.Close()
+
+	var expiration time.Time
+	err := db.QueryRow(
+		"SELECT expiration_date FROM Sessions WHERE cookie_value = ?",
+		cookieValue,
+	).Scan(&expiration)
+	if err != nil {
+		return false // not found, or some other DB error
+	}
+	return time.Now().Before(expiration)
 }
