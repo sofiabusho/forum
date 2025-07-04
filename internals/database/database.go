@@ -7,9 +7,9 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var dbPath = "./forum.db" // ή το path που θες
+var dbPath = "./forum.db" 
 
-// ✅ Δημιουργεί/συνδέεται με SQLite DB
+// Connect with SQLite DB
 func CreateTable() *sql.DB {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
@@ -18,7 +18,7 @@ func CreateTable() *sql.DB {
 	return db
 }
 
-// ✅ Εισάγει δυναμικά σε οποιονδήποτε πίνακα
+// imports the database schema from a file
 func Insert(db *sql.DB, table string, columns string, values ...any) {
 	placeholders := ""
 	for i := range values {
