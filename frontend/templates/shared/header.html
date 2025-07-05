@@ -3,38 +3,39 @@
     <div class="container d-flex justify-content-between align-items-center">
         <!-- Logo / Brand -->
         <a class="navbar-brand text-dark fw-bold d-flex align-items-center" href="/">
-            <img src="/frontend/css/images/cactus.png" alt="Plant Talk Logo" height="32"            
+            <img src="/frontend/css/images/cactus.png" alt="Plant Talk Logo" height="32"
                 class="d-inline-block align-text-top me-2">
             <span class="logo-text">Plant Talk</span>
         </a>
 
-        <!-- Unsigned state -->
+        <!-- Unsigned state (default) -->
         <div id="nav-unsigned" class="d-flex">
-            <a href="/register.html" class="btn btn-outline-light me-2">Register</a>
-            <a href="/login.html" class="btn btn-outline-light me-2">Login</a>
+            <a href="/register" class="btn btn-outline-light me-2">Register</a>
+            <a href="/login" class="btn btn-outline-light me-2">Login</a>
         </div>
 
-        <!-- Signed-in state -->
+        <!-- Signed-in state (hidden by default) -->
         <div id="nav-signed" class="d-flex d-none align-items-center">
             <!-- Create Post -->
-            <a href="/new-post.html" class="btn btn-outline-light me-2">Create Post</a>
+            <a href="/new-post" class="btn btn-outline-light me-2">Create Post</a>
             <!-- Notifications -->
             <a href="/notifications" class="position-relative me-3 p-0">
                 <!-- notification icon image -->
-                <img src="../css/images/notification.png" alt="Notifications" width="24" height="24">
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+                <img src="/frontend/css/images/notification.png" alt="Notifications" width="24" height="24">
+                <span id="notification-badge"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
             </a>
             <!-- Profile Thumbnail Dropdown -->
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle p-0" id="profileMenu"
                     data-bs-toggle="dropdown" aria-expanded="false">
                     <!-- user thumbnail -->
-                    <img src="../css/images/avatar.png" alt="Profile" width="32" height="32"
+                    <img src="/frontend/css/images/avatar.png" alt="Profile" width="32" height="32"
                         class="rounded-circle img-thumbnail">
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
                     <li><a class="dropdown-item" href="/profile">Profile</a></li>
-                    <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                    <li><a class="dropdown-item" href="/categories">Categories</a></li>
                     <li>
                         <hr class="dropdown-divider">
                     </li>
@@ -43,33 +44,65 @@
             </div>
         </div>
 
-        <!-- Error state -->
+        <!-- Error state (hidden by default) -->
         <div id="nav-error" class="d-flex d-none text-danger">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            <a class="navbar-brand text-dark fw-bold d-flex align-items-center" href="/">
-                <img src="../css/images/cactus.png" alt="Plant Talk Logo" height="32" class="d-inline-block align-text-top me-2">
-                <span class="logo-text">Plant Talk</span>    </a>
+            <span>Connection Error</span>
         </div>
     </div>
 </nav>
 
 <script>
-    // replace this with your real check (cookie, fetch, global var, etc.)
-    async function detectUserState() {
+    // Check authentication status
+    async function checkAuthStatus() {
         try {
-            // example: hit your auth/status endpoint
-            const res = await fetch('/api/auth/status');
-            if (!res.ok) throw new Error();
-            const { loggedIn } = await res.json();
-            return loggedIn ? 'signed' : 'unsigned';
-        } catch {
-            return 'error';
+            const response = await fetch('/api/auth/status');
+            if (!response.ok) throw new Error('Auth check failed');
+
+            const data = await response.json();
+            const isLoggedIn = data.loggedIn;
+
+            // Show/hide appropriate nav sections
+            if (isLoggedIn) {
+                document.getElementById('nav-unsigned').classList.add('d-none');
+                document.getElementById('nav-signed').classList.remove('d-none');
+                document.getElementById('nav-error').classList.add('d-none');
+
+                // Load notification count
+                loadNotificationCount();
+            } else {
+                document.getElementById('nav-unsigned').classList.remove('d-none');
+                document.getElementById('nav-signed').classList.add('d-none');
+                document.getElementById('nav-error').classList.add('d-none');
+            }
+        } catch (error) {
+            console.error('Error checking auth status:', error);
+            // Show error state
+            document.getElementById('nav-unsigned').classList.add('d-none');
+            document.getElementById('nav-signed').classList.add('d-none');
+            document.getElementById('nav-error').classList.remove('d-none');
         }
     }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        const state = await detectUserState();            // 'signed' | 'unsigned' | 'error'
-        document.getElementById(`nav-${state}`).classList.remove('d-none');
-    });
+    // Load notification count for logged-in users
+    async function loadNotificationCount() {
+        try {
+            const response = await fetch('/api/notifications');
+            if (response.ok) {
+                const data = await response.json();
+                const unreadCount = data.unread ? data.unread.length : 0;
+                document.getElementById('notification-badge').textContent = unreadCount;
+
+                // Hide badge if no notifications
+                if (unreadCount === 0) {
+                    document.getElementById('notification-badge').style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
+    }
+
+    // Check auth status when page loads
+    document.addEventListener('DOMContentLoaded', checkAuthStatus);
 </script>
-  

@@ -16,39 +16,40 @@
     <!-- Shared Header -->
     <div id="shared-header"></div>
 
-<!-- Centered Card Container -->
-<main class="flex-fill d-flex justify-content-center align-items-center bg-transparent">
-    <div class="card shadow-sm"
-        style="width: 600px; background-color: rgba(227, 227, 227, 0.482); backdrop-filter: blur(6px);">
-        <div class="card-body">
-            <h2 class="card-title mb-4">Create Post</h2>
-            <form id="postForm">
-                <div class="mb-3">
-                    <label for="categories" class="form-label">Choose categories</label>
-                    <select id="categories" name="categories" class="form-select" required>
-                        <!-- Populate with <option value="">Category</option> -->
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <input type="text" id="title" name="title" class="form-control" placeholder="Type your title"
-                        required>
-                </div>
-                <div class="mb-3">
-                    <textarea id="content" name="content" class="form-control" rows="6"
-                        placeholder="What's on your mind?" required></textarea>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <button type="button" class="btn btn-outline-light">
-                        <i class="bi bi-image me-2"></i>Add Image
-                    </button>
-                    <button type="submit" class="btn btn-outline-light" disabled id="btn-publish">
-                        <i class="bi bi-send-fill me-1"></i>Publish
-                    </button>
-                </div>
-            </form>
+    <!-- Centered Card Container -->
+    <main class="flex-fill d-flex justify-content-center align-items-center bg-transparent">
+        <div class="card shadow-sm"
+            style="width: 600px; background-color: rgba(227, 227, 227, 0.482); backdrop-filter: blur(6px);">
+            <div class="card-body">
+                <h2 class="card-title mb-4">Create Post</h2>
+                <form id="postForm" action="/new-post" method="POST">
+                    <div class="mb-3">
+                        <label for="categories" class="form-label">Choose categories</label>
+                        <select id="categories" name="categories" class="form-select" required>
+                            <option value="">Select a category...</option>
+                            <!-- Categories will be loaded dynamically -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="title" name="title" class="form-control" placeholder="Type your title"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <textarea id="content" name="content" class="form-control" rows="6"
+                            placeholder="What's on your mind?" required></textarea>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-outline-light">
+                            <i class="bi bi-image me-2"></i>Add Image
+                        </button>
+                        <button type="submit" class="btn btn-outline-light" disabled id="btn-publish">
+                            <i class="bi bi-send-fill me-1"></i>Publish
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-</main>
+    </main>
 
     <!-- Shared footer -->
     <div id="shared-footer"></div>
@@ -58,21 +59,45 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
     <!-- Load shared partials -->
     <script>
-    // header
-    fetch('/frontend/templates/shared/header.html').then(r => r.text())
-        .then(html => document.getElementById('shared-header').innerHTML = html);
+        // header
+        fetch('/frontend/templates/shared/header.html').then(r => r.text())
+            .then(html => document.getElementById('shared-header').innerHTML = html);
 
-    // footer
-    fetch('/frontend/templates/shared/footer.html').then(r => r.text())
-        .then(html => document.getElementById('shared-footer').innerHTML = html);
+        // footer
+        fetch('/frontend/templates/shared/footer.html').then(r => r.text())
+            .then(html => document.getElementById('shared-footer').innerHTML = html);
     </script>
-    <!-- Enable publish when form valid -->
+
+    <!-- Load categories and enable form validation -->
     <script>
+        // Load categories from API
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const categories = await response.json();
+                const select = document.getElementById('categories');
+
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.name; // You might want to use category ID instead
+                    option.textContent = category.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+            }
+        }
+
+        // Enable publish button when form is valid
         const form = document.getElementById('postForm');
         const btn = document.getElementById('btn-publish');
+
         form.addEventListener('input', () => {
             btn.disabled = !form.checkValidity();
         });
+
+        // Load categories when page loads
+        document.addEventListener('DOMContentLoaded', loadCategories);
     </script>
 
 </body>
