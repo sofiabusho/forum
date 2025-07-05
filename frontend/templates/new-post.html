@@ -60,7 +60,7 @@
     <!-- Load shared partials -->
     <script>
         // header
-        fetch('/frontend/templates/shared/header.html').then(r => r.text())
+        fetch('/frontend/templates/shared/header-signed.html').then(r => r.text())
             .then(html => document.getElementById('shared-header').innerHTML = html);
 
         // footer
