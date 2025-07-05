@@ -28,6 +28,19 @@ type Post struct {
 	Nbrcomments    int
 }
 
+type PostResponse struct {
+	ID       int      `json:"id"`
+	Title    string   `json:"title"`
+	Content  string   `json:"content"`
+	Author   string   `json:"author"`
+	TimeAgo  string   `json:"timeAgo"`
+	Tags     []string `json:"tags"`
+	Views    int      `json:"views"`
+	Comments int      `json:"comments"`
+	Likes    int      `json:"likes"`
+	Excerpt  string   `json:"excerpt"`
+}
+
 type Comment struct {
 	CommentID    int
 	PostID       int
@@ -40,9 +53,26 @@ type Comment struct {
 	Formatdate   string
 }
 
+type CommentResponse struct {
+	ID         int    `json:"id"`
+	PostID     int    `json:"postId"`
+	Author     string `json:"author"`
+	Content    string `json:"content"`
+	TimeAgo    string `json:"timeAgo"`
+	LikeCount  int    `json:"likeCount"`
+	DislikeCount int  `json:"dislikeCount"`
+	UserVote   int    `json:"userVote"`
+}
+
 type Category struct {
 	CategoryID int
 	Name       string
+}
+
+type CategoryResponse struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Tags        []string `json:"tags"`
 }
 
 type PostCategory struct {
@@ -66,6 +96,13 @@ type CommentLike struct {
 	NbrLike      int
 	NbrDislike   int
 	CreationDate time.Time
+}
+
+type LikeResponse struct {
+	Success    bool `json:"success"`
+	LikeCount  int  `json:"likeCount"`
+	DislikeCount int `json:"dislikeCount"`
+	UserVote   int  `json:"userVote"` // 1 for like, -1 for dislike, 0 for none
 }
 
 type Session struct {

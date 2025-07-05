@@ -76,9 +76,12 @@ CREATE TABLE IF NOT EXISTS Sessions (
 );
 
 -- Optional: insert some starter categories
-INSERT INTO Categories (name) VALUES
-('*****'),
-('*****'),
-('*****'),
-('*****'),
-('*****'),
+INSERT OR IGNORE INTO Categories (name) VALUES
+('Succulents'),
+('Tropical Plants'),
+('Herb Garden'),
+('Indoor Plants'),
+('Plant Care Tips'),
+('Plant Diseases'),
+('Propagation'),
+('Flowering Plants');
