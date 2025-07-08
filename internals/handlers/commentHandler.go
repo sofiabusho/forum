@@ -24,7 +24,7 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := utgetUserIDFromSession(cookie.Value)
+	userID := utils.GetUserIDFromSession(cookie.Value)
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return
@@ -77,7 +77,7 @@ func CommentsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	// Get current user ID if logged in
 	var currentUserID int
 	if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {
-		currentUserID = getUserIDFromSession(cookie.Value)
+		currentUserID = utils.GetUserIDFromSession(cookie.Value)
 	}
 
 	db := database.CreateTable()
@@ -136,7 +136,7 @@ func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := getUserIDFromSession(cookie.Value)
+	userID := utils.GetUserIDFromSession(cookie.Value)
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return

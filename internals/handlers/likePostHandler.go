@@ -23,7 +23,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := getUserIDFromSession(cookie.Value)
+	userID := utils.GetUserIDFromSession(cookie.Value)
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return
@@ -87,7 +87,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := getUserIDFromSession(cookie.Value)
+	userID := utils.GetUserIDFromSession(cookie.Value)
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return

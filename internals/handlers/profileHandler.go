@@ -37,7 +37,7 @@ func ProfileAPIHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := getUserIDFromSession(cookie.Value)
+	userID := utils.GetUserIDFromSession(cookie.Value)
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return
@@ -62,7 +62,7 @@ func ActivityAPIHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := getUserIDFromSession(cookie.Value)
+	userID := utils.GetUserIDFromSession(cookie.Value)
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return
@@ -80,7 +80,7 @@ func ActivityAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 // updateProfile handles profile update requests
 func updateProfile(w http.ResponseWriter, r *http.Request) {
-	userID := getUserIDFromSession(getCookieValue(r))
+	userID := utils.GetUserIDFromSession(getCookieValue(r))
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return
