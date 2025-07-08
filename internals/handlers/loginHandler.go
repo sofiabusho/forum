@@ -17,6 +17,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db := database.CreateTable()
+	defer db.Close()
 	emailOrUsername := strings.TrimSpace(r.FormValue("email"))
 	password := r.FormValue("password")
 

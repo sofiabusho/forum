@@ -73,6 +73,8 @@ func main() {
 
 	// Notifications API
 	http.HandleFunc("/api/notifications", handlers.NotificationsAPIHandler)
+	http.HandleFunc("/api/notifications/mark-read", handlers.MarkNotificationReadHandler)
+	http.HandleFunc("/api/notifications/mark-all-read", handlers.MarkAllNotificationsReadHandler)
 
 	// Profile and notifications
 	http.HandleFunc("/profile", func(w http.ResponseWriter, r *http.Request) {
@@ -103,6 +105,20 @@ func main() {
 		} else {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
+	})
+
+	http.HandleFunc("/api/notifications/count", func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("session")
+		if err != nil || !utils.IsValidSession(cookie.Value) {
+			json.NewEncoder(w).Encode(map[string]int{"count": 0})
+			return
+		}
+
+		userID := handlers.GetUserIDFromSession(cookie.Value) // You'll need to export this function
+		count := handlers.GetUnreadNotificationCount(userID)
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]int{"count": count})
 	})
 
 	// Static pages

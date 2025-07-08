@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS Users (
     password_hash TEXT NOT NULL,
     registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 -- Posts Table: stores user posts
 CREATE TABLE IF NOT EXISTS Posts (
     post_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +16,6 @@ CREATE TABLE IF NOT EXISTS Posts (
     creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
-
 -- Comments Table: stores user comments on posts
 CREATE TABLE IF NOT EXISTS Comments (
     comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,13 +26,11 @@ CREATE TABLE IF NOT EXISTS Comments (
     FOREIGN KEY (post_id) REFERENCES Posts(post_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
-
 -- Categories Table: defines available categories/tags for posts
 CREATE TABLE IF NOT EXISTS Categories (
     category_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL
 );
-
 -- PostCategories Table: connects posts to multiple categories (many-to-many)
 CREATE TABLE IF NOT EXISTS PostCategories (
     post_id INTEGER NOT NULL,
@@ -43,7 +39,6 @@ CREATE TABLE IF NOT EXISTS PostCategories (
     FOREIGN KEY (post_id) REFERENCES Posts(post_id),
     FOREIGN KEY (category_id) REFERENCES Categories(category_id)
 );
-
 -- LikesDislikes Table: stores user reactions (likes or dislikes) to posts
 CREATE TABLE IF NOT EXISTS LikesDislikes (
     likeDislike_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +49,6 @@ CREATE TABLE IF NOT EXISTS LikesDislikes (
     FOREIGN KEY (post_id) REFERENCES Posts(post_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
-
 -- CommentLikes Table: stores user reactions (likes or dislikes) to comments
 CREATE TABLE IF NOT EXISTS CommentLikes (
     commentlikes_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,7 +59,25 @@ CREATE TABLE IF NOT EXISTS CommentLikes (
     FOREIGN KEY (comment_id) REFERENCES Comments(comment_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
-
+-- Notifications Table: stores user notifications
+CREATE TABLE IF NOT EXISTS Notifications (
+    notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    type TEXT NOT NULL CHECK (type IN ('like', 'comment', 'mention', 'system')),
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    related_post_id INTEGER,
+    related_comment_id INTEGER,
+    related_user_id INTEGER,
+    is_read BOOLEAN DEFAULT FALSE,
+    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (related_post_id) REFERENCES Posts(post_id),
+    FOREIGN KEY (related_comment_id) REFERENCES Comments(comment_id),
+    FOREIGN KEY (related_user_id) REFERENCES Users(user_id)
+);
+-- Index for better performance
+CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON Notifications(user_id, is_read, creation_date DESC);
 -- Sessions Table: manages user sessions (login cookies)
 CREATE TABLE IF NOT EXISTS Sessions (
     session_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,14 +86,14 @@ CREATE TABLE IF NOT EXISTS Sessions (
     expiration_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
-
 -- Optional: insert some starter categories
-INSERT OR IGNORE INTO Categories (name) VALUES
-('Succulents'),
-('Tropical Plants'),
-('Herb Garden'),
-('Indoor Plants'),
-('Plant Care Tips'),
-('Plant Diseases'),
-('Propagation'),
-('Flowering Plants');
+INSERT
+    OR IGNORE INTO Categories (name)
+VALUES ('Succulents'),
+    ('Tropical Plants'),
+    ('Herb Garden'),
+    ('Indoor Plants'),
+    ('Plant Care Tips'),
+    ('Plant Diseases'),
+    ('Propagation'),
+    ('Flowering Plants');
