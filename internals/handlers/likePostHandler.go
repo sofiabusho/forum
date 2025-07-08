@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"forum/internals/database"
 	"forum/internals/utils"
 	"net/http"
@@ -66,6 +67,23 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		db.Exec("INSERT INTO LikesDislikes (post_id, user_id, vote) VALUES (?, ?, ?)", postID, userID, vote)
 	}
 
+	if err == nil && vote == 1 { // Only for likes, not dislikes
+		// Get post author
+		var postAuthorID int
+		var postTitle string
+		err := db.QueryRow("SELECT user_id, title FROM Posts WHERE post_id = ?", postID).Scan(&postAuthorID, &postTitle)
+
+		if err == nil && postAuthorID != userID { // Don't notify yourself
+			// Get liker's username
+			likerUsername := GetUsernameFromSession(cookie.Value)
+
+			title := "New Like!"
+			message := fmt.Sprintf("%s liked your post '%s'", likerUsername, truncateText(postTitle, 50))
+
+			CreateNotification(postAuthorID, "like", title, message, &postID, nil, &userID)
+		}
+	}
+
 	// Get updated counts and user's current vote
 	response := getLikeStats(db, postID, userID)
 
@@ -87,7 +105,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := utils.GetUserIDFromSession(cookie.Value)
+	userID := getUserIDFromSession(cookie.Value)
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return
@@ -129,6 +147,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		// No existing vote - create new one
 		db.Exec("INSERT INTO CommentLikes (comment_id, user_id, vote) VALUES (?, ?, ?)", commentID, userID, vote)
 	}
+
 
 	// Get updated counts
 	response := getCommentLikeStats(db, commentID, userID)

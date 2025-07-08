@@ -16,6 +16,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db := database.CreateTable()
+	defer db.Close()
+
 	username := strings.TrimSpace(r.FormValue("username"))
 	email := strings.TrimSpace(r.FormValue("email"))
 	pass := r.FormValue("password")
@@ -48,5 +50,16 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	hash, _ := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
 	database.Insert(db, "Users", "(username, email, password_hash)", username, email, string(hash))
+
+	// After successful registration, create welcome notification
+	var newUserID int
+	err := db.QueryRow("SELECT user_id FROM Users WHERE email = ?", email).Scan(&newUserID)
+	if err == nil && newUserID > 0 {
+		title := "Welcome to Plant Talk!"
+		message := "Welcome to our plant-loving community! Start by creating your first post or exploring categories."
+			
+		CreateNotification(newUserID, "system", title, message, nil, nil, nil)
+	}
+
 	utils.FileService("login.html", w, map[string]interface{}{"Message": "Register successful"})
 }

@@ -23,7 +23,7 @@ func (c *Comment) ScanRows(rows *sql.Rows) error {
 	return rows.Scan(&c.CommentID, &c.PostID, &c.UserID, &c.Content, &c.CreationDate)
 }
 
-// CAtegory structure
+// Category structure
 func (cat *Category) ScanRows(rows *sql.Rows) error {
 	return rows.Scan(&cat.CategoryID, &cat.Name)
 }
@@ -41,4 +41,20 @@ func (ld *LikeDislike) ScanRows(rows *sql.Rows) error {
 // Session structure
 func (s *Session) ScanRows(rows *sql.Rows) error {
 	return rows.Scan(&s.SessionID, &s.UserID, &s.Cookie_value, &s.ExpirationDate)
+}
+
+// Scanning function
+func (n *Notification) ScanRows(rows *sql.Rows) error {
+	return rows.Scan(
+		&n.NotificationID,
+		&n.UserID,
+		&n.Type,
+		&n.Title,
+		&n.Message,
+		&n.RelatedPostID,
+		&n.RelatedCommentID,
+		&n.RelatedUserID,
+		&n.IsRead,
+		&n.CreationDate,
+	)
 }

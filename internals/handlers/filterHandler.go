@@ -17,7 +17,7 @@ func FilteredPostsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := utils.GetUserIDFromSession(cookie.Value)
+	userID := getUserIDFromSession(cookie.Value)
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return
@@ -98,44 +98,4 @@ func AuthStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
-}
-
-// NotificationsAPIHandler returns user notifications (placeholder implementation)
-func NotificationsAPIHandler(w http.ResponseWriter, r *http.Request) {
-	// Check authentication
-	cookie, err := r.Cookie("session")
-	if err != nil || !utils.IsValidSession(cookie.Value) {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	userID := utils.GetUserIDFromSession(cookie.Value)
-	if userID == 0 {
-		http.Error(w, "Invalid session", http.StatusUnauthorized)
-		return
-	}
-
-	// Placeholder notification data
-	// In a real implementation, you'd have a notifications table
-	notifications := map[string]interface{}{
-		"unread": []map[string]interface{}{
-			{
-				"text":    "Your post 'Best Indoor Plants for Beginners' received a new comment",
-				"timeAgo": "2 hours ago",
-			},
-			{
-				"text":    "Someone liked your comment on 'Succulent Care Tips'",
-				"timeAgo": "1 day ago",
-			},
-		},
-		"read": []map[string]interface{}{
-			{
-				"text":    "Welcome to Plant Talk! Start by creating your first post.",
-				"timeAgo": "3 days ago",
-			},
-		},
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(notifications)
 }

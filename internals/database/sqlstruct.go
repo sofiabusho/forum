@@ -13,14 +13,14 @@ type User struct {
 }
 
 type UserProfile struct {
-	UserID       int    `json:"userId"`
-	Username     string `json:"username"`
-	Email        string `json:"email"`
-	JoinDate     string `json:"joinDate"`
-	PostCount    int    `json:"postCount"`
-	CommentCount int    `json:"commentCount"`
-	LikesGiven   int    `json:"likesGiven"`
-	LikesReceived int   `json:"likesReceived"`
+	UserID        int    `json:"userId"`
+	Username      string `json:"username"`
+	Email         string `json:"email"`
+	JoinDate      string `json:"joinDate"`
+	PostCount     int    `json:"postCount"`
+	CommentCount  int    `json:"commentCount"`
+	LikesGiven    int    `json:"likesGiven"`
+	LikesReceived int    `json:"likesReceived"`
 }
 
 type UserActivity struct {
@@ -29,13 +29,12 @@ type UserActivity struct {
 }
 
 type CommentActivity struct {
-	ID         int    `json:"id"`
-	PostID     int    `json:"postId"`
-	PostTitle  string `json:"postTitle"`
-	Content    string `json:"content"`
-	TimeAgo    string `json:"timeAgo"`
+	ID        int    `json:"id"`
+	PostID    int    `json:"postId"`
+	PostTitle string `json:"postTitle"`
+	Content   string `json:"content"`
+	TimeAgo   string `json:"timeAgo"`
 }
-
 
 type Post struct {
 	PostID         int
@@ -79,14 +78,14 @@ type Comment struct {
 }
 
 type CommentResponse struct {
-	ID         int    `json:"id"`
-	PostID     int    `json:"postId"`
-	Author     string `json:"author"`
-	Content    string `json:"content"`
-	TimeAgo    string `json:"timeAgo"`
-	LikeCount  int    `json:"likeCount"`
-	DislikeCount int  `json:"dislikeCount"`
-	UserVote   int    `json:"userVote"`
+	ID           int    `json:"id"`
+	PostID       int    `json:"postId"`
+	Author       string `json:"author"`
+	Content      string `json:"content"`
+	TimeAgo      string `json:"timeAgo"`
+	LikeCount    int    `json:"likeCount"`
+	DislikeCount int    `json:"dislikeCount"`
+	UserVote     int    `json:"userVote"`
 }
 
 type Category struct {
@@ -124,10 +123,10 @@ type CommentLike struct {
 }
 
 type LikeResponse struct {
-	Success    bool `json:"success"`
-	LikeCount  int  `json:"likeCount"`
-	DislikeCount int `json:"dislikeCount"`
-	UserVote   int  `json:"userVote"` // 1 for like, -1 for dislike, 0 for none
+	Success      bool `json:"success"`
+	LikeCount    int  `json:"likeCount"`
+	DislikeCount int  `json:"dislikeCount"`
+	UserVote     int  `json:"userVote"` // 1 for like, -1 for dislike, 0 for none
 }
 
 type Session struct {
@@ -135,4 +134,23 @@ type Session struct {
 	UserID         int
 	Cookie_value   string
 	ExpirationDate time.Time
+}
+
+type Notification struct {
+	NotificationID   int       `json:"id"`
+	UserID           int       `json:"userId"`
+	Type             string    `json:"type"`
+	Title            string    `json:"title"`
+	Message          string    `json:"message"`
+	RelatedPostID    *int      `json:"relatedPostId,omitempty"`
+	RelatedCommentID *int      `json:"relatedCommentId,omitempty"`
+	RelatedUserID    *int      `json:"relatedUserId,omitempty"`
+	IsRead           bool      `json:"isRead"`
+	CreationDate     time.Time `json:"creationDate"`
+	TimeAgo          string    `json:"timeAgo"`
+}
+
+type NotificationResponse struct {
+	Unread []Notification `json:"unread"`
+	Read   []Notification `json:"read"`
 }
