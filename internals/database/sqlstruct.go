@@ -12,6 +12,31 @@ type User struct {
 	RegistrationDate time.Time
 }
 
+type UserProfile struct {
+	UserID       int    `json:"userId"`
+	Username     string `json:"username"`
+	Email        string `json:"email"`
+	JoinDate     string `json:"joinDate"`
+	PostCount    int    `json:"postCount"`
+	CommentCount int    `json:"commentCount"`
+	LikesGiven   int    `json:"likesGiven"`
+	LikesReceived int   `json:"likesReceived"`
+}
+
+type UserActivity struct {
+	RecentPosts    []PostResponse    `json:"recentPosts"`
+	RecentComments []CommentActivity `json:"recentComments"`
+}
+
+type CommentActivity struct {
+	ID         int    `json:"id"`
+	PostID     int    `json:"postId"`
+	PostTitle  string `json:"postTitle"`
+	Content    string `json:"content"`
+	TimeAgo    string `json:"timeAgo"`
+}
+
+
 type Post struct {
 	PostID         int
 	UserID         int
