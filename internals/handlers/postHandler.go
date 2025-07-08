@@ -25,7 +25,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get user ID from session
-	userID := getUserIDFromSession(cookie.Value)
+	userID := utils.GetUserIDFromSession(cookie.Value)
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return
