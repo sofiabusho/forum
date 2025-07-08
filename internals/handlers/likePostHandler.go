@@ -75,7 +75,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 		if err == nil && postAuthorID != userID { // Don't notify yourself
 			// Get liker's username
-			likerUsername := GetUsernameFromSession(cookie.Value)
+			likerUsername := utils.GetUsernameFromSession(cookie.Value)
 
 			title := "New Like!"
 			message := fmt.Sprintf("%s liked your post '%s'", likerUsername, truncateText(postTitle, 50))
@@ -105,7 +105,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := getUserIDFromSession(cookie.Value)
+	userID := utils.GetUserIDFromSession(cookie.Value)
 	if userID == 0 {
 		http.Error(w, "Invalid session", http.StatusUnauthorized)
 		return

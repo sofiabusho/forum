@@ -3,28 +3,14 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"forum/internals/database"
 	"forum/internals/utils"
 	"time"
 )
 
-// getUserIDFromSession returns the user ID for a given session cookie
-func getUserIDFromSession(cookieValue string) int {
-	db := database.CreateTable()
-	defer db.Close()
-
-	var userID int
-	err := db.QueryRow("SELECT user_id FROM Sessions WHERE cookie_value = ? AND expiration_date > datetime('now')", cookieValue).Scan(&userID)
-	if err != nil {
-		return 0
-	}
-	return userID
-}
-
 // formatTimeAgo formats a time.Time into a human-readable "time ago" string
 func formatTimeAgo(t time.Time) string {
 	duration := time.Since(t)
-	
+
 	if duration.Minutes() < 1 {
 		return "just now"
 	} else if duration.Hours() < 1 {
@@ -90,6 +76,6 @@ func checkAuthenticationRequired(cookieValue string) (int, bool) {
 	if !utils.IsValidSession(cookieValue) {
 		return 0, false
 	}
-	userID := getUserIDFromSession(cookieValue)
+	userID := utils.GetUserIDFromSession(cookieValue)
 	return userID, userID > 0
 }

@@ -114,7 +114,7 @@ func main() {
 			return
 		}
 
-		userID := handlers.GetUserIDFromSession(cookie.Value) // You'll need to export this function
+		userID := utils.GetUserIDFromSession(cookie.Value) // You'll need to export this function
 		count := handlers.GetUnreadNotificationCount(userID)
 
 		w.Header().Set("Content-Type", "application/json")
