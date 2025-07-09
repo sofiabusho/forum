@@ -76,6 +76,11 @@ func main() {
 	wrapHandler("/api/notifications/mark-read", handlers.MarkNotificationReadHandler)
 	wrapHandler("/api/notifications/mark-all-read", handlers.MarkAllNotificationsReadHandler)
 
+	// Image upload and management
+	wrapHandler("/api/upload-image", handlers.ImageUploadHandler)
+	wrapHandler("/api/delete-image", handlers.DeleteImageHandler)
+	wrapHandler("/api/user-images", handlers.GetUserImagesHandler)
+
 	// Profile and notifications
 	wrapHandler("/profile", func(w http.ResponseWriter, r *http.Request) {
 		if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {

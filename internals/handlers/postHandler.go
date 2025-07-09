@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"forum/internals/database"
@@ -35,6 +36,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	title := strings.TrimSpace(r.FormValue("title"))
 	content := strings.TrimSpace(r.FormValue("content"))
 	categoryName := r.FormValue("categories")
+	imageIDStr := r.FormValue("image_id")
 
 	if title == "" || content == "" || categoryName == "" {
 		utils.FileService("new-post.html", w, map[string]interface{}{"Error": "All fields are required"})
@@ -52,14 +54,44 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Insert post into database
-	result, err := db.Exec("INSERT INTO Posts (user_id, title, content) VALUES (?, ?, ?)", userID, title, content)
+	// Validate image ID if provided
+	var imageID *int
+	if imageIDStr != "" {
+		// Verify the image exists and belongs to this user
+		var imageUserID int
+		var imageFilename string
+		err = db.QueryRow("SELECT user_id, filename FROM Images WHERE filename = ?", imageIDStr).Scan(&imageUserID, &imageFilename)
+		if err != nil {
+			utils.FileService("new-post.html", w, map[string]interface{}{"Error": "Invalid image selected"})
+			return
+		}
+		if imageUserID != userID {
+			utils.FileService("new-post.html", w, map[string]interface{}{"Error": "You can only use your own images"})
+			return
+		}
+
+		// Get the actual image ID
+		var actualImageID int
+		err = db.QueryRow("SELECT image_id FROM Images WHERE filename = ?", imageIDStr).Scan(&actualImageID)
+		if err == nil {
+			imageID = &actualImageID
+		}
+	}
+
+	// Insert post into database with optional image
+	var result interface{}
+	if imageID != nil {
+		result, err = db.Exec("INSERT INTO Posts (user_id, title, content, image_id) VALUES (?, ?, ?, ?)", userID, title, content, *imageID)
+	} else {
+		result, err = db.Exec("INSERT INTO Posts (user_id, title, content) VALUES (?, ?, ?)", userID, title, content)
+	}
+
 	if err != nil {
 		http.Error(w, "Failed to create post", http.StatusInternalServerError)
 		return
 	}
 
-	postID, _ := result.LastInsertId()
+	postID, _ := result.(*sql.Result).LastInsertId()
 
 	// Associate post with category
 	db.Exec("INSERT INTO PostCategories (post_id, category_id) VALUES (?, ?)", postID, categoryID)
@@ -83,9 +115,11 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		query = `
 			SELECT p.post_id, p.title, p.content, u.username, p.creation_date,
 			       (SELECT COUNT(*) FROM Comments WHERE post_id = p.post_id) as comment_count,
-			       (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = 1) as like_count
+			       (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = 1) as like_count,
+			       i.image_url, i.thumbnail_url
 			FROM Posts p 
 			JOIN Users u ON p.user_id = u.user_id
+			LEFT JOIN Images i ON p.image_id = i.image_id
 			JOIN PostCategories pc ON p.post_id = pc.post_id
 			JOIN Categories c ON pc.category_id = c.category_id
 			WHERE c.name = ?
@@ -95,9 +129,11 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		query = `
 			SELECT p.post_id, p.title, p.content, u.username, p.creation_date,
 			       (SELECT COUNT(*) FROM Comments WHERE post_id = p.post_id) as comment_count,
-			       (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = 1) as like_count
+			       (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = 1) as like_count,
+			       i.image_url, i.thumbnail_url
 			FROM Posts p 
 			JOIN Users u ON p.user_id = u.user_id
+			LEFT JOIN Images i ON p.image_id = i.image_id
 			ORDER BY p.creation_date DESC`
 	}
 
@@ -112,7 +148,9 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var p database.PostResponse
 		var creationDate time.Time
-		err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Author, &creationDate, &p.Comments, &p.Likes)
+		var imageURL, thumbnailURL *string
+
+		err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Author, &creationDate, &p.Comments, &p.Likes, &imageURL, &thumbnailURL)
 		if err != nil {
 			continue
 		}
@@ -122,6 +160,14 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		p.Tags = getPostTags(db, p.ID)
 		p.Views = getPostViews(db, p.ID)
 
+		// Add image URLs if available
+		if imageURL != nil {
+			p.ImageURL = *imageURL
+		}
+		if thumbnailURL != nil {
+			p.ThumbnailURL = *thumbnailURL
+		}
+
 		posts = append(posts, p)
 	}
 
@@ -129,34 +175,68 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(posts)
 }
 
-// CategoriesAPIHandler returns available categories
-func CategoriesAPIHandler(w http.ResponseWriter, r *http.Request) {
+// GetUserImagesHandler returns images uploaded by a user
+func GetUserImagesHandler(w http.ResponseWriter, r *http.Request) {
+	// Check authentication
+	cookie, err := r.Cookie("session")
+	if err != nil || !utils.IsValidSession(cookie.Value) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userID := utils.GetUserIDFromSession(cookie.Value)
+	if userID == 0 {
+		http.Error(w, "Invalid session", http.StatusUnauthorized)
+		return
+	}
+
 	db := database.CreateTable()
 	defer db.Close()
 
-	rows, err := db.Query("SELECT category_id, name FROM Categories")
+	// Get user's uploaded images
+	rows, err := db.Query(`
+		SELECT image_id, filename, original_name, file_size, file_type, 
+		       image_url, thumbnail_url, upload_date
+		FROM Images 
+		WHERE user_id = ? 
+		ORDER BY upload_date DESC`, userID)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
-	var categories []database.CategoryResponse
+	var images []database.ImageResponse
 	for rows.Next() {
-		var id int
-		var name string
-		err := rows.Scan(&id, &name)
+		var img database.ImageResponse
+		var uploadDate time.Time
+
+		err := rows.Scan(&img.ID, &img.Filename, &img.OriginalName, &img.FileSize,
+			&img.FileType, &img.ImageURL, &img.ThumbnailURL, &uploadDate)
 		if err != nil {
 			continue
 		}
 
-		categories = append(categories, database.CategoryResponse{
-			Name:        name,
-			Description: fmt.Sprintf("Posts about %s", name),
-			Tags:        []string{name},
-		})
+		img.UploadDate = uploadDate.Format("2006-01-02 15:04:05")
+		img.FileSizeFormatted = formatFileSize(img.FileSize)
+
+		images = append(images, img)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(categories)
+	json.NewEncoder(w).Encode(images)
+}
+
+// Helper function to format file size
+func formatFileSize(bytes int64) string {
+	const unit = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	div, exp := int64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }

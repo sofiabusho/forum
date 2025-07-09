@@ -42,6 +42,7 @@ type Post struct {
 	Title          string
 	PhotoURL       string
 	Content        string
+	ImageID        *int
 	CreationDate   time.Time
 	FormatedDate   string
 	Categories     []string
@@ -53,16 +54,44 @@ type Post struct {
 }
 
 type PostResponse struct {
-	ID       int      `json:"id"`
-	Title    string   `json:"title"`
-	Content  string   `json:"content"`
-	Author   string   `json:"author"`
-	TimeAgo  string   `json:"timeAgo"`
-	Tags     []string `json:"tags"`
-	Views    int      `json:"views"`
-	Comments int      `json:"comments"`
-	Likes    int      `json:"likes"`
-	Excerpt  string   `json:"excerpt"`
+	ID           int      `json:"id"`
+	Title        string   `json:"title"`
+	Content      string   `json:"content"`
+	Author       string   `json:"author"`
+	TimeAgo      string   `json:"timeAgo"`
+	Tags         []string `json:"tags"`
+	Views        int      `json:"views"`
+	Comments     int      `json:"comments"`
+	Likes        int      `json:"likes"`
+	Excerpt      string   `json:"excerpt"`
+	ImageURL     string   `json:"imageUrl,omitempty"`
+	ThumbnailURL string   `json:"thumbnailUrl,omitempty"`
+}
+
+// New Image struct
+type Image struct {
+	ImageID      int       `json:"id"`
+	UserID       int       `json:"userId"`
+	Filename     string    `json:"filename"`
+	OriginalName string    `json:"originalName"`
+	FileSize     int64     `json:"fileSize"`
+	FileType     string    `json:"fileType"`
+	ImageURL     string    `json:"imageUrl"`
+	ThumbnailURL string    `json:"thumbnailUrl"`
+	UploadDate   time.Time `json:"uploadDate"`
+}
+
+// ImageResponse struct for API responses
+type ImageResponse struct {
+	ID                int    `json:"id"`
+	Filename          string `json:"filename"`
+	OriginalName      string `json:"originalName"`
+	FileSize          int64  `json:"fileSize"`
+	FileSizeFormatted string `json:"fileSizeFormatted"`
+	FileType          string `json:"fileType"`
+	ImageURL          string `json:"imageUrl"`
+	ThumbnailURL      string `json:"thumbnailUrl"`
+	UploadDate        string `json:"uploadDate"`
 }
 
 type Comment struct {

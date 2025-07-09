@@ -58,3 +58,9 @@ func (n *Notification) ScanRows(rows *sql.Rows) error {
 		&n.CreationDate,
 	)
 }
+
+// Image scanning function
+func (img *Image) ScanRows(rows *sql.Rows) error {
+	return rows.Scan(&img.ImageID, &img.UserID, &img.Filename, &img.OriginalName,
+		&img.FileSize, &img.FileType, &img.ImageURL, &img.ThumbnailURL, &img.UploadDate)
+}
