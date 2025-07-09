@@ -18,40 +18,40 @@ func main() {
 	fmt.Println("Server running on http://localhost:8080")
 
 	// Authentication routes
-	http.HandleFunc("/login", handlers.LoginHandler)
-	http.HandleFunc("/login.html", handlers.LoginHandler)
-	http.HandleFunc("/register", handlers.RegisterHandler)
-	http.HandleFunc("/register.html", handlers.RegisterHandler)
-	http.HandleFunc("/logout", logoutHandler)
+	wrapHandler("/login", handlers.LoginHandler)
+	wrapHandler("/login.html", handlers.LoginHandler)
+	wrapHandler("/register", handlers.RegisterHandler)
+	wrapHandler("/register.html", handlers.RegisterHandler)
+	wrapHandler("/logout", logoutHandler)
 
 	// Post routes
-	http.HandleFunc("/new-post", handlers.CreatePostHandler)
-	http.HandleFunc("/new-post.html", handlers.CreatePostHandler)
-	http.HandleFunc("/api/posts", handlers.PostsAPIHandler)
+	wrapHandler("/new-post", handlers.CreatePostHandler)
+	wrapHandler("/new-post.html", handlers.CreatePostHandler)
+	wrapHandler("/api/posts", handlers.PostsAPIHandler)
 
 	// Comment routes
-	http.HandleFunc("/api/comments/create", handlers.CreateCommentHandler)
-	http.HandleFunc("/api/comments", handlers.CommentsAPIHandler)
-	http.HandleFunc("/api/comments/delete", handlers.DeleteCommentHandler)
+	wrapHandler("/api/comments/create", handlers.CreateCommentHandler)
+	wrapHandler("/api/comments", handlers.CommentsAPIHandler)
+	wrapHandler("/api/comments/delete", handlers.DeleteCommentHandler)
 
 	// Like/Dislike routes
-	http.HandleFunc("/api/posts/like", handlers.LikePostHandler)
-	http.HandleFunc("/api/comments/like", handlers.LikeCommentHandler)
+	wrapHandler("/api/posts/like", handlers.LikePostHandler)
+	wrapHandler("/api/comments/like", handlers.LikeCommentHandler)
 
 	// Category routes
-	http.HandleFunc("/api/categories", handlers.CategoriesAPIHandler)
-	http.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/api/categories", handlers.CategoriesAPIHandler)
+	wrapHandler("/categories", func(w http.ResponseWriter, r *http.Request) {
 		utils.FileService("categories.html", w, nil)
 	})
-	http.HandleFunc("/categories.html", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/categories.html", func(w http.ResponseWriter, r *http.Request) {
 		utils.FileService("categories.html", w, nil)
 	})
 
 	// Filter routes (for authenticated users)
-	http.HandleFunc("/api/posts/filtered", handlers.FilteredPostsHandler)
+	wrapHandler("/api/posts/filtered", handlers.FilteredPostsHandler)
 
 	// Auth status check - ONLY ONE REGISTRATION
-	http.HandleFunc("/api/auth/status", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/api/auth/status", func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("session")
 		isLoggedIn := err == nil && utils.IsValidSession(cookie.Value)
 
@@ -72,19 +72,19 @@ func main() {
 	})
 
 	// Notifications API
-	http.HandleFunc("/api/notifications", handlers.NotificationsAPIHandler)
-	http.HandleFunc("/api/notifications/mark-read", handlers.MarkNotificationReadHandler)
-	http.HandleFunc("/api/notifications/mark-all-read", handlers.MarkAllNotificationsReadHandler)
+	wrapHandler("/api/notifications", handlers.NotificationsAPIHandler)
+	wrapHandler("/api/notifications/mark-read", handlers.MarkNotificationReadHandler)
+	wrapHandler("/api/notifications/mark-all-read", handlers.MarkAllNotificationsReadHandler)
 
 	// Profile and notifications
-	http.HandleFunc("/profile", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/profile", func(w http.ResponseWriter, r *http.Request) {
 		if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {
 			utils.FileService("profile.html", w, nil)
 		} else {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
 	})
-	http.HandleFunc("/profile.html", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/profile.html", func(w http.ResponseWriter, r *http.Request) {
 		if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {
 			utils.FileService("profile.html", w, nil)
 		} else {
@@ -92,14 +92,14 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/notifications", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/notifications", func(w http.ResponseWriter, r *http.Request) {
 		if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {
 			utils.FileService("notifications.html", w, nil)
 		} else {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
 	})
-	http.HandleFunc("/notifications.html", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/notifications.html", func(w http.ResponseWriter, r *http.Request) {
 		if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {
 			utils.FileService("notifications.html", w, nil)
 		} else {
@@ -107,14 +107,14 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/api/notifications/count", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/api/notifications/count", func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("session")
 		if err != nil || !utils.IsValidSession(cookie.Value) {
 			json.NewEncoder(w).Encode(map[string]int{"count": 0})
 			return
 		}
 
-		userID := utils.GetUserIDFromSession(cookie.Value) // You'll need to export this function
+		userID := utils.GetUserIDFromSession(cookie.Value)
 		count := handlers.GetUnreadNotificationCount(userID)
 
 		w.Header().Set("Content-Type", "application/json")
@@ -122,31 +122,31 @@ func main() {
 	})
 
 	// Static pages
-	http.HandleFunc("/about", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/about", func(w http.ResponseWriter, r *http.Request) {
 		utils.FileService("about.html", w, nil)
 	})
-	http.HandleFunc("/about.html", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/about.html", func(w http.ResponseWriter, r *http.Request) {
 		utils.FileService("about.html", w, nil)
 	})
 
-	http.HandleFunc("/terms", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/terms", func(w http.ResponseWriter, r *http.Request) {
 		utils.FileService("Terms&Conditions.html", w, nil)
 	})
-	http.HandleFunc("/terms.html", func(w http.ResponseWriter, r *http.Request) {
+	wrapHandler("/terms.html", func(w http.ResponseWriter, r *http.Request) {
 		utils.FileService("Terms&Conditions.html", w, nil)
 	})
 
-	// Error pages
-	http.HandleFunc("/404", handlers.NotFoundHandler)
-	http.HandleFunc("/500", handlers.InternalServerErrorHandler)
+	// Error pages - ADD THESE NEW ROUTES
+	wrapHandler("/404", handlers.NotFoundHandler)
+	wrapHandler("/500", handlers.InternalServerErrorHandler)
 
 	// Static files (CSS, images, JavaScript)
 	fs := http.FileServer(http.Dir("frontend/"))
 	http.Handle("/frontend/", http.StripPrefix("/frontend/", fs))
 
-	// Homepage
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// Handle 404 for any path that's not exactly "/"
+	// Homepage - IMPROVED 404 HANDLING
+	wrapHandler("/", func(w http.ResponseWriter, r *http.Request) {
+		// Handle 404 for any path that's not exactly "/" or registered routes
 		if r.URL.Path != "/" {
 			handlers.NotFoundHandler(w, r)
 			return
@@ -164,7 +164,7 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-// Initialize database and create tables
+// KEEP YOUR EXISTING FUNCTIONS - NO CHANGES NEEDED
 func initializeDatabase() {
 	db := database.CreateTable()
 	defer db.Close()
@@ -186,7 +186,6 @@ func initializeDatabase() {
 	insertDefaultCategories(db)
 }
 
-// Insert default categories
 func insertDefaultCategories(db *sql.DB) {
 	categories := []string{
 		"Succulents",
@@ -208,7 +207,6 @@ func insertDefaultCategories(db *sql.DB) {
 	}
 }
 
-// Logout handler
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the session cookie
 	cookie, err := r.Cookie("session")
