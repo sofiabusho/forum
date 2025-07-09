@@ -79,7 +79,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert post into database with optional image
-	var result interface{}
+	var result sql.Result
 	if imageID != nil {
 		result, err = db.Exec("INSERT INTO Posts (user_id, title, content, image_id) VALUES (?, ?, ?, ?)", userID, title, content, *imageID)
 	} else {
@@ -91,7 +91,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postID, _ := result.(*sql.Result).LastInsertId()
+	postID, _ := result.LastInsertId()
 
 	// Associate post with category
 	db.Exec("INSERT INTO PostCategories (post_id, category_id) VALUES (?, ?)", postID, categoryID)

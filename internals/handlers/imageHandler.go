@@ -135,15 +135,6 @@ func ImageUploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Return success response with image URL
 	w.Header().Set("Content-Type", "application/json")
-	response := map[string]interface{}{
-		"success":      true,
-		"filename":     filename,
-		"imageUrl":     imageURL,
-		"thumbnailUrl": thumbnailURL,
-		"fileSize":     fileHeader.Size,
-		"fileType":     fileType,
-	}
-
 	fmt.Fprintf(w, `{
 		"success": true,
 		"filename": "%s",
