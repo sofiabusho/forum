@@ -11,6 +11,17 @@ func CategoriesAPIHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.CreateTable()
 	defer db.Close()
 
+	// Debug: Check if we can connect to database
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM Categories").Scan(&count)
+	if err != nil {
+		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Debug: Log the count
+	println("Categories count:", count)
+
 	// Get all categories
 	rows, err := db.Query("SELECT name FROM Categories ORDER BY name")
 	if err != nil {
@@ -31,14 +42,24 @@ func CategoriesAPIHandler(w http.ResponseWriter, r *http.Request) {
 		category := database.CategoryResponse{
 			Name:        categoryName,
 			Description: getCategoryDescription(categoryName),
-			Tags:        []string{categoryName}, // Simple tags for now
+			Tags:        []string{categoryName}, 
 		}
 
 		categories = append(categories, category)
 	}
 
+	// Debug: Log the categories
+	println("Categories found:", len(categories))
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(categories)
+}
+
+// CategoryResponse struct (add this to your database structs)
+type CategoryResponse struct {
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Tags        []string `json:"tags"`
 }
 
 // getCategoryDescription returns a description for each category
