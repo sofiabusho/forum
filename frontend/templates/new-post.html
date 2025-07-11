@@ -14,81 +14,98 @@
 
 </head>
 
-<body class="d-flex flex-column" style="height:100vh;">
+<body class="d-flex flex-column" style="min-height:100vh; overflow-y: hidden;">
     <!-- Shared Header -->
     <div id="shared-header"></div>
 
-    <!-- Centered Card Container -->
-    <main class="flex-fill d-flex justify-content-center align-items-center bg-transparent">
-        <div class="card shadow-sm"
-            style="width: 600px; background-color: rgba(227, 227, 227, 0.482); backdrop-filter: blur(6px);">
-            <div class="card-body">
-                <h2 class="card-title mb-4">Create Post</h2>
-                <form id="postForm" action="/new-post" method="POST" enctype="multipart/form-data">
-                    <!-- Categories  -->
-                    <div class="mb-3">
-                        <label for="categories" class="form-label">Choose categories</label>
-                        <select id="categories" name="categories" class="form-select" required>
-                            <option value="">Select a category...</option>
-                            <!-- Categories will be loaded dynamically -->
-                        </select>
+    <!-- Main Content - Improved Layout -->
+    <main class="flex-fill py-1">
+        <div class="container-fluid px-1 px-md-3">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-5">
+                    <div class="card shadow-sm"
+                        style="background-color: rgba(227, 227, 227, 0.482); backdrop-filter: blur(6px); max-width: 100%;">
+                        <div class="card-body p-1">
+                            <h2 class="card-title mb-1 text-center">Create Post</h2>
+                            <form id="postForm" action="/new-post" method="POST" enctype="multipart/form-data">
+                                <!-- Categories -->
+                                <div class="mb-1">
+                                    <label for="categories" class="form-label">Choose categories</label>
+                                    <select id="categories" name="categories" class="form-select" required>
+                                        <option value="">Select a category...</option>
+                                        <!-- Categories will be loaded dynamically -->
+                                    </select>
+                                </div>
+
+                                <!-- Title -->
+                                <div class="mb-1">
+                                    <label for="title" class="form-label">Title</label>
+                                    <input type="text" id="title" name="title" class="form-control"
+                                        placeholder="Type your title" required>
+                                </div>
+
+                                <!-- Content -->
+                                <div class="mb-1">
+                                    <label for="content" class="form-label">Content</label>
+                                    <textarea id="content" name="content" class="form-control" rows="6"
+                                        placeholder="What's on your mind?" required></textarea>
+                                </div>
+
+                                <!-- Image Upload -->
+                                <div class="mb-1">
+                                    <label class="form-label">Image (Optional)</label>
+                                    <div class="image-upload-area" id="imageUploadArea">
+                                        <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                                        <div class="mt-1">
+                                            <strong>Click to upload</strong> or drag and drop
+                                        </div>
+                                        <div class="image-upload-info">
+                                            JPEG, PNG, GIF up to 20MB
+                                        </div>
+                                    </div>
+
+                                    <!-- Hidden File Input -->
+                                    <input type="file" id="imageInput" name="image"
+                                        accept="image/jpeg,image/png,image/gif" style="display: none;">
+
+                                    <!-- Image Preview -->
+                                    <div id="imagePreview" style="display: none;">
+                                        <img id="previewImg" class="image-preview" alt="Preview">
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <span id="imageInfo" class="image-upload-info"></span>
+                                            <button type="button" id="removeImage"
+                                                class="btn btn-outline-danger btn-sm">
+                                                <i class="bi bi-x"></i> Remove
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Upload Progress -->
+                                    <div id="uploadProgress" class="upload-progress" style="display: none;">
+                                        <div class="progress">
+                                            <div id="progressBar" class="progress-bar" role="progressbar"
+                                                style="width: 0%"></div>
+                                        </div>
+                                        <small class="text-muted">Uploading image...</small>
+                                    </div>
+
+                                    <!-- Hidden field to store uploaded image ID -->
+                                    <input type="hidden" id="imageId" name="image_id" value="">
+                                </div>
+
+                                <!-- Submit Buttons -->
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <button type="button" class="btn btn-outline-light" onclick="history.back()">
+                                        <i class="bi bi-arrow-left me-1"></i>Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-outline-light" disabled id="btn-publish">
+                                        <i class="bi bi-send-fill me-1"></i>Publish
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <input type="text" id="title" name="title" class="form-control" placeholder="Type your title"
-                            required>
-                    </div>
-                    <!-- Post Section -->
-                    <div class="mb-3">
-                        <textarea id="content" name="content" class="form-control" rows="6"
-                            placeholder="What's on your mind?" required></textarea>
-                    </div>
-            <!-- Image Upload -->
-            <div class="image-upload-area" id="imageUploadArea">
-                <i class="bi bi-cloud-upload fs-1 text-muted"></i>
-                <div class="mt-2">
-                    <strong>Click to upload</strong> or drag and drop
                 </div>
-                <div class="image-upload-info">
-                    JPEG, PNG, GIF up to 20MB
-                </div>
-            </div>
-            
-            <!-- Hidden File Input -->
-            <input type="file" id="imageInput" name="image" accept="image/jpeg,image/png,image/gif" style="display: none;">
-            
-            <!-- Image Preview -->
-            <div id="imagePreview" style="display: none;">
-                <img id="previewImg" class="image-preview" alt="Preview">
-                <div class="d-flex justify-content-between align-items-center mt-2">
-                    <span id="imageInfo" class="image-upload-info"></span>
-                    <button type="button" id="removeImage" class="btn btn-outline-danger btn-sm">
-                        <i class="bi bi-x"></i> Remove
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Upload Progress -->
-            <div id="uploadProgress" class="upload-progress" style="display: none;">
-                <div class="progress">
-                    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
-                </div>
-                <small class="text-muted">Uploading image...</small>
-            </div>
-            
-            <!-- Hidden field to store uploaded image ID -->
-            <input type="hidden" id="imageId" name="image_id" value="">
-            </div>
-            
-            <!-- Submit Buttons -->
-            <div class="d-flex justify-content-between align-items-center">
-                <button type="button" class="btn btn-outline-light" onclick="history.back()">
-                    <i class="bi bi-arrow-left me-1"></i>Cancel
-                </button>
-                <button type="submit" class="btn btn-outline-light" disabled id="btn-publish">
-                    <i class="bi bi-send-fill me-1"></i>Publish
-                </button>
-                    </div>
-                </form>
             </div>
         </div>
     </main>
