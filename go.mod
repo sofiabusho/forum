@@ -9,4 +9,7 @@ require (
 	golang.org/x/crypto v0.39.0
 )
 
-require golang.org/x/image v0.28.0 // indirect
+require (
+	github.com/google/uuid v1.6.0 // indirect
+	golang.org/x/image v0.28.0 // indirect
+)

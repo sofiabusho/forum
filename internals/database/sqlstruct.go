@@ -10,6 +10,7 @@ type User struct {
 	Email            string
 	PasswordHash     string
 	RegistrationDate time.Time
+	ResetToken       *string
 }
 
 type UserProfile struct {

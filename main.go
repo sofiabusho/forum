@@ -55,6 +55,12 @@ func main() {
 	// Forgot Password Logic
 	wrapHandler("/forgot-password", handlers.ForgotPasswordHandler)
 
+	wrapHandler("/reset-password", handlers.ResetPasswordHandler)
+
+	wrapHandler("/add-newpassword.html", func(w http.ResponseWriter, r *http.Request) {
+		utils.FileService("add-newpassword.html", w, nil)
+	})
+
 	// Filter routes (for authenticated users)
 	wrapHandler("/api/posts/filtered", handlers.FilteredPostsHandler)
 

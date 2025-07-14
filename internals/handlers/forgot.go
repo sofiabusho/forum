@@ -1,9 +1,12 @@
 package handlers
 
 import (
-	"forum/internals/utils" // 👈 import το πακέτο utils
+	"forum/internals/database"
+	"forum/internals/utils"
 	"net/http"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func ForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
@@ -18,16 +21,25 @@ func ForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ➤ Εδώ μπορείς να δημιουργήσεις πραγματικό token (π.χ. uuid ή jwt)
-	token := "dummy-reset-token"
+	// Δημιουργία reset token
+	token := uuid.New().String()
 
-	// ➤ Αποστολή email
-	err := utils.SendResetEmail(email, token)
+	db := database.CreateTable()
+	defer db.Close()
+
+	// Αποθήκευση token στον χρήστη
+	_, err := db.Exec("UPDATE Users SET reset_token = ? WHERE email = ?", token, email)
 	if err != nil {
-		http.Error(w, "Failed to send email: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to store reset token", http.StatusInternalServerError)
 		return
 	}
 
-	// ✅ Αν όλα πάνε καλά, κάνε redirect ή εμφάνισε επιβεβαίωση
+	// Αποστολή email
+	err = utils.SendResetEmail(email, token)
+	if err != nil {
+		http.Error(w, "Failed to send reset email", http.StatusInternalServerError)
+		return
+	}
+
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
