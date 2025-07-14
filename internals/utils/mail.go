@@ -7,7 +7,7 @@ import (
 
 func SendResetEmail(toEmail, token string) error {
 	from := "plant.talk2025@gmail.com" // ➤ βάλε εδώ το Gmail σου
-	password := "ubueofjezoavlnbl"     // ✅ χωρίς κενά
+	password := "niicnftnethvawxf"     // ✅ χωρίς κενά
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 
