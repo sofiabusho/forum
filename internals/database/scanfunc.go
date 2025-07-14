@@ -10,7 +10,7 @@ type Table interface {
 
 // User structure
 func (u *User) ScanRows(rows *sql.Rows) error {
-	return rows.Scan(&u.UserID, &u.Username, &u.Email, &u.PasswordHash, &u.RegistrationDate)
+	return rows.Scan(&u.UserID, &u.Username, &u.Email, &u.PasswordHash, &u.RegistrationDate, &u.ResetToken)
 }
 
 // Post structure
