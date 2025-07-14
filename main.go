@@ -47,6 +47,14 @@ func main() {
 		utils.FileService("categories.html", w, nil)
 	})
 
+	// Forgot Password Page
+	wrapHandler("/forgot-password.html", func(w http.ResponseWriter, r *http.Request) {
+		utils.FileService("forgot-password.html", w, nil)
+	})
+
+	// Forgot Password Logic
+	wrapHandler("/forgot-password", handlers.ForgotPasswordHandler)
+
 	// Filter routes (for authenticated users)
 	wrapHandler("/api/posts/filtered", handlers.FilteredPostsHandler)
 
