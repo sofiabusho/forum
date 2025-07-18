@@ -35,6 +35,13 @@ main {
     overflow-y: auto;
 }
 
+.forgot-password {
+    width: 600px;
+    max-width: 100%;
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
+}
+
 .login-card h2,
 .register-card h2 {
     font-size: 1.25rem;
