@@ -1,25 +1,507 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height:100%;">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>View Post</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>View Post - Plant Talk</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../frontend/css/pages/main.css">
+    <link rel="stylesheet" href="../frontend/css/pages/shared.css">
+    <link rel="stylesheet" href="../frontend/css/pages/post.css">
 </head>
 
-<body>
-    <div class="container-fluid">
-        <div class="row vh-100">
-            <h1>Hello, world!</h1>
-            <p>This is my very first HTML page.</p>
+<body class="d-flex flex-column" style="min-height:100vh;">
 
+    <!-- Shared Header -->
+    <div id="shared-header"></div>
+
+    <!-- Main Content -->
+    <main class="container flex-grow-1 py-4">
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-5">
+            <div class="spinner-border loading-spinner" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-white">Loading post...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-container" class="d-none">
+            <div class="error-message text-center">
+                <h4>Post Not Found</h4>
+                <p>The post you're looking for doesn't exist or has been removed.</p>
+                <a href="/" class="btn btn-outline-light">Back to Home</a>
+            </div>
+        </div>
+
+        <!-- Post Content -->
+        <div id="post-container" class="d-none">
+            <div class="row">
+                <!-- Main Post Content -->
+                <div class="col-12 col-lg-8">
+                    <div class="post-content p-4">
+                        <!-- Post Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h1 id="post-title" class="h3 text-white mb-2"></h1>
+                                <div class="author-info">
+                                    <span>by <strong id="post-author"></strong></span>
+                                    <span class="ms-2" id="post-time"></span>
+                                </div>
+                                <div id="post-tags" class="mt-2"></div>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">
+                                    <i class="bi bi-eye"></i> <span id="post-views">0</span> views
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Post Image -->
+                        <div id="post-image-container" class="mb-3 d-none">
+                            <img id="post-image" class="post-image" alt="Post image" onclick="showImageModal(this.src)">
+                        </div>
+
+                        <!-- Post Content -->
+                        <div id="post-content" class="text-white mb-3"></div>
+
+                        <!-- Post Actions -->
+                        <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <button id="share-btn" class="btn btn-outline-light btn-sm">
+                                    <i class="bi bi-share"></i> Share
+                                </button>
+                                <span class="text-muted">
+                                    <i class="bi bi-chat"></i> <span id="comment-count">0</span> comments
+                                </span>
+                            </div>
+                            <a href="/" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-arrow-left"></i> Back to Posts
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voting Sidebar -->
+                <div class="col-12 col-lg-4">
+                    <div class="post-content p-3 text-center">
+                        <div class="vote-buttons mx-auto">
+                            <button id="like-btn" class="vote-btn" onclick="votePost(1)">
+                                <i class="bi bi-arrow-up-circle"></i>
+                            </button>
+                            <span id="like-count" class="fw-bold text-white fs-5">0</span>
+                            <button id="dislike-btn" class="vote-btn" onclick="votePost(-1)">
+                                <i class="bi bi-arrow-down-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="comment-section p-4 mt-4">
+                <h4 class="text-white mb-3">
+                    <i class="bi bi-chat-left-text"></i> Comments
+                </h4>
+
+                <!-- Comment Form (Only for logged-in users) -->
+                <div id="comment-form-container" class="d-none">
+                    <div class="comment-form">
+                        <form id="comment-form">
+                            <div class="mb-3">
+                                <label for="comment-text" class="form-label text-white">Add a comment</label>
+                                <textarea id="comment-text" class="form-control" rows="3"
+                                    placeholder="Share your thoughts..." required></textarea>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Be respectful and constructive in your comments.</small>
+                                <button type="submit" class="btn btn-outline-light">
+                                    <i class="bi bi-send"></i> Post Comment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Login Prompt for Non-logged Users -->
+                <div id="login-prompt" class="text-center py-3 d-none">
+                    <p class="text-muted">
+                        <a href="/login" class="text-white">Login</a> or
+                        <a href="/register" class="text-white">register</a> to join the discussion
+                    </p>
+                </div>
+
+                <!-- Comments List -->
+                <div id="comments-container">
+                    <div id="comments-loading" class="text-center py-3">
+                        <div class="spinner-border loading-spinner" role="status">
+                            <span class="visually-hidden">Loading comments...</span>
+                        </div>
+                    </div>
+                    <div id="comments-list"></div>
+                    <div id="no-comments" class="text-center py-3 text-muted d-none">
+                        <i class="bi bi-chat-square-dots fs-1"></i>
+                        <p class="mt-2">No comments yet. Be the first to share your thoughts!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Image Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Post Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" alt="Full size image" class="img-fluid">
+                </div>
+            </div>
         </div>
     </div>
 
-            <!-- Bootstrap JS -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Share Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Share Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="share-url" class="form-label">Post URL</label>
+                        <div class="input-group">
+                            <input type="text" id="share-url" class="form-control" readonly>
+                            <button class="btn btn-outline-secondary" onclick="copyToClipboard()">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared footer -->
+    <div id="shared-footer"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.js"></script>
+
+    <!-- Load shared partials -->
+    <script>
+        // Load header based on auth status
+        fetch('/frontend/templates/shared/header.html').then(r => r.text())
+            .then(html => document.getElementById('shared-header').innerHTML = html);
+
+        // Load footer
+        fetch('/frontend/templates/shared/footer.html').then(r => r.text())
+            .then(html => document.getElementById('shared-footer').innerHTML = html);
+    </script>
+
+    <script>
+        let currentPostId = null;
+        let isLoggedIn = false;
+        let currentUserId = null;
+
+        // Get post ID from URL
+        function getPostIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // Load post data
+        async function loadPost() {
+            const postId = getPostIdFromUrl();
+            if (!postId) {
+                showError();
+                return;
+            }
+
+            currentPostId = postId;
+
+            try {
+                const response = await fetch(`/api/post/${postId}`);
+                if (!response.ok) {
+                    throw new Error('Post not found');
+                }
+
+                const post = await response.json();
+                displayPost(post);
+                loadComments();
+
+                // Hide loading, show post
+                document.getElementById('loading').classList.add('d-none');
+                document.getElementById('post-container').classList.remove('d-none');
+
+            } catch (error) {
+                console.error('Error loading post:', error);
+                showError();
+            }
+        }
+
+        // Display post data
+        function displayPost(post) {
+            document.getElementById('post-title').textContent = post.title;
+            document.getElementById('post-author').textContent = post.author;
+            document.getElementById('post-time').textContent = post.timeAgo;
+            document.getElementById('post-content').innerHTML = post.content.replace(/\n/g, '<br>');
+            document.getElementById('post-views').textContent = post.views || 0;
+            document.getElementById('like-count').textContent = post.likes || 0;
+            document.getElementById('comment-count').textContent = post.comments || 0;
+
+            // Display tags
+            const tagsContainer = document.getElementById('post-tags');
+            if (post.tags && post.tags.length > 0) {
+                tagsContainer.innerHTML = post.tags.map(tag =>
+                    `<span class="tag-badge">#${tag}</span>`
+                ).join('');
+            }
+
+            // Display image if available
+            if (post.imageUrl) {
+                const imageContainer = document.getElementById('post-image-container');
+                const imageElement = document.getElementById('post-image');
+                imageElement.src = post.imageUrl;
+                imageContainer.classList.remove('d-none');
+            }
+
+            // Update vote buttons
+            updateVoteButtons(post.userVote || 0);
+
+            // Update page title
+            document.title = `${post.title} - Plant Talk`;
+
+            // Set share URL
+            document.getElementById('share-url').value = window.location.href;
+        }
+
+        // Load comments
+        async function loadComments() {
+            try {
+                document.getElementById('comments-loading').classList.remove('d-none');
+
+                const response = await fetch(`/api/comments?post_id=${currentPostId}`);
+                const comments = await response.json();
+
+                document.getElementById('comments-loading').classList.add('d-none');
+                displayComments(comments);
+
+            } catch (error) {
+                console.error('Error loading comments:', error);
+                document.getElementById('comments-loading').classList.add('d-none');
+                document.getElementById('no-comments').classList.remove('d-none');
+            }
+        }
+
+        // Display comments
+        function displayComments(comments) {
+            const commentsList = document.getElementById('comments-list');
+
+            if (!comments || comments.length === 0) {
+                document.getElementById('no-comments').classList.remove('d-none');
+                return;
+            }
+
+            commentsList.innerHTML = comments.map(comment => `
+                <div class="comment-item p-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <strong class="text-white">${comment.author}</strong>
+                                <small class="text-muted ms-2">${comment.timeAgo}</small>
+                            </div>
+                            <p class="text-white mb-2">${comment.content.replace(/\n/g, '<br>')}</p>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-outline-light vote-comment-btn ${comment.userVote === 1 ? 'active-like' : ''}" 
+                                    onclick="voteComment(${comment.id}, 1)">
+                                    <i class="bi bi-arrow-up"></i> ${comment.likeCount || 0}
+                                </button>
+                                <button class="btn btn-sm btn-outline-light vote-comment-btn ${comment.userVote === -1 ? 'active-dislike' : ''}" 
+                                    onclick="voteComment(${comment.id}, -1)">
+                                    <i class="bi bi-arrow-down"></i> ${comment.dislikeCount || 0}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Vote on post
+        async function votePost(vote) {
+            if (!isLoggedIn) {
+                alert('Please login to vote on posts');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/posts/like', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `post_id=${currentPostId}&vote=${vote}`
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('like-count').textContent = result.likeCount;
+                    updateVoteButtons(result.userVote);
+                }
+
+            } catch (error) {
+                console.error('Error voting on post:', error);
+            }
+        }
+
+        // Vote on comment
+        async function voteComment(commentId, vote) {
+            if (!isLoggedIn) {
+                alert('Please login to vote on comments');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/comments/like', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `comment_id=${commentId}&vote=${vote}`
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Reload comments to update counts
+                    loadComments();
+                }
+
+            } catch (error) {
+                console.error('Error voting on comment:', error);
+            }
+        }
+
+        // Update vote button states
+        function updateVoteButtons(userVote) {
+            const likeBtn = document.getElementById('like-btn');
+            const dislikeBtn = document.getElementById('dislike-btn');
+
+            // Reset classes
+            likeBtn.classList.remove('active-like');
+            dislikeBtn.classList.remove('active-dislike');
+
+            // Set active state
+            if (userVote === 1) {
+                likeBtn.classList.add('active-like');
+            } else if (userVote === -1) {
+                dislikeBtn.classList.add('active-dislike');
+            }
+        }
+
+        // Submit comment
+        async function submitComment(event) {
+            event.preventDefault();
+
+            const commentText = document.getElementById('comment-text').value.trim();
+            if (!commentText) return;
+
+            try {
+                const response = await fetch('/api/comments/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `post_id=${currentPostId}&content=${encodeURIComponent(commentText)}`
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('comment-text').value = '';
+                    loadComments();
+
+                    // Update comment count
+                    const currentCount = parseInt(document.getElementById('comment-count').textContent);
+                    document.getElementById('comment-count').textContent = currentCount + 1;
+                }
+
+            } catch (error) {
+                console.error('Error submitting comment:', error);
+                alert('Error submitting comment. Please try again.');
+            }
+        }
+
+        // Show image modal
+        function showImageModal(imageUrl) {
+            document.getElementById('modalImage').src = imageUrl;
+            const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+            modal.show();
+        }
+
+        // Copy URL to clipboard
+        function copyToClipboard() {
+            const shareUrl = document.getElementById('share-url');
+            shareUrl.select();
+            shareUrl.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(shareUrl.value);
+
+            // Show feedback
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-check"></i> Copied!';
+            setTimeout(() => {
+                button.innerHTML = originalText;
+            }, 2000);
+        }
+
+        // Show error state
+        function showError() {
+            document.getElementById('loading').classList.add('d-none');
+            document.getElementById('error-container').classList.remove('d-none');
+        }
+
+        // Check authentication status
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/auth/status');
+                const data = await response.json();
+                isLoggedIn = data.loggedIn;
+                currentUserId = data.userID;
+
+                if (isLoggedIn) {
+                    document.getElementById('comment-form-container').classList.remove('d-none');
+                } else {
+                    document.getElementById('login-prompt').classList.remove('d-none');
+                }
+
+            } catch (error) {
+                console.error('Error checking auth status:', error);
+                document.getElementById('login-prompt').classList.remove('d-none');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+            loadPost();
+
+            // Setup comment form
+            document.getElementById('comment-form').addEventListener('submit', submitComment);
+
+            // Setup share button
+            document.getElementById('share-btn').addEventListener('click', () => {
+                const modal = new bootstrap.Modal(document.getElementById('shareModal'));
+                modal.show();
+            });
+        });
+    </script>
 </body>
 
 </html>
