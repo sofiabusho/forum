@@ -57,9 +57,7 @@ func main() {
 
 	wrapHandler("/reset-password", handlers.ResetPasswordHandler)
 
-	wrapHandler("/add-newpassword.html", func(w http.ResponseWriter, r *http.Request) {
-		utils.FileService("add-newpassword.html", w, nil)
-	})
+	wrapHandler("/add-newpassword.html", handlers.ShowResetFormHandler)
 
 	// Filter routes (for authenticated users)
 	wrapHandler("/api/posts/filtered", handlers.FilteredPostsHandler)
