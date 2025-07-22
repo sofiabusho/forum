@@ -43,19 +43,22 @@ main {
 }
 
 .login-card h2,
-.register-card h2 {
+.register-card h2,
+.forgot-password h2 {
     font-size: 1.25rem;
     margin-bottom: 0.5rem;
 }
 
 .login-card p,
-.register-card p {
+.register-card p,
+.forgot-password p {
     font-size: 0.85rem;
     margin-bottom: 0.5rem;
 }
 
 .login-card .btn,
-.register-card .btn {
+.register-card .btn,
+.forgot-password .btn {
     font-size: 0.85rem;
     padding: 0.4rem 0.75rem;
 }
