@@ -38,6 +38,9 @@ func main() {
 	wrapHandler("/api/posts/like", handlers.LikePostHandler)
 	wrapHandler("/api/comments/like", handlers.LikeCommentHandler)
 
+	http.HandleFunc("/auth/google", handlers.GoogleLogin)
+	http.HandleFunc("/auth/google/callback", handlers.GoogleCallback)
+
 	// Category routes
 	wrapHandler("/api/categories", handlers.CategoriesAPIHandler)
 	wrapHandler("/categories", func(w http.ResponseWriter, r *http.Request) {
