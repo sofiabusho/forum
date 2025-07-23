@@ -20,9 +20,9 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.CreateTable()
 	defer db.Close()
 
-	// Βρες τον χρήστη με βάση το token
+	// ✅ Σωστό: πεδίο user_id (και ΟΧΙ UserID)
 	var userID int
-	err := db.QueryRow("SELECT UserID FROM Users WHERE reset_token = ?", token).Scan(&userID)
+	err := db.QueryRow("SELECT user_id FROM Users WHERE reset_token = ?", token).Scan(&userID)
 	if err == sql.ErrNoRows {
 		http.Error(w, "Invalid or expired token", http.StatusBadRequest)
 		return
@@ -31,19 +31,20 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Hash του νέου password
+	// Δημιουργία hash του νέου κωδικού
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
 		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
 		return
 	}
 
-	// Ενημέρωσε τον χρήστη και αφαίρεσε το token
-	_, err = db.Exec("UPDATE Users SET passwordHash = ?, reset_token = NULL WHERE UserID = ?", string(hashedPassword), userID)
+	// ✅ Ενημέρωση password και διαγραφή του token
+	_, err = db.Exec("UPDATE Users SET password_hash = ?, reset_token = NULL WHERE user_id = ?", string(hashedPassword), userID)
 	if err != nil {
 		http.Error(w, "Failed to update password", http.StatusInternalServerError)
 		return
 	}
 
+	// Redirect στον χρήστη για login
 	http.Redirect(w, r, "/login.html", http.StatusSeeOther)
 }
