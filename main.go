@@ -38,6 +38,7 @@ func main() {
 	wrapHandler("/api/posts/like", handlers.LikePostHandler)
 	wrapHandler("/api/comments/like", handlers.LikeCommentHandler)
 
+	// Google OAuth routes
 	http.HandleFunc("/auth/google", handlers.GoogleLogin)
 	http.HandleFunc("/auth/google/callback", handlers.GoogleCallback)
 
@@ -54,6 +55,10 @@ func main() {
 	wrapHandler("/forgot-password.html", func(w http.ResponseWriter, r *http.Request) {
 		utils.FileService("forgot-password.html", w, nil)
 	})
+
+	// GitHub OAuth routes
+	http.HandleFunc("/auth/github", handlers.GitHubLogin)
+	http.HandleFunc("/auth/github/callback", handlers.GitHubCallback)
 
 	// Forgot Password Logic
 	wrapHandler("/forgot-password", handlers.ForgotPasswordHandler)
