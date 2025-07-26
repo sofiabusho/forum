@@ -100,9 +100,6 @@ CREATE TABLE IF NOT EXISTS Sessions (
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
--- This will store the reference to uploaded images
-ALTER TABLE Posts ADD COLUMN image_id INTEGER REFERENCES Images(image_id);
-
 -- Create indexes for performance
 
 -- User table indexes
@@ -125,7 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_post_categories_post_id ON PostCategories(post_id
 CREATE INDEX IF NOT EXISTS idx_post_categories_category_id ON PostCategories(category_id);
 CREATE INDEX IF NOT EXISTS idx_categories_name ON Categories(name);
 
--- Likes/Dislikes indexes (critical for counting likes)
+-- Likes/Dislikes indexes (for counting likes)
 CREATE INDEX IF NOT EXISTS idx_likes_post_id ON LikesDislikes(post_id);
 CREATE INDEX IF NOT EXISTS idx_likes_user_id ON LikesDislikes(user_id);
 CREATE INDEX IF NOT EXISTS idx_likes_post_vote ON LikesDislikes(post_id, vote);
@@ -157,6 +154,10 @@ CREATE INDEX IF NOT EXISTS idx_images_upload_date ON Images(upload_date DESC);
 
 -- Index for Posts with images
 CREATE INDEX IF NOT EXISTS idx_posts_image_id ON Posts(image_id);
+
+-- This will store the reference to uploaded images
+ALTER TABLE Posts ADD COLUMN image_id INTEGER REFERENCES Images(image_id);
+
 
 -- Insert starter categories
 INSERT OR IGNORE INTO Categories (name) VALUES 
