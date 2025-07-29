@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"forum/internals/database"
 	"html/template"
 	"math/rand"
@@ -11,12 +12,12 @@ import (
 
 // TemplateData holds data to pass to templates
 type TemplateData struct {
-	IsLoggedIn   bool
-	Username     string
-	UserID       int
-	Message      string
-	Error        string
-	Data         interface{}
+	IsLoggedIn bool
+	Username   string
+	UserID     int
+	Message    string
+	Error      string
+	Data       interface{}
 }
 
 func FileService(filename string, w http.ResponseWriter, data any) {
@@ -33,14 +34,14 @@ func FileServiceWithAuth(filename string, w http.ResponseWriter, r *http.Request
 	templateData := &TemplateData{
 		Data: data,
 	}
-	
+
 	// Check if user is logged in
 	if cookie, err := r.Cookie("session"); err == nil && IsValidSession(cookie.Value) {
 		templateData.IsLoggedIn = true
 		templateData.UserID = GetUserIDFromSession(cookie.Value)
 		templateData.Username = GetUsernameFromSession(cookie.Value)
 	}
-	
+
 	tmpl, err := template.ParseFiles("frontend/templates/" + filename)
 	if err != nil {
 		http.Error(w, "Template error: "+err.Error(), 500)
@@ -121,13 +122,34 @@ func CheckAuth(r *http.Request) (bool, int, string) {
 	if err != nil {
 		return false, 0, ""
 	}
-	
+
 	if !IsValidSession(cookie.Value) {
 		return false, 0, ""
 	}
-	
+
 	userID := GetUserIDFromSession(cookie.Value)
 	username := GetUsernameFromSession(cookie.Value)
-	
+
 	return true, userID, username
+}
+
+// UpdateSessionUsername updates the username in the Sessions table
+func UpdateSessionUsername(cookieValue string, newUsername string) {
+	db := database.CreateTable()
+	defer db.Close()
+
+	// Ενημερώνουμε το username για το session ώστε να φαίνεται άμεσα στο frontend
+	_, err := db.Exec(`
+		UPDATE Users 
+		SET username = ?
+		WHERE user_id = (
+			SELECT user_id 
+			FROM Sessions 
+			WHERE cookie_value = ?
+		)
+	`, newUsername, cookieValue)
+
+	if err != nil {
+		fmt.Println("Error updating session username:", err)
+	}
 }
