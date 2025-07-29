@@ -107,6 +107,8 @@ func main() {
 
 	// Profile and notifications
 	wrapHandler("/profile", handlers.ProfileHandler)
+	// Direct handlers (non-wrapped)
+	http.HandleFunc("/upload-image", handlers.ImageUploadHandler)
 
 	wrapHandler("/profile.html", func(w http.ResponseWriter, r *http.Request) {
 		if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {

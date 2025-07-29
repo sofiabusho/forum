@@ -107,6 +107,16 @@ func getUserProfile(db *sql.DB, userID int) database.UserProfile {
 		WHERE p.user_id = ? AND ld.vote = 1
 	`, userID).Scan(&profile.LikesReceived)
 
+	var thumbnailURL string
+	db.QueryRow(`
+		SELECT thumbnail_url 
+		FROM Images 
+		WHERE user_id = ? 
+		ORDER BY upload_date DESC 
+		LIMIT 1
+	`, userID).Scan(&thumbnailURL)
+	profile.ProfileImage = thumbnailURL
+
 	return profile
 }
 
