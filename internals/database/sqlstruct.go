@@ -22,6 +22,7 @@ type UserProfile struct {
 	CommentCount  int    `json:"commentCount"`
 	LikesGiven    int    `json:"likesGiven"`
 	LikesReceived int    `json:"likesReceived"`
+	ProfileImage  string `json:"profileImage,omitempty"`
 }
 
 type UserActivity struct {
