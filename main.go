@@ -101,16 +101,13 @@ func main() {
 	wrapHandler("/api/delete-image", handlers.DeleteImageHandler)
 	wrapHandler("/api/user-images", handlers.GetUserImagesHandler)
 
+	// User profile management
 	wrapHandler("/api/user/profile", handlers.ProfileAPIHandler)
+	//	wrapHandler("/api/profile/change-name", handlers.ChangeDisplayNameHandler)
 
 	// Profile and notifications
-	wrapHandler("/profile", func(w http.ResponseWriter, r *http.Request) {
-		if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {
-			utils.FileService("profile.html", w, nil)
-		} else {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-		}
-	})
+	wrapHandler("/profile", handlers.ProfileHandler)
+
 	wrapHandler("/profile.html", func(w http.ResponseWriter, r *http.Request) {
 		if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {
 			utils.FileService("profile.html", w, nil)
