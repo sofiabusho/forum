@@ -61,7 +61,10 @@
 
                         <!-- Post Image -->
                         <div id="post-image-container" class="mb-3 d-none">
-                            <img id="post-image" class="post-image" alt="Post image" onclick="showImageModal(this.src)">
+                            <div class="text-center">
+                                <img id="post-image" class="post-image" alt="Post image" onclick="showImageModal(this.src)"
+                                    style="cursor: pointer;">
+                            </div>
                         </div>
 
                         <!-- Post Content -->
@@ -228,7 +231,7 @@
             currentPostId = postId;
 
             try {
-                const response = await fetch(`/api/post/${postId}`);
+                const response = await fetch(`/api/post?id=${postId}`);
                 if (!response.ok) {
                     throw new Error('Post not found');
                 }

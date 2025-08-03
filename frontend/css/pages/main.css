@@ -23,5 +23,48 @@ main {
     font-weight: bold;
 }
 
+.post-thumbnail-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
 
+.post-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Maintains aspect ratio, fills container */
+    transition: transform 0.2s ease;
+}
+
+.post-thumbnail:hover {
+    transform: scale(1.05);
+}
    
+.post-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
+}
+
+.post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+    .post-thumbnail-container {
+        height: 150px;
+        /* Smaller on mobile */
+    }
+}
+
+@media (max-width: 576px) {
+    .post-thumbnail-container {
+        height: 120px;
+        /* Even smaller on very small screens */
+    }
+}
