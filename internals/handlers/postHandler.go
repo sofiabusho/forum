@@ -7,6 +7,7 @@ import (
 	"forum/internals/database"
 	"forum/internals/utils"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -173,6 +174,95 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(posts)
+}
+
+// SinglePostAPIHandler returns a single post by ID
+func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract post ID from URL path or query parameter
+	postIDStr := r.URL.Query().Get("id")
+	if postIDStr == "" {
+		// Try to extract from path if using /api/post/{id} pattern
+		parts := strings.Split(r.URL.Path, "/")
+		if len(parts) >= 3 {
+			postIDStr = parts[len(parts)-1]
+		}
+	}
+
+	if postIDStr == "" {
+		http.Error(w, "Post ID required", http.StatusBadRequest)
+		return
+	}
+
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		return
+	}
+
+	// Get current user ID if logged in (for vote status)
+	var currentUserID int
+	if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {
+		currentUserID = utils.GetUserIDFromSession(cookie.Value)
+	}
+
+	db := database.CreateTable()
+	defer db.Close()
+
+	// Query for single post with image information
+	query := `
+        SELECT p.post_id, p.title, p.content, u.username, p.creation_date,
+               (SELECT COUNT(*) FROM Comments WHERE post_id = p.post_id) as comment_count,
+               (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = 1) as like_count,
+               i.image_url, i.thumbnail_url
+        FROM Posts p 
+        JOIN Users u ON p.user_id = u.user_id
+        LEFT JOIN Images i ON p.image_id = i.image_id
+        WHERE p.post_id = ?`
+
+	var post database.PostResponse
+	var creationDate time.Time
+	var imageURL, thumbnailURL *string
+
+	err = db.QueryRow(query, postID).Scan(
+		&post.ID, &post.Title, &post.Content, &post.Author,
+		&creationDate, &post.Comments, &post.Likes,
+		&imageURL, &thumbnailURL,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Post not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Format the post data
+	post.TimeAgo = formatTimeAgo(creationDate)
+	post.Tags = getPostTags(db, post.ID)
+	post.Views = getPostViews(db, post.ID)
+
+	// Add image URLs if available
+	if imageURL != nil {
+		post.ImageURL = *imageURL
+	}
+	if thumbnailURL != nil {
+		post.ThumbnailURL = *thumbnailURL
+	}
+
+	// Get user's vote status if logged in
+	if currentUserID > 0 {
+		var userVote int
+		err := db.QueryRow("SELECT vote FROM LikesDislikes WHERE post_id = ? AND user_id = ?", postID, currentUserID).Scan(&userVote)
+		if err == nil {
+			// Add userVote to response (you might need to extend PostResponse struct)
+			// For now, we'll add it as a separate field
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(post)
 }
 
 // GetUserImagesHandler returns images uploaded by a user

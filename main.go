@@ -29,6 +29,15 @@ func main() {
 	wrapHandler("/new-post.html", handlers.CreatePostHandler)
 	wrapHandler("/api/posts", handlers.PostsAPIHandler)
 
+	// Single post view
+	wrapHandler("/view-post", func(w http.ResponseWriter, r *http.Request) {
+		utils.FileService("view-post.html", w, nil)
+	})
+	wrapHandler("/view-post.html", func(w http.ResponseWriter, r *http.Request) {
+		utils.FileService("view-post.html", w, nil)
+	})
+	wrapHandler("/api/post", handlers.SinglePostAPIHandler) // API for single post, Since Go doesn't support URL parameters like /api/post/{id} natively
+
 	// Comment routes
 	wrapHandler("/api/comments/create", handlers.CreateCommentHandler)
 	wrapHandler("/api/comments", handlers.CommentsAPIHandler)
