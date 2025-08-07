@@ -53,49 +53,59 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUsername := strings.TrimSpace(r.FormValue("username"))
-	if newUsername == "" {
-		http.Error(w, "Username cannot be empty", http.StatusBadRequest)
-		return
-	}
-
 	db := database.CreateTable()
 	defer db.Close()
 
-	var exists int
-	db.QueryRow("SELECT COUNT(*) FROM Users WHERE username = ? AND user_id != ?", newUsername, userID).Scan(&exists)
-	if exists > 0 {
-		http.Error(w, "Username already taken", http.StatusBadRequest)
-		return
+	newUsername := strings.TrimSpace(r.FormValue("username"))
+	newBio := strings.TrimSpace(r.FormValue("bio"))
+
+	if newUsername != "" {
+		var exists int
+		db.QueryRow("SELECT COUNT(*) FROM Users WHERE username = ? AND user_id != ?", newUsername, userID).Scan(&exists)
+		if exists > 0 {
+			http.Error(w, "Username already taken", http.StatusBadRequest)
+			return
+		}
+
+		_, err := db.Exec("UPDATE Users SET username = ? WHERE user_id = ?", newUsername, userID)
+		if err != nil {
+			http.Error(w, "Failed to update username", http.StatusInternalServerError)
+			return
+		}
 	}
 
-	_, err := db.Exec("UPDATE Users SET username = ? WHERE user_id = ?", newUsername, userID)
-	if err != nil {
-		http.Error(w, "Failed to update username", http.StatusInternalServerError)
-		return
+	if newBio != "" {
+		_, err := db.Exec("UPDATE Users SET bio = ? WHERE user_id = ?", newBio, userID)
+		if err != nil {
+			http.Error(w, "Failed to update bio", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{
 		"success":  true,
 		"username": newUsername,
+		"bio":      newBio,
 	})
 }
 
 func getUserProfile(db *sql.DB, userID int) database.UserProfile {
 	var profile database.UserProfile
 	var registrationDate time.Time
+	var bio string
 
 	err := db.QueryRow(`
-		SELECT user_id, username, email, registration_date 
+		SELECT user_id, username, email, registration_date,bio
 		FROM Users 
 		WHERE user_id = ?
-	`, userID).Scan(&profile.UserID, &profile.Username, &profile.Email, &registrationDate)
+	`, userID).Scan(&profile.UserID, &profile.Username, &profile.Email, &registrationDate, &bio)
 
 	if err != nil {
 		return profile
 	}
 
+	profile.Bio = bio
 	profile.JoinDate = registrationDate.Format("January 2, 2006")
 	db.QueryRow("SELECT COUNT(*) FROM Posts WHERE user_id = ?", userID).Scan(&profile.PostCount)
 	db.QueryRow("SELECT COUNT(*) FROM Comments WHERE user_id = ?", userID).Scan(&profile.CommentCount)

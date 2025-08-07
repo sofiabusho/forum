@@ -23,6 +23,7 @@ type UserProfile struct {
 	LikesGiven    int    `json:"likesGiven"`
 	LikesReceived int    `json:"likesReceived"`
 	ProfileImage  string `json:"profileImage,omitempty"`
+	Bio           string `json:"bio"`
 }
 
 type UserActivity struct {
