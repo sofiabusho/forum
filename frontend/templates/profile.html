@@ -52,7 +52,7 @@
           <li class="list-group-item">Member Since <strong id="joined-date">...</strong></li>
           <li class="list-group-item">
             <button class="btn btn-outline-light w-100" id="btn-change-name">Change my display name</button>
-            <button class="btn btn-outline-light w-100" id="btn-change-name">Change my profile Image</button>
+            <button class="btn btn-outline-light w-100" id="btn-change-image">Change my profile Image</button>
           </li>
         </ul>
       </div>
@@ -60,7 +60,7 @@
   </div>
 </main>
 
-<!-- Modal -->
+<!-- Modal for Editing Display Name -->
 <div class="modal fade" id="changeNameModal" tabindex="-1" aria-labelledby="changeNameLabel" aria-hidden="true">
   <div class="modal-dialog">
     <form class="modal-content" id="changeNameForm">
@@ -96,6 +96,23 @@
   </div>
 </div>
 
+<!-- Modal for Editing Bio -->
+<div class="modal fade" id="editBioModal" tabindex="-1" aria-labelledby="editBioLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="editBioForm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editBioLabel">Edit Bio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <textarea class="form-control" name="bio" id="newBio" rows="4" placeholder="Enter your bio..." required></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <div id="shared-footer"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -134,13 +151,12 @@
         alert("Could not load profile data.");
       });
 
-    // Display name modal
+    // Change Name Modal
     document.getElementById("btn-change-name").addEventListener("click", () => {
       const modal = new bootstrap.Modal(document.getElementById('changeNameModal'));
       modal.show();
     });
 
-    // Submit new name
     document.getElementById("changeNameForm").addEventListener("submit", async function (e) {
       e.preventDefault();
       const newName = document.getElementById("newDisplayName").value.trim();
@@ -167,13 +183,12 @@
       }
     });
 
-    // Upload image modal
-    document.getElementById("btn-change-name").nextElementSibling.addEventListener("click", () => {
+    // Upload Image Modal
+    document.getElementById("btn-change-image").addEventListener("click", () => {
       const modal = new bootstrap.Modal(document.getElementById("uploadImageModal"));
       modal.show();
     });
 
-    // Submit image upload
     document.getElementById("uploadImageForm").addEventListener("submit", async function (e) {
       e.preventDefault();
       const formData = new FormData(this);
@@ -196,9 +211,41 @@
         alert("Error: " + err);
       }
     });
+
+    // Edit Bio Modal
+    document.getElementById("btn-edit-bio").addEventListener("click", () => {
+      const currentBio = document.getElementById("bioText").textContent;
+      document.getElementById("newBio").value = currentBio === "No bio set yet." ? "" : currentBio;
+      const modal = new bootstrap.Modal(document.getElementById("editBioModal"));
+      modal.show();
+    });
+
+    document.getElementById("editBioForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const newBio = document.getElementById("newBio").value.trim();
+
+      const res = await fetch("/profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({ bio: newBio })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById("bioText").textContent = newBio;
+          bootstrap.Modal.getInstance(document.getElementById('editBioModal')).hide();
+        } else {
+          alert("Failed to update bio.");
+        }
+      } else {
+        const err = await res.text();
+        alert("Error: " + err);
+      }
+    });
   });
 </script>
-
-
 </body>
 </html>
