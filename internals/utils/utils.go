@@ -153,3 +153,21 @@ func UpdateSessionUsername(cookieValue string, newUsername string) {
 		fmt.Println("Error updating session username:", err)
 	}
 }
+func FormatTimeAgo(t time.Time) string {
+	duration := time.Since(t)
+
+	switch {
+	case duration < time.Minute:
+		return "just now"
+	case duration < time.Hour:
+		return fmt.Sprintf("%d minutes ago", int(duration.Minutes()))
+	case duration < 24*time.Hour:
+		return fmt.Sprintf("%d hours ago", int(duration.Hours()))
+	case duration < 30*24*time.Hour:
+		return fmt.Sprintf("%d days ago", int(duration.Hours()/24))
+	case duration < 12*30*24*time.Hour:
+		return fmt.Sprintf("%d months ago", int(duration.Hours()/(24*30)))
+	default:
+		return fmt.Sprintf("%d years ago", int(duration.Hours()/(24*365)))
+	}
+}

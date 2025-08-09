@@ -47,6 +47,12 @@ func main() {
 	wrapHandler("/api/posts/like", handlers.LikePostHandler)
 	wrapHandler("/api/comments/like", handlers.LikeCommentHandler)
 
+	//post by user
+	http.HandleFunc("/api/user/posts", handlers.UserPostsHandler)
+
+	wrapHandler("/api/user/comments", handlers.UserCommentsHandler)
+	wrapHandler("/api/user/likes", handlers.UserLikesHandler)
+
 	// Google OAuth routes
 	http.HandleFunc("/auth/google", handlers.GoogleLogin)
 	http.HandleFunc("/auth/google/callback", handlers.GoogleCallback)
