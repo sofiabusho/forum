@@ -5,12 +5,10 @@ body {
     background: url('../images/background.jpg') no-repeat center center;
     background-size: cover; /* cover the screen */
     background-attachment: fixed; /* KEEP IT STILL */
-}
-
-body {
     display: flex;
     flex-direction: column;
 }
+
 
 main {
     flex: 1 0 auto;
@@ -41,6 +39,8 @@ main {
     background-color: rgba(227, 227, 227, 0.482);
     backdrop-filter: blur(6px);
 }
+
+
 
 .login-card h2,
 .register-card h2,
