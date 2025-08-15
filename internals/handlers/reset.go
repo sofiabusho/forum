@@ -11,15 +11,16 @@ import (
 )
 
 func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
-	// GET: δείξε τη φόρμα με το token από το URL (π.χ. /reset-password?token=XYZ)
+	// GET: serve the reset form with token from the URL (?token=...)
 	if r.Method == http.MethodGet {
 		token := strings.TrimSpace(r.URL.Query().Get("token"))
-		// σερβίρουμε template και περνάμε το token για το hidden input {{.Token}}
+		// Render template and pass token to {{.Token}}
+		// (Assumes utils.FileService uses Go templates.)
 		utils.FileService("add-newpassword.html", w, map[string]interface{}{"Token": token})
 		return
 	}
 
-	// POST: αποθήκευση νέου κωδικού
+	// POST: perform the reset
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -27,16 +28,21 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 
 	token := strings.TrimSpace(r.FormValue("token"))
 	newPassword := r.FormValue("newPassword")
+	confirm := r.FormValue("confirmPassword")
 
-	if token == "" || newPassword == "" {
+	if token == "" || newPassword == "" || confirm == "" {
 		http.Error(w, "Invalid or missing token/password", http.StatusBadRequest)
+		return
+	}
+	if newPassword != confirm {
+		http.Error(w, "Passwords do not match", http.StatusBadRequest)
 		return
 	}
 
 	db := database.CreateTable()
 	defer db.Close()
 
-	// Βρες τον χρήστη από το token
+	// find user by token
 	var userID int
 	err := db.QueryRow("SELECT user_id FROM Users WHERE reset_token = ?", token).Scan(&userID)
 	if err == sql.ErrNoRows {
@@ -47,20 +53,17 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Hash νέου κωδικού
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	// hash and store new password; clear token
+	hashed, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
 		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
 		return
 	}
-
-	// Ενημέρωση password & καθάρισμα token
-	_, err = db.Exec("UPDATE Users SET password_hash = ?, reset_token = NULL WHERE user_id = ?", string(hashedPassword), userID)
+	_, err = db.Exec("UPDATE Users SET password_hash = ?, reset_token = NULL WHERE user_id = ?", string(hashed), userID)
 	if err != nil {
 		http.Error(w, "Failed to update password", http.StatusInternalServerError)
 		return
 	}
 
-	// Επιτυχία → login
 	http.Redirect(w, r, "/login.html", http.StatusSeeOther)
 }
