@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"forum/internals/database"
 	"forum/internals/utils"
 	"net/http"
@@ -69,13 +70,15 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
 	database.Insert(db, "Users", "(username, email, password_hash)", username, email, string(hash))
 
-	// Create welcome notification (best-effort)
+	// Create welcome notification
 	var newUserID int
-	if err := db.QueryRow("SELECT user_id FROM Users WHERE email = ?", email).Scan(&newUserID); err == nil && newUserID > 0 {
-		title := "Welcome to Plant Talk!"
-		message := "Welcome to our plant-loving community! Start by creating your first post or exploring categories."
+	err := db.QueryRow("SELECT user_id FROM Users WHERE email = ?", email).Scan(&newUserID)
+	if err == nil && newUserID > 0 {
+		title := "Welcome to Plant Talk! 🌱"
+		message := fmt.Sprintf("Welcome to our plant-loving community, %s! Start by creating your first post or exploring different plant categories. Happy growing!", username)
+
 		CreateNotification(newUserID, "system", title, message, nil, nil, nil)
 	}
 
-	utils.FileService("login.html", w, map[string]interface{}{"Message": "Register successful"})
+	utils.FileService("login.html", w, map[string]interface{}{"Message": "Registration successful! Please log in."})
 }

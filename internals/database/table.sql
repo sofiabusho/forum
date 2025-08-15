@@ -140,6 +140,8 @@ CREATE INDEX IF NOT EXISTS idx_comment_likes_comment_vote ON CommentLikes(commen
 CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON Notifications(user_id, is_read, creation_date DESC);
 CREATE INDEX IF NOT EXISTS idx_notifications_type ON Notifications(type);
 CREATE INDEX IF NOT EXISTS idx_notifications_related_post ON Notifications(related_post_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_related_user ON Notifications(related_user_id);
+
 
 -- Sessions indexes (important for authentication)
 CREATE INDEX IF NOT EXISTS idx_sessions_cookie_value ON Sessions(cookie_value);
