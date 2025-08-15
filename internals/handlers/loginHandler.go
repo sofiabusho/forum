@@ -32,7 +32,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	).Scan(&userID, &passwordHash)
 
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)) != nil {
-		utils.FileService("login.html", w, map[string]interface{}{"Messagelg": "Invalid credentials"})
+		utils.FileService("login.html", w, map[string]interface{}{
+			"Messagelg": "Invalid email/username or password",
+		})
 		return
 	}
 
