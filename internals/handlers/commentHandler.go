@@ -49,16 +49,34 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.CreateTable()
 	defer db.Close()
 
+	// Get post details for the notification
+	var postTitle string
+	var postAuthorID int
+	err = db.QueryRow("SELECT title, user_id FROM Posts WHERE post_id = ?", postID).Scan(&postTitle, &postAuthorID)
+	if err != nil {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+
 	_, err = db.Exec("INSERT INTO Comments (post_id, user_id, content) VALUES (?, ?, ?)", postID, userID, content)
 	if err != nil {
 		http.Error(w, "Failed to create comment", http.StatusInternalServerError)
 		return
 	}
 
+	// Create notification for the post author if the comment is not by the author
+	if postAuthorID != userID {
+		commenterUsername := utils.GetUsernameFromSession(cookie.Value)
+		CreateCommentNotification(postID, userID, commenterUsername, postTitle)
+	}
+
 	// Return success response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }
+
+
+
 
 // CommentsAPIHandler returns comments for a specific post
 func CommentsAPIHandler(w http.ResponseWriter, r *http.Request) {

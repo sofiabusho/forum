@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"forum/internals/database"
 	"forum/internals/utils"
 	"net/http"
@@ -30,9 +29,9 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse request
+	// Parse Rquest
 	postIDStr := r.FormValue("post_id")
-	voteStr := r.FormValue("vote") // "1" for like, "-1" for dislike
+	voteStr := r.FormValue("vote") // "like" is 1 and "dislike is -1"
 
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
@@ -44,6 +43,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil || (vote != 1 && vote != -1) {
 		http.Error(w, "Invalid vote", http.StatusBadRequest)
 		return
+
 	}
 
 	db := database.CreateTable()
@@ -51,9 +51,11 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check if user already voted on this post
 	var existingVote int
-	err = db.QueryRow("SELECT vote FROM LikesDislikes WHERE post_id = ? AND user_id = ?", postID, userID).Scan(&existingVote)
+	err = db.QueryRow("SLECT vote FROM PostVotes WHERE post_id = ? AND user_id = ?", postID, userID).Scan(&existingVote)
 
-	if err == nil {
+	var isNewLike bool = false
+
+	if err != nil {
 		// User already voted
 		if existingVote == vote {
 			// Same vote - remove it (toggle off)
@@ -61,26 +63,27 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			// Different vote - update it
 			db.Exec("UPDATE LikesDislikes SET vote = ? WHERE post_id = ? AND user_id = ?", vote, postID, userID)
+			if vote == 1 {
+				isNewLike = true
+			}
 		}
 	} else {
 		// No existing vote - create new one
 		db.Exec("INSERT INTO LikesDislikes (post_id, user_id, vote) VALUES (?, ?, ?)", postID, userID, vote)
+		if vote == 1 {
+			isNewLike = true
+		}
 	}
 
-	if err == nil && vote == 1 { // Only for likes, not dislikes
-		// Get post author
+	// Create notification for new likes only
+	if isNewLike {
 		var postAuthorID int
 		var postTitle string
 		err := db.QueryRow("SELECT user_id, title FROM Posts WHERE post_id = ?", postID).Scan(&postAuthorID, &postTitle)
 
 		if err == nil && postAuthorID != userID { // Don't notify yourself
-			// Get liker's username
 			likerUsername := utils.GetUsernameFromSession(cookie.Value)
-
-			title := "New Like!"
-			message := fmt.Sprintf("%s liked your post '%s'", likerUsername, truncateText(postTitle, 50))
-
-			CreateNotification(postAuthorID, "like", title, message, &postID, nil, &userID)
+			CreateLikeNotification(postID, userID, likerUsername, postTitle)
 		}
 	}
 
@@ -147,7 +150,6 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		// No existing vote - create new one
 		db.Exec("INSERT INTO CommentLikes (comment_id, user_id, vote) VALUES (?, ?, ?)", commentID, userID, vote)
 	}
-
 
 	// Get updated counts
 	response := getCommentLikeStats(db, commentID, userID)
