@@ -75,6 +75,16 @@
                 </ol>
             </section>
             </div>
+
+            <!-- Home Button -->
+            <a href="/" class="btn btn-outline-light me-2">
+                <i class="bi bi-house-fill me-1 centered"></i>Home
+            </a>
+            
+            <!-- Back Button -->
+            <button onclick="history.back()" class="btn btn-outline-light" style="">
+                <i class="bi bi-arrow-left me-1"></i>Go Back
+            </button>
     </main>
 
 <!-- Shared footer -->
@@ -86,12 +96,14 @@
 <!-- Load shared partials -->
 <script>
     // header
-    fetch('/frontend/templates/shared/header.html').then(r => r.text())
+    fetch('/frontend/templates/shared/header-error.html').then(r => r.text())
         .then(html => document.getElementById('shared-header').innerHTML = html);
 
     // footer
     fetch('/frontend/templates/shared/footer.html').then(r => r.text())
         .then(html => document.getElementById('shared-footer').innerHTML = html);
+
+
 </script>
 </body>
 

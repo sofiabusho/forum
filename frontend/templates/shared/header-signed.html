@@ -42,95 +42,32 @@
 </nav>
 
 <script>
-    // Load notification count for logged-in users
-    async function loadNotificationCount() {
-            try {
-                console.log('🔔 Loading notification count...');
-
-                const response = await fetch('/api/notifications/count');
-                console.log('📡 Response status:', response.status);
-
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('📡 Response data:', data);
-
-                    const unreadCount = data.count || 0;
-                    console.log('🔔 Unread notifications:', unreadCount);
-
-                    const badge = document.getElementById('notification-badge');
-                    console.log('🎯 Badge element found:', !!badge);
-
-                    if (badge) {
-                        badge.textContent = unreadCount;
-                        if (unreadCount > 0) {
-                            badge.style.display = 'inline';
-                            console.log('✅ Badge shown with count:', unreadCount);
-                        } else {
-                            badge.style.display = 'none';
-                            console.log('❌ Badge hidden (no notifications)');
-                        }
+    // Simple notification dot system
+    function updateNotificationDot() {
+        fetch('/api/notifications/count')
+            .then(response => response.json())
+            .then(data => {
+                const dot = document.getElementById('notification-dot');
+                if (dot) {
+                    if (data.count > 0) {
+                        dot.style.display = 'block';  // Show red dot
                     } else {
-                        console.error('❌ Badge element not found!');
+                        dot.style.display = 'none';   // Hide red dot
                     }
-                } else {
-                    console.error('❌ Failed to load notification count:', response.status);
-                    const errorText = await response.text();
-                    console.error('❌ Error response:', errorText);
+                    console.log('Notification dot updated:', data.count > 0 ? 'visible' : 'hidden');
                 }
-            } catch (error) {
-                console.error('❌ Error loading notifications:', error);
-            }
-        }
+            })
+            .catch(error => console.error('Error updating notification dot:', error));
+    }
 
-        // Function to update badge from anywhere
-        window.updateNotificationBadge = function (count) {
-            const badge = document.getElementById('notification-badge');
-            if (badge) {
-                badge.textContent = count;
-                badge.style.display = count > 0 ? 'inline' : 'none';
-                console.log('🎯 Badge manually updated to:', count);
-            }
-        };
+    // Load dot status when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(updateNotificationDot, 500);
+    });
 
-        // Wait for DOM and header to load completely
-        function initNotificationBadge() {
-            console.log('🚀 Initializing notification badge...');
+    // Check every 30 seconds
+    setInterval(updateNotificationDot, 30000);
 
-            // Try to find the badge element
-            const badge = document.getElementById('notification-badge');
-            if (badge) {
-                console.log('✅ Badge element found, loading count...');
-                loadNotificationCount();
-            } else {
-                console.log('⏳ Badge not found yet, retrying in 200ms...');
-                setTimeout(initNotificationBadge, 200);
-            }
-        }
-
-        // Multiple initialization attempts
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('📄 DOM loaded, starting badge initialization...');
-            setTimeout(initNotificationBadge, 100);
-        });
-
-        window.addEventListener('load', () => {
-            console.log('🌐 Window loaded, ensuring badge is updated...');
-            setTimeout(loadNotificationCount, 200);
-        });
-
-        // Auto-refresh notification count every 30 seconds
-        setInterval(() => {
-            console.log('🔄 Auto-refreshing notification count...');
-            loadNotificationCount();
-        }, 30000);
-
-        // Expose function globally for manual testing and other pages
-        window.loadNotificationCount = loadNotificationCount;
-
-        // Listen for custom events to update badge (for real-time updates)
-        window.addEventListener('notificationUpdate', function (event) {
-            if (event.detail && typeof event.detail.count === 'number') {
-                window.updateNotificationBadge(event.detail.count);
-            }
-        });
+    // Global function for other pages to use
+    window.updateNotificationDot = updateNotificationDot;
 </script>

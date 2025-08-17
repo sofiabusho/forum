@@ -85,6 +85,7 @@
     // footer
     fetch('/frontend/templates/shared/footer.html').then(r => r.text())
         .then(html => document.getElementById('shared-footer').innerHTML = html);
+   
 </script>
 <!-- Notifications functionality -->
 <script>
@@ -275,11 +276,10 @@
         }
     }
 
-    // Update notification badges and buttons - FIXED to check if elements exist
-    function updateBadges() {
+   function updateBadges() {
         const unreadCount = notifications.unread.length;
 
-        // Update unread badge (only if it exists)
+        // Update the unread tab badge on notifications page
         const unreadBadge = document.getElementById('unread-badge');
         if (unreadBadge) {
             if (unreadCount > 0) {
@@ -290,15 +290,15 @@
             }
         }
 
-        // Update header notification count (only if it exists - for when this page is loaded)
-        const headerBadge = document.getElementById('notification-badge');
-        if (headerBadge) {
+        // Update the header notification dot (simple red dot)
+        const notificationDot = document.getElementById('notification-dot');
+        if (notificationDot) {
             if (unreadCount > 0) {
-                headerBadge.textContent = unreadCount;
-                headerBadge.style.display = 'inline';
+                notificationDot.style.display = 'block';  // Show red dot
             } else {
-                headerBadge.style.display = 'none';
+                notificationDot.style.display = 'none';   // Hide red dot
             }
+            console.log('Header dot updated:', unreadCount > 0 ? 'visible' : 'hidden');
         }
     }
 
