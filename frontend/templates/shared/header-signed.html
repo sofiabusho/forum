@@ -13,19 +13,19 @@
             <!-- Create Post -->
             <a href="/new-post.html" class="btn btn-outline-light me-2">Create Post</a>
 
-            <!-- Notifications -->
+            <!-- Notifications with simple red dot -->
             <a href="/notifications" class="btn btn-link position-relative me-3 p-1" aria-label="Notifications">
-                <!-- notification icon image -->
                 <img src="/frontend/css/images/notification.png" alt="Notifications" width="24" height="24">
-                <span id="notification-badge"
-                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;"></span>
+                <!-- Simple red dot -->
+                <span id="notification-dot"
+                    class="position-absolute top-0 start-100 translate-middle bg-danger rounded-circle"
+                    style="width: 8px; height: 8px; display: none;"></span>
             </a>
 
             <!-- Profile Thumbnail Dropdown -->
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle p-0" id="profileMenu"
                     data-bs-toggle="dropdown" aria-expanded="false">
-                    <!-- user thumbnail -->
                     <img src="/frontend/css/images/avatar.png" alt="Profile" width="32" height="32"
                         class="rounded-circle img-thumbnail">
                 </a>
@@ -42,32 +42,28 @@
 </nav>
 
 <script>
-    // Simple notification dot system
+    // Simple red dot notification system
     function updateNotificationDot() {
         fetch('/api/notifications/count')
             .then(response => response.json())
             .then(data => {
                 const dot = document.getElementById('notification-dot');
                 if (dot) {
-                    if (data.count > 0) {
-                        dot.style.display = 'block';  // Show red dot
-                    } else {
-                        dot.style.display = 'none';   // Hide red dot
-                    }
-                    console.log('Notification dot updated:', data.count > 0 ? 'visible' : 'hidden');
+                    dot.style.display = data.count > 0 ? 'block' : 'none';
+                    console.log('Red dot:', data.count > 0 ? 'visible' : 'hidden', '(count:', data.count + ')');
                 }
             })
-            .catch(error => console.error('Error updating notification dot:', error));
+            .catch(error => console.error('Notification dot error:', error));
     }
 
-    // Load dot status when page loads
+    // Initialize when DOM loads
     document.addEventListener('DOMContentLoaded', () => {
         setTimeout(updateNotificationDot, 500);
     });
 
-    // Check every 30 seconds
+    // Auto-refresh every 30 seconds
     setInterval(updateNotificationDot, 30000);
 
-    // Global function for other pages to use
+    // Expose globally
     window.updateNotificationDot = updateNotificationDot;
 </script>

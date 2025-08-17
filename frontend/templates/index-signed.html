@@ -41,8 +41,15 @@
 <!-- Load shared partials -->
 <script>
     // header
-    fetch('/frontend/templates/shared/header-signed.html').then(r => r.text())
-        .then(html => document.getElementById('shared-header').innerHTML = html);
+   fetch('/frontend/templates/shared/header-signed.html').then(r => r.text())
+      .then(html => {
+        document.getElementById('shared-header').innerHTML = html;
+        setTimeout(() => {
+          if (window.updateNotificationDot) {
+            window.updateNotificationDot();
+          }
+        }, 100);
+      });
 
     // footer
     fetch('/frontend/templates/shared/footer.html').then(r => r.text())
