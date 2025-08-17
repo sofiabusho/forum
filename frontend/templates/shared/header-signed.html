@@ -37,4 +37,34 @@
         </div>
     </div>
 </div>
+<script>    
+    async function loadNotificationCount() {
+            try {
+                console.log('🔔 Loading notification count...');
+
+                const response = await fetch('/api/notifications/count');
+                if (response.ok) {
+                    const data = await response.json();
+                    const unreadCount = data.count || 0;
+                    console.log('🔔 Unread notifications:', unreadCount);
+
+                    const badge = document.getElementById('notification-badge');
+                    if (badge) {
+                        badge.textContent = unreadCount;
+                        if (unreadCount === 0) {
+                            badge.style.display = 'none';
+                        } else {
+                            badge.style.display = 'inline';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        fetch('/api/notifications/count')
+                .then(r => r.json())
+                .then(data => console.log('Notification count:', data));
+</script>
 </nav>

@@ -77,6 +77,8 @@ CREATE TABLE IF NOT EXISTS Notifications (
     FOREIGN KEY (related_user_id) REFERENCES Users(user_id)
 );
 
+SELECT notification_id, user_id, type, title, is_read FROM Notifications;
+
 -- Images Table: stores uploaded image information
 CREATE TABLE IF NOT EXISTS Images (
     image_id INTEGER PRIMARY KEY AUTOINCREMENT,

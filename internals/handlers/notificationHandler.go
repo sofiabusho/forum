@@ -230,8 +230,6 @@ func CreateLikeNotification(postID int, likerID int, likerUsername string, postT
 func getNotificationsWithPagination(db *sql.DB, userID int, isRead bool, page, limit int) []database.Notification {
 	var notifications []database.Notification
 
-	offset := (page - 1) * limit
-
 	query := `
 		SELECT notification_id, user_id, type, title, message, 
 		       related_post_id, related_comment_id, related_user_id, 
@@ -239,9 +237,9 @@ func getNotificationsWithPagination(db *sql.DB, userID int, isRead bool, page, l
 		FROM Notifications 
 		WHERE user_id = ? AND is_read = ?
 		ORDER BY creation_date DESC
-		LIMIT 20`
+		LIMIT ?`
 
-	rows, err := db.Query(query, userID, isRead, limit, offset)
+	rows, err := db.Query(query, userID, isRead, limit)
 	if err != nil {
 		return notifications
 	}
