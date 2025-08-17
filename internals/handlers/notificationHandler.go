@@ -106,7 +106,7 @@ func MarkNotificationReadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Mark as read
-	_, err = db.Exec("UPDATE Notifications SET is_read = TRUE WHERE notification_id = ?", notificationID)
+	_, err = db.Exec("UPDATE Notifications SET is_read = 1 WHERE notification_id = ?", notificationID)
 	if err != nil {
 		http.Error(w, "Failed to mark notification as read", http.StatusInternalServerError)
 		return
@@ -136,37 +136,43 @@ func MarkAllNotificationsReadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	notificationIDStr := r.FormValue("notification_id")
+	notificationID, err := strconv.Atoi(notificationIDStr)
+	if err != nil {
+		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
+		return
+	}
+
 	db := database.CreateTable()
 	defer db.Close()
 
-	// Get count of unread notifications before marking
-	var unreadCount int
-	db.QueryRow("SELECT COUNT(*) FROM Notifications WHERE user_id = ? AND is_read = FALSE", userID).Scan(&unreadCount)
+	// Get count of unread notifications before marking as read
+	var existingUserID int
+	var isRead bool
+	err = db.QueryRow("SELECT user_id, is_read FROM Notifications WHERE notification_id = ?", notificationID).Scan(&existingUserID, &isRead)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Notification not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+		}
+		return
+	}
 
-	if unreadCount == 0 {
-		// No unread notifications
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": true,
-			"marked":  0,
-		})
+	if existingUserID != userID {
+		http.Error(w, "Unauthorized to modify this notification", http.StatusForbidden)
 		return
 	}
 
 	// Mark all notifications as read for this user
-	result, err := db.Exec("UPDATE Notifications SET is_read = TRUE WHERE user_id = ? AND is_read = FALSE", userID)
+	_, err = db.Exec("UPDATE Notifications SET is_read = 1 WHERE notification_id = ?", notificationID)
 	if err != nil {
-		http.Error(w, "Failed to mark notifications as read", http.StatusInternalServerError)
+		http.Error(w, "Failed to mark notification as read", http.StatusInternalServerError)
 		return
 	}
 
-	rowsAffected, _ := result.RowsAffected()
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"marked":  rowsAffected,
-	})
+	json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }
 
 // CreateNotification creates a new notification for a user
@@ -294,7 +300,11 @@ func GetUnreadNotificationCount(userID int) int {
 	defer db.Close()
 
 	var count int
-	db.QueryRow("SELECT COUNT(*) FROM Notifications WHERE user_id = ? AND is_read = FALSE", userID).Scan(&count)
+	err := db.QueryRow("SELECT COUNT(*) FROM Notifications WHERE user_id = ? AND (is_read = 0 OR is_read = false OR is_read IS NULL)", userID).Scan(&count)
+	if err != nil {
+		fmt.Printf("Error getting notification count for user %d: %v\n", userID, err)
+		return 0
+	}
 	return count
 }
 
@@ -322,8 +332,8 @@ func DeleteOldNotifications() {
 		DELETE FROM Notifications
 		WHERE is_read = TRUE AND creation_date < datetime('now', '-30 days')
 		`)
-		if err != nil {
-			fmt.Printf("Error deleting old notifications: %v\n", err)
+	if err != nil {
+		fmt.Printf("Error deleting old notifications: %v\n", err)
 	}
 }
 
@@ -369,4 +379,3 @@ func SystemNotification(userIDs []int, title, message string) error {
 
 	return tx.Commit()
 }
-

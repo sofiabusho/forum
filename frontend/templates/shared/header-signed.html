@@ -1,70 +1,136 @@
-<!-- header-unsigned.html -->
-<nav class="navbar bg-transparent border-bottom py-2"></nav>
-<div class="container d-flex justify-content-between align-items-center">
-    <!-- Logo / Brand -->
-    <a class="navbar-brand text-dark fw-bold d-flex align-items-center" href="/">
-        <img src="/frontend/css/images/cactus.png" alt="Plant Talk Logo" height="32"
-            class="d-inline-block align-text-top me-2">
-        <span class="logo-text">Plant Talk</span>
-    </a>
-
-    <!-- Static nav links/buttons -->
-    <div class="d-flex">
-        <!-- Create Post -->
-        <a href="/new-post.html" class="btn btn-outline-light me-2">Create Post</a>
-       
-        <!-- Notifications -->
-        <a href="/notifications" class="btn btn-link position-relative me-3 p-1" aria-label="Notifications">
-            <!-- notification icon image -->
-            <img src="/frontend/css/images/notification.png" alt="Notifications" width="24" height="24">
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+<!-- header-signed.html -->
+<nav class="navbar bg-transparent border-bottom py-2">
+    <div class="container d-flex justify-content-between align-items-center">
+        <!-- Logo / Brand -->
+        <a class="navbar-brand text-dark fw-bold d-flex align-items-center" href="/">
+            <img src="/frontend/css/images/cactus.png" alt="Plant Talk Logo" height="32"
+                class="d-inline-block align-text-top me-2">
+            <span class="logo-text">Plant Talk</span>
         </a>
-        
-        <!-- Profile Thumbnail Dropdown -->
-        <div class="dropdown">
-            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle p-0" id="profileMenu"
-                data-bs-toggle="dropdown" aria-expanded="false">
-                <!-- user thumbnail -->
-                <img src="/frontend/css/images/avatar.png" alt="Profile" width="32" height="32" class="rounded-circle img-thumbnail">
+
+        <!-- Static nav links/buttons -->
+        <div class="d-flex">
+            <!-- Create Post -->
+            <a href="/new-post.html" class="btn btn-outline-light me-2">Create Post</a>
+
+            <!-- Notifications -->
+            <a href="/notifications" class="btn btn-link position-relative me-3 p-1" aria-label="Notifications">
+                <!-- notification icon image -->
+                <img src="/frontend/css/images/notification.png" alt="Notifications" width="24" height="24">
+                <span id="notification-badge"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;"></span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
-                <li><a class="dropdown-item" href="/profile">Profile</a></li>
-                <li>
-                <hr class="dropdown-divider">
-                </li>
-                <li><a class="dropdown-item" href="/logout">Log Out</a></li>
-            </ul>
+
+            <!-- Profile Thumbnail Dropdown -->
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle p-0" id="profileMenu"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <!-- user thumbnail -->
+                    <img src="/frontend/css/images/avatar.png" alt="Profile" width="32" height="32"
+                        class="rounded-circle img-thumbnail">
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
+                    <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+                </ul>
+            </div>
         </div>
     </div>
-</div>
-<script>    
+</nav>
+
+<script>
+    // Load notification count for logged-in users
     async function loadNotificationCount() {
             try {
                 console.log('🔔 Loading notification count...');
 
                 const response = await fetch('/api/notifications/count');
+                console.log('📡 Response status:', response.status);
+
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('📡 Response data:', data);
+
                     const unreadCount = data.count || 0;
                     console.log('🔔 Unread notifications:', unreadCount);
 
                     const badge = document.getElementById('notification-badge');
+                    console.log('🎯 Badge element found:', !!badge);
+
                     if (badge) {
                         badge.textContent = unreadCount;
-                        if (unreadCount === 0) {
-                            badge.style.display = 'none';
-                        } else {
+                        if (unreadCount > 0) {
                             badge.style.display = 'inline';
+                            console.log('✅ Badge shown with count:', unreadCount);
+                        } else {
+                            badge.style.display = 'none';
+                            console.log('❌ Badge hidden (no notifications)');
                         }
+                    } else {
+                        console.error('❌ Badge element not found!');
                     }
+                } else {
+                    console.error('❌ Failed to load notification count:', response.status);
+                    const errorText = await response.text();
+                    console.error('❌ Error response:', errorText);
                 }
             } catch (error) {
-                console.error('Error loading notifications:', error);
+                console.error('❌ Error loading notifications:', error);
             }
         }
 
-        fetch('/api/notifications/count')
-                .then(r => r.json())
-                .then(data => console.log('Notification count:', data));
+        // Function to update badge from anywhere
+        window.updateNotificationBadge = function (count) {
+            const badge = document.getElementById('notification-badge');
+            if (badge) {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline' : 'none';
+                console.log('🎯 Badge manually updated to:', count);
+            }
+        };
+
+        // Wait for DOM and header to load completely
+        function initNotificationBadge() {
+            console.log('🚀 Initializing notification badge...');
+
+            // Try to find the badge element
+            const badge = document.getElementById('notification-badge');
+            if (badge) {
+                console.log('✅ Badge element found, loading count...');
+                loadNotificationCount();
+            } else {
+                console.log('⏳ Badge not found yet, retrying in 200ms...');
+                setTimeout(initNotificationBadge, 200);
+            }
+        }
+
+        // Multiple initialization attempts
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📄 DOM loaded, starting badge initialization...');
+            setTimeout(initNotificationBadge, 100);
+        });
+
+        window.addEventListener('load', () => {
+            console.log('🌐 Window loaded, ensuring badge is updated...');
+            setTimeout(loadNotificationCount, 200);
+        });
+
+        // Auto-refresh notification count every 30 seconds
+        setInterval(() => {
+            console.log('🔄 Auto-refreshing notification count...');
+            loadNotificationCount();
+        }, 30000);
+
+        // Expose function globally for manual testing and other pages
+        window.loadNotificationCount = loadNotificationCount;
+
+        // Listen for custom events to update badge (for real-time updates)
+        window.addEventListener('notificationUpdate', function (event) {
+            if (event.detail && typeof event.detail.count === 'number') {
+                window.updateNotificationBadge(event.detail.count);
+            }
+        });
 </script>
-</nav>
