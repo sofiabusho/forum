@@ -23,9 +23,9 @@ main {
     font-weight: bold;
 }
 
-.post-thumbnail-container {
+.post-card .post-thumbnail-container {
     width: 100% !important;
-    height: 200px !important;
+    height: auto !important;
     overflow: hidden;
     border-radius: 0.5rem;
     margin-bottom: 1rem;
@@ -34,8 +34,8 @@ main {
 }
 
 .post-thumbnail {
-    width: 100% !important;
-    height: 100% !important;
+    width: auto !important;
+    height: auto !important;
     object-fit: cover !important;
     object-position: center !important;
     /* Maintains aspect ratio, fills container */
@@ -56,8 +56,8 @@ main {
 }
 
 .post-card .post-thumbnail-container img {
-    width: 100% !important;
-    height: 100% !important;
+    width: auto !important;
+    height: auto !important;
     object-fit: cover !important;
     object-position: center !important;
     max-width: none !important;
