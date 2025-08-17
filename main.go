@@ -177,7 +177,6 @@ func main() {
 		utils.FileService("Terms&Conditions.html", w, nil)
 	})
 
-	// Error pages - ADD THESE NEW ROUTES
 	wrapHandler("/404", handlers.NotFoundHandler)
 	wrapHandler("/500", handlers.InternalServerErrorHandler)
 
@@ -201,11 +200,11 @@ func main() {
 		}
 	})
 
+
 	// Start server
 	http.ListenAndServe(":8080", nil)
 }
 
-// KEEP YOUR EXISTING FUNCTIONS - NO CHANGES NEEDED
 func initializeDatabase() {
 	db := database.CreateTable()
 	defer db.Close()

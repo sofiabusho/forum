@@ -176,6 +176,188 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(posts)
 }
 
+func EditPostHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		postID := r.URL.Query().Get("id")
+		if postID == "" {
+			http.Error(w, "Post ID required", http.StatusBadRequest)
+			return
+		}
+
+		// Check authentication and ownership
+		cookie, err := r.Cookie("session")
+		if err != nil || !utils.IsValidSession(cookie.Value) {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		userID := utils.GetUserIDFromSession(cookie.Value)
+
+		// Get post and verify ownership
+		db := database.CreateTable()
+		defer db.Close()
+
+		var post database.Post
+		var authorID int
+		err = db.QueryRow("SELECT post_id, user_id, title, content FROM Posts WHERE post_id = ?", postID).Scan(
+			&post.PostID, &authorID, &post.Title, &post.Content)
+
+		if err != nil {
+			NotFoundHandler(w, r)
+			return
+		}
+
+		if authorID != userID {
+			http.Error(w, "Unauthorized", http.StatusForbidden)
+			return
+		}
+
+		// Serve edit form with post data
+		utils.FileService("edit-post.html", w, post)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		// Handle post update
+		postID := r.FormValue("post_id")
+		title := strings.TrimSpace(r.FormValue("title"))
+		content := strings.TrimSpace(r.FormValue("content"))
+
+		if title == "" || content == "" {
+			http.Error(w, "Title and content required", http.StatusBadRequest)
+			return
+		}
+
+		// Verify ownership again
+		cookie, _ := r.Cookie("session")
+		userID := utils.GetUserIDFromSession(cookie.Value)
+
+		db := database.CreateTable()
+		defer db.Close()
+
+		var authorID int
+		err := db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&authorID)
+		if err != nil || authorID != userID {
+			http.Error(w, "Unauthorized", http.StatusForbidden)
+			return
+		}
+
+		// Update post
+		_, err = db.Exec("UPDATE Posts SET title = ?, content = ? WHERE post_id = ?", title, content, postID)
+		if err != nil {
+			http.Error(w, "Failed to update post", http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, fmt.Sprintf("/view-post?id=%s", postID), http.StatusSeeOther)
+	}
+}
+
+// DeletePostHandler handles post deletion
+func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	postID := r.FormValue("post_id")
+	if postID == "" {
+		http.Error(w, "Post ID required", http.StatusBadRequest)
+		return
+	}
+
+	// Check authentication and ownership
+	cookie, err := r.Cookie("session")
+	if err != nil || !utils.IsValidSession(cookie.Value) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userID := utils.GetUserIDFromSession(cookie.Value)
+
+	db := database.CreateTable()
+	defer db.Close()
+
+	var authorID int
+	err = db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&authorID)
+	if err != nil {
+		http.Error(w, "Post not found", http.StatusNotFound)
+		return
+	}
+
+	if authorID != userID {
+		http.Error(w, "Unauthorized", http.StatusForbidden)
+		return
+	}
+
+	// Delete related data first (foreign key constraints)
+	db.Exec("DELETE FROM LikesDislikes WHERE post_id = ?", postID)
+	db.Exec("DELETE FROM CommentLikes WHERE comment_id IN (SELECT comment_id FROM Comments WHERE post_id = ?)", postID)
+	db.Exec("DELETE FROM Comments WHERE post_id = ?", postID)
+	db.Exec("DELETE FROM PostCategories WHERE post_id = ?", postID)
+	db.Exec("DELETE FROM Notifications WHERE related_post_id = ?", postID)
+
+	// Delete the post
+	_, err = db.Exec("DELETE FROM Posts WHERE post_id = ?", postID)
+	if err != nil {
+		http.Error(w, "Failed to delete post", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+}
+
+// EditCommentHandler handles comment editing
+func EditCommentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	commentID := r.FormValue("comment_id")
+	content := strings.TrimSpace(r.FormValue("content"))
+
+	if commentID == "" || content == "" {
+		http.Error(w, "Comment ID and content required", http.StatusBadRequest)
+		return
+	}
+
+	// Check authentication and ownership
+	cookie, err := r.Cookie("session")
+	if err != nil || !utils.IsValidSession(cookie.Value) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userID := utils.GetUserIDFromSession(cookie.Value)
+
+	db := database.CreateTable()
+	defer db.Close()
+
+	var authorID int
+	err = db.QueryRow("SELECT user_id FROM Comments WHERE comment_id = ?", commentID).Scan(&authorID)
+	if err != nil {
+		http.Error(w, "Comment not found", http.StatusNotFound)
+		return
+	}
+
+	if authorID != userID {
+		http.Error(w, "Unauthorized", http.StatusForbidden)
+		return
+	}
+
+	// Update comment
+	_, err = db.Exec("UPDATE Comments SET content = ? WHERE comment_id = ?", content, commentID)
+	if err != nil {
+		http.Error(w, "Failed to update comment", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+}
+
 // SinglePostAPIHandler returns a single post by ID
 func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract post ID from URL path or query parameter

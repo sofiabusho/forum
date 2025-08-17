@@ -24,7 +24,7 @@ main {
 }
 
 .post-thumbnail-container {
-    width: 100%;
+    width: 100% !important;
     height: 200px !important;
     overflow: hidden;
     border-radius: 0.5rem;
