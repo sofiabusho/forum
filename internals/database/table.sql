@@ -100,6 +100,10 @@ CREATE TABLE IF NOT EXISTS Sessions (
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
+
+ALTER TABLE Users ADD COLUMN bio TEXT DEFAULT '';
+ALTER TABLE Users ADD COLUMN reset_token TEXT;
+
 -- This will store the reference to uploaded images
 ALTER TABLE Posts ADD COLUMN image_id INTEGER REFERENCES Images(image_id);
 

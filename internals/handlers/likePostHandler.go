@@ -51,7 +51,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check if user already voted on this post
 	var existingVote int
-	err = db.QueryRow("SLECT vote FROM PostVotes WHERE post_id = ? AND user_id = ?", postID, userID).Scan(&existingVote)
+	err = db.QueryRow("SELECT vote FROM PostVotes WHERE post_id = ? AND user_id = ?", postID, userID).Scan(&existingVote)
 
 	var isNewLike bool = false
 

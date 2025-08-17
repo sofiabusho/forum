@@ -223,7 +223,7 @@ func CreateLikeNotification(postID int, likerID int, likerUsername string, postT
 	title := "New Like!"
 	message := fmt.Sprintf("%s liked your post '%s'", likerUsername, truncateText(postTitle, 50))
 
-	CreateNotification(postAuthorID, "liket", title, message, &postID, nil, &likerID)
+	CreateNotification(postAuthorID, "like", title, message, &postID, nil, &likerID)
 }
 
 // Helper function to get notifications from database
@@ -355,7 +355,7 @@ func SystemNotification(userIDs []int, title, message string) error {
 
 	smtm, err := tx.Prepare(`
 		INSERT INTO Notifications (user_id, type, title, message)
-		VALUES (?, 'system;, ?, ?)
+		VALUES (?, 'system', ?, ?)
 	`)
 	if err != nil {
 		return err
