@@ -124,7 +124,5 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		CreateNotification(newUserID, "system", title, message, nil, nil, nil)
 	}
 
-	fmt.Println("✅ Registration successful!")
-
 	http.Redirect(w, r, "/login?success=registration", http.StatusSeeOther)
 }

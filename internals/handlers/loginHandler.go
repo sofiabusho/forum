@@ -61,16 +61,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		Expires:  expiration,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode, // ✅ required for modern browsers
-		// Secure: true, // ✅ uncomment if using HTTPS
+		SameSite: http.SameSiteLaxMode, 
 	})
 
 	// Store session in database
 	database.Insert(db, "Sessions", "(user_id, cookie_value, expiration_date)", userID, cookieValue, expiration)
 
 	// Debug output
-	fmt.Println("✅ Login successful for user_id:", userID)
-	fmt.Println("✅ Session cookie set:", cookieValue)
+	fmt.Println("Login successful for user_id:", userID)
+	fmt.Println("Session cookie set:", cookieValue)
 
 	// Redirect to home
 	http.Redirect(w, r, "/", http.StatusSeeOther)
