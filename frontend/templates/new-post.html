@@ -120,7 +120,15 @@
     <script>
         // header
         fetch('/frontend/templates/shared/header-signed.html').then(r => r.text())
-            .then(html => document.getElementById('shared-header').innerHTML = html);
+                .then(html => {
+                    document.getElementById('shared-header').innerHTML = html;
+                    // Wait a bit for DOM to settle, then update notification dot
+                    setTimeout(() => {
+                        if (window.updateNotificationDot) {
+                            window.updateNotificationDot();
+                        }
+                    }, 100);
+                });
 
         // footer
         fetch('/frontend/templates/shared/footer.html').then(r => r.text())
