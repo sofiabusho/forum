@@ -149,7 +149,7 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var p database.PostResponse
 		var creationDate time.Time
-		var imageURL, thumbnailURL *string
+		var imageURL, thumbnailURL sql.NullString
 
 		err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Author, &creationDate, &p.Comments, &p.Likes, &imageURL, &thumbnailURL)
 		if err != nil {
@@ -162,11 +162,11 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		p.Views = getPostViews(db, p.ID)
 
 		// Add image URLs if available
-		if imageURL != nil {
-			p.ImageURL = *imageURL
+		if imageURL.Valid {
+			p.ImageURL = imageURL.String
 		}
-		if thumbnailURL != nil {
-			p.ThumbnailURL = *thumbnailURL
+		if thumbnailURL.Valid {
+			p.ThumbnailURL = thumbnailURL.String
 		}
 
 		posts = append(posts, p)

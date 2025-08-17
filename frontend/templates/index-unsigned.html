@@ -66,10 +66,10 @@
     }
 
   function renderPosts(posts) {
-    container.innerHTML = '';
+      container.innerHTML = '';
 
-    if (posts.length === 0) {
-      container.innerHTML = `
+      if (posts.length === 0) {
+        container.innerHTML = `
           <div class="col-12 text-center py-5">
             <div class="text-muted">
               <i class="bi bi-chat-square-dots fs-1 mb-3"></i>
@@ -81,26 +81,34 @@
             </div>
           </div>
         `;
-      return;
-    }
+        return;
+      }
 
-    posts.forEach(post => {
-      const col = document.createElement('div');
-      col.className = 'col-12';
+      posts.forEach(post => {
+        const col = document.createElement('div');
+        col.className = 'col-12';
 
-      // Create proper image HTML structure
-      const imageHTML = post.thumbnailUrl ? `
+        // Debug: Log the image URLs to console
+        console.log('Post image data:', {
+          id: post.id,
+          thumbnailUrl: post.thumbnailUrl,
+          imageUrl: post.imageUrl
+        });
+
+        // Use thumbnailUrl first, fallback to imageUrl, then no image
+        const imageURL = post.thumbnailUrl || post.imageUrl;
+        const imageHTML = imageURL ? `
             <div class="post-thumbnail-container">
-                <img src="${post.thumbnailUrl}" 
+                <img src="${imageURL}" 
                      alt="Post thumbnail" 
                      class="post-thumbnail"
-                     loading="lazy">
+                     loading="lazy"
+                     onerror="this.parentElement.style.display='none'">
             </div>
         ` : '';
 
-      col.innerHTML = `
-          <div class="card shadow-sm mb-3 post-card"
-              onclick="viewPost(${post.id})">
+        col.innerHTML = `
+          <div class="card shadow-sm mb-3 post-card" onclick="viewPost(${post.id})">
             <div class="card-body">
               <!-- Post Header -->
               <div class="d-flex justify-content-between align-items-start mb-3">
@@ -148,9 +156,13 @@
             </div>
           </div>
         `;
-      container.appendChild(col);
-    });
-  }
+        container.appendChild(col);
+      });
+
+      function viewPost(postId) {
+        window.location.href = `/view-post?id=${postId}`;
+      }
+    }
 
     // Menu tab switching
     document.querySelectorAll('[data-filter]').forEach(link => {
