@@ -5,7 +5,7 @@ body {
     padding-top: calc((2 * 0.5rem) + 32px);
     background: url('../images/background.jpg') no-repeat center center;
     background-size: cover; /* cover the screen */
-    background-attachment: fixed; /* KEEP IT STILL */
+    background-attachment: fixed; 
 }
 
 main {
@@ -24,23 +24,19 @@ main {
 }
 
 .post-card .post-thumbnail-container {
-    width: 100% !important;
+    width: auto!important;
     height: auto !important;
     overflow: hidden;
     border-radius: 0.5rem;
     margin-bottom: 1rem;
-    position: relative;
-    background: #f8f9fa;
+    position: center;
 }
 
 .post-thumbnail {
     width: auto !important;
     height: auto !important;
-    object-fit: cover !important;
-    object-position: center !important;
     /* Maintains aspect ratio, fills container */
     transition: transform 0.2s ease;
-    display: block !important;
     max-width: none !important;
     max-height: none !important;
 }
