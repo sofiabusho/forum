@@ -131,14 +131,19 @@
         const container = document.getElementById(containerId);
         const emptyState = document.getElementById(emptyId);
 
-        container.innerHTML = '';
-
-        if (!notifList || notifList.length === 0) {
-            emptyState.style.display = 'block';
+        if (!container) {
+            console.error(`Container ${containerId} not found`);
             return;
         }
 
-        emptyState.style.display = 'none';
+        container.innerHTML = '';
+
+        if (!notifList || notifList.length === 0) {
+            if (emptyState) emptyState.style.display = 'block';
+            return;
+        }
+
+        if (emptyState) emptyState.style.display = 'none';
 
         notifList.forEach(notification => {
             const notifElement = createNotificationElement(notification, isUnread);
@@ -160,26 +165,26 @@
         const clickHandler = isClickable ? `onclick="handleNotificationClick(${notification.id}, ${notification.relatedPostId || 'null'})"` : '';
 
         div.innerHTML = `
-            <div class="d-flex align-items-start" ${clickHandler}>
-                <div class="notification-icon ${notification.type}">
-                    <i class="bi ${iconInfo.icon}"></i>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-title">${notification.title}</div>
-                    <div class="notification-message">${notification.message}</div>
-                    <div class="notification-time">
-                        <i class="bi bi-clock me-1"></i>${notification.timeAgo}
-                    </div>
-                    ${isUnread ? `
-                        <div class="notification-actions">
-                            <button class="btn btn-outline-light mark-read-btn" onclick="markAsRead(${notification.id}, event)">
-                                <i class="bi bi-check"></i> Mark as read
-                            </button>
-                        </div>
-                    ` : ''}
-                </div>
+        <div class="d-flex align-items-start" ${clickHandler}>
+            <div class="notification-icon ${notification.type}">
+                <i class="bi ${iconInfo.icon}"></i>
             </div>
-        `;
+            <div class="notification-content">
+                <div class="notification-title">${notification.title}</div>
+                <div class="notification-message">${notification.message}</div>
+                <div class="notification-time">
+                    <i class="bi bi-clock me-1"></i>${notification.timeAgo}
+                </div>
+                ${isUnread ? `
+                    <div class="notification-actions">
+                        <button class="btn btn-outline-light mark-read-btn" onclick="markAsRead(${notification.id}, event)">
+                            <i class="bi bi-check"></i> Mark as read
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
 
         return div;
     }
@@ -270,22 +275,22 @@
         }
     }
 
-    // Update notification badges and buttons
+    // Update notification badges and buttons - FIXED to check if elements exist
     function updateBadges() {
         const unreadCount = notifications.unread.length;
-        const unreadBadge = document.getElementById('unread-badge');
-        const markAllBtn = document.getElementById('markAllReadBtn');
 
-        if (unreadCount > 0) {
-            unreadBadge.textContent = unreadCount;
-            unreadBadge.style.display = 'inline';
-            markAllBtn.style.display = 'inline-block';
-        } else {
-            unreadBadge.style.display = 'none';
-            markAllBtn.style.display = 'none';
+        // Update unread badge (only if it exists)
+        const unreadBadge = document.getElementById('unread-badge');
+        if (unreadBadge) {
+            if (unreadCount > 0) {
+                unreadBadge.textContent = unreadCount;
+                unreadBadge.style.display = 'inline';
+            } else {
+                unreadBadge.style.display = 'none';
+            }
         }
 
-        // Update header notification count
+        // Update header notification count (only if it exists - for when this page is loaded)
         const headerBadge = document.getElementById('notification-badge');
         if (headerBadge) {
             if (unreadCount > 0) {
@@ -320,9 +325,9 @@
         alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed';
         alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
         alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
         document.body.appendChild(alertDiv);
 
         // Auto remove after 5 seconds
@@ -350,12 +355,6 @@
     // Event listeners
     document.addEventListener('DOMContentLoaded', () => {
         loadNotifications();
-
-        // Refresh button
-        document.getElementById('refreshBtn').addEventListener('click', loadNotifications);
-
-        // Mark all read button
-        document.getElementById('markAllReadBtn').addEventListener('click', markAllAsRead);
 
         // Auto-refresh every 30 seconds
         setInterval(loadNotifications, 30000);
