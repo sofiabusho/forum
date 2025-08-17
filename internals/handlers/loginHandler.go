@@ -13,7 +13,19 @@ import (
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		utils.FileService("login.html", w, nil)
+		// Check for success message from registration
+		successType := r.URL.Query().Get("success")
+		message := r.URL.Query().Get("message")
+		
+		data := make(map[string]interface{})
+		
+		if successType == "registration" {
+			data["SuccessMessage"] = "Registration successful! Please log in with your new account."
+		} else if message != "" {
+			data["SuccessMessage"] = message
+		}
+		
+		utils.FileService("login.html", w, data)
 		return
 	}
 
@@ -33,16 +45,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)) != nil {
 		utils.FileService("login.html", w, map[string]interface{}{
-			"Messagelg": "Invalid email/username or password",
+			"ErrorMessage": "Invalid email/username or password",
 		})
 		return
 	}
 
-	// ✅ Create secure session cookie
+	// Create secure session cookie
 	cookieValue := utils.GenerateCookieValue()
 	expiration := time.Now().Add(24 * time.Hour)
 
-	// 🔐 Set session cookie with SameSite
+	// Set session cookie with SameSite
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session",
 		Value:    cookieValue,
@@ -53,13 +65,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		// Secure: true, // ✅ uncomment if using HTTPS
 	})
 
-	// ✅ Store session in database
+	// Store session in database
 	database.Insert(db, "Sessions", "(user_id, cookie_value, expiration_date)", userID, cookieValue, expiration)
 
-	// 🐞 Debug output
+	// Debug output
 	fmt.Println("✅ Login successful for user_id:", userID)
 	fmt.Println("✅ Session cookie set:", cookieValue)
 
-	// ✅ Redirect to home
+	// Redirect to home
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

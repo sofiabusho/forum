@@ -5,23 +5,10 @@ import (
 	"forum/internals/database"
 	"forum/internals/utils"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
-
-// isValidPassword enforces:
-// - at least 1 lowercase
-// - at least 1 uppercase
-// - at least 1 number
-// - at least 1 symbol
-// - length: >= 8 characters
-func isValidPassword(password string) bool {
-	pattern := `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$`
-	ok, _ := regexp.MatchString(pattern, password)
-	return ok
-}
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -37,42 +24,99 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	pass := r.FormValue("password")
 	confirm := r.FormValue("confirmPassword")
 
+	formData := map[string]interface{}{
+		"Username": username,
+		"Email":    email,
+	}
+
+	// DEBUG: Print received values
+	fmt.Printf("\n=== REGISTRATION DEBUG ===\n")
+	fmt.Printf("Username: '%s'\n", username)
+	fmt.Printf("Email: '%s'\n", email)
+	fmt.Printf("Password length: %d\n", len(pass))
+	fmt.Printf("Passwords match: %v\n", pass == confirm)
+
 	if username == "" || email == "" || pass == "" || confirm == "" {
-		utils.FileService("register.html", w, map[string]interface{}{"Messagesg": "All fields required"})
+		formData["Message"] = "All fields are required"
+		utils.FileService("register.html", w, formData)
 		return
 	}
 
 	if pass != confirm {
-		utils.FileService("register.html", w, map[string]interface{}{"Messagesg": "Passwords do not match"})
+		formData["Message"] = "Passwords do not match"
+		utils.FileService("register.html", w, formData)
 		return
 	}
 
-	// Email and password validation
-	if !utils.IsValidEmail(email) || !isValidPassword(pass) {
-		utils.FileService("register.html", w, map[string]interface{}{"Messagesg": "Invalid input"})
+	// DEBUG: Test email validation step by step
+	fmt.Printf("\n--- EMAIL VALIDATION DEBUG ---\n")
+	fmt.Printf("Raw email: '%s'\n", email)
+	fmt.Printf("Email length: %d\n", len(email))
+	fmt.Printf("@ count: %d\n", strings.Count(email, "@"))
+	emailValid := utils.IsValidEmail(email)
+
+	if !emailValid {
+		formData["Message"] = "Invalid email format"
+		utils.FileService("register.html", w, formData)
+		return
+	
+	}
+	
+	fmt.Printf("\n--- PASSWORD VALIDATION DEBUG ---\n")
+	passValid := utils.IsValidPassword(pass)
+
+	if !passValid {
+		formData["Message"] = "Password must have: 8+ characters, 1 uppercase, 1 lowercase, 1 number, 1 symbol"
+		utils.FileService("register.html", w, formData)
 		return
 	}
 
 	// Check for duplicates
 	var exists int
-	db.QueryRow("SELECT COUNT(*) FROM Users WHERE email = ?", email).Scan(&exists)
-	if exists > 0 {
-		utils.FileService("register.html", w, map[string]interface{}{"Messagesg": "Email exists"})
+	err := db.QueryRow("SELECT COUNT(*) FROM Users WHERE email = ?", email).Scan(&exists)
+	if err != nil {
+		formData["Message"] = "Database error occurred"
+		utils.FileService("register.html", w, formData)		
 		return
 	}
-	db.QueryRow("SELECT COUNT(*) FROM Users WHERE username = ?", username).Scan(&exists)
+
 	if exists > 0 {
-		utils.FileService("register.html", w, map[string]interface{}{"Messagesg": "Username taken"})
+		formData["Message"] = "This email is already registered"
+		utils.FileService("register.html", w, formData)
+		return
+	}
+
+	err = db.QueryRow("SELECT COUNT(*) FROM Users WHERE username = ?", username).Scan(&exists)
+	if err != nil {
+		formData["Message"] = "Database error occurred"
+		utils.FileService("register.html", w, formData)
+		return
+	}
+
+	if exists > 0 {
+		formData["Message"] = "This username is already taken"
+		utils.FileService("register.html", w, formData)
 		return
 	}
 
 	// Hash and insert
-	hash, _ := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
-	database.Insert(db, "Users", "(username, email, password_hash)", username, email, string(hash))
+	hash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
+	if err != nil {
+		formData["Message"] = "Internal server error"
+		utils.FileService("register.html", w, formData)
+		return
+	}
+
+	_, err = db.Exec("INSERT INTO Users (username, email, password_hash) VALUES (?, ?, ?)", username, email, string(hash))
+	if err != nil {
+		formData["Message"] = "Failed to create user account"
+		utils.FileService("register.html", w, formData)
+		return
+	}
 
 	// Create welcome notification
 	var newUserID int
-	err := db.QueryRow("SELECT user_id FROM Users WHERE email = ?", email).Scan(&newUserID)
+	err = db.QueryRow("SELECT user_id FROM Users WHERE email = ?", email).Scan(&newUserID)
 	if err == nil && newUserID > 0 {
 		title := "Welcome to Plant Talk! 🌱"
 		message := fmt.Sprintf("Welcome to our plant-loving community, %s! Start by creating your first post or exploring different plant categories. Happy growing!", username)
@@ -80,5 +124,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		CreateNotification(newUserID, "system", title, message, nil, nil, nil)
 	}
 
-	utils.FileService("login.html", w, map[string]interface{}{"Message": "Registration successful! Please log in."})
+	fmt.Println("✅ Registration successful!")
+
+	http.Redirect(w, r, "/login?success=registration", http.StatusSeeOther)
 }
