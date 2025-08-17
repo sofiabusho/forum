@@ -151,8 +151,9 @@ func main() {
 	wrapHandler("/api/notifications/count", func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("session")
 		if err != nil || !utils.IsValidSession(cookie.Value) {
-			json.NewEncoder(w).Encode(map[string]int{"count": 0})
-			return
+			w.Header().Set("Content-Type", "application/json")
+        	json.NewEncoder(w).Encode(map[string]int{"count": 0})
+        	return
 		}
 
 		userID := utils.GetUserIDFromSession(cookie.Value)
