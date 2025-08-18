@@ -159,7 +159,6 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		p.TimeAgo = formatTimeAgo(creationDate)
 		p.Excerpt = truncateText(p.Content, 150)
 		p.Tags = getPostTags(db, p.ID)
-		p.Views = getPostViews(db, p.ID)
 
 		// Add image URLs if available
 		if imageURL.Valid {
@@ -423,7 +422,6 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 	// Format the post data
 	post.TimeAgo = formatTimeAgo(creationDate)
 	post.Tags = getPostTags(db, post.ID)
-	post.Views = getPostViews(db, post.ID)
 
 	// Add image URLs if available
 	if imageURL != nil {

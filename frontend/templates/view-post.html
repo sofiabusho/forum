@@ -52,11 +52,7 @@
                                 </div>
                                 <div id="post-tags" class="mt-2"></div>
                             </div>
-                            <div class="text-end">
-                                <small class="text-muted">
-                                    <i class="bi bi-eye"></i> <span id="post-views">0</span> views
-                                </small>
-                            </div>
+
                         </div>
 
                         <!-- Post Image -->
@@ -256,7 +252,6 @@
             document.getElementById('post-author').textContent = post.author;
             document.getElementById('post-time').textContent = post.timeAgo;
             document.getElementById('post-content').innerHTML = post.content.replace(/\n/g, '<br>');
-            document.getElementById('post-views').textContent = post.views || 0;
             document.getElementById('like-count').textContent = post.likes || 0;
             document.getElementById('comment-count').textContent = post.comments || 0;
 
