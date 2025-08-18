@@ -34,18 +34,6 @@
     color: #78ff7e;
     /* Darker green on hover */ }
 
-/* Login and register button, loaded after bootstrap.css */
-/* .btn.btn-primary.btn-lg.w-100 {
-    background-color: #388e3c !important;
-    border-color: #388e3c !important;
-    color: #fafafa !important;
-    transition: all 150ms ease-in-out;
-}
-
-.btn.btn-primary.btn-lg.w-100:hover {
-    background-color: #2e7d32 !important;
-    transform: translateY(-2px); 
-} */
 
 /* Notifications Read- Unread Tab  */
 .nav-link {
@@ -67,12 +55,6 @@
     backdrop-filter: blur(6px);  
 }
 
-/* @font-face {
-    font-family: 'BestienyaYulistiani';
-    src: url('../fonts/BestienyaYulistiani.ttf') format('truetype');
-    font-weight: lighter;
-    font-style: normal;
-} */
 
 @font-face {
     font-family: 'BebasNeue-Regular';
