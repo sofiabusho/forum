@@ -54,12 +54,6 @@ func getPostTags(db *sql.DB, postID int) []string {
 	return tags
 }
 
-// getPostViews returns the view count for a post (placeholder implementation)
-func getPostViews(db *sql.DB, postID int) int {
-	// Placeholder - you can implement view tracking later
-	// For now, return a random-ish number based on post ID
-	return (postID * 7) % 100
-}
 
 // getUsernameFromSession returns the username for a given session cookie
 func GetUsernameFromSession(cookieValue string) string {

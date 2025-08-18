@@ -63,7 +63,6 @@ type PostResponse struct {
 	Author       string   `json:"author"`
 	TimeAgo      string   `json:"timeAgo"`
 	Tags         []string `json:"tags"`
-	Views        int      `json:"views"`
 	Comments     int      `json:"comments"`
 	Likes        int      `json:"likes"`
 	Excerpt      string   `json:"excerpt"`

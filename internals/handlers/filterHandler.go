@@ -80,7 +80,6 @@ func FilteredPostsHandler(w http.ResponseWriter, r *http.Request) {
 		p.TimeAgo = formatTimeAgo(creationDate)
 		p.Excerpt = truncateText(p.Content, 150)
 		p.Tags = getPostTags(db, p.ID)
-		p.Views = getPostViews(db, p.ID)
 
 		posts = append(posts, p)
 	}
