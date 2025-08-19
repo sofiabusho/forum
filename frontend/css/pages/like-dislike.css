@@ -75,9 +75,9 @@
     align-items: center;
 }
 
-.clickable-area {
+/* .clickable-area {
     /* No special styles needed, just for identification */
-}
+/* } */ 
 
 /* Ensure vote buttons have higher z-index */
 .post-voting * {
