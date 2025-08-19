@@ -105,6 +105,12 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.CreateTable()
 	defer db.Close()
 
+
+	var currentUserID int
+	if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {
+		currentUserID = utils.GetUserIDFromSession(cookie.Value)
+	}
+
 	filter := r.URL.Query().Get("filter")
 
 	var query string
@@ -117,6 +123,8 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 			SELECT p.post_id, p.title, p.content, u.username, p.creation_date,
 			       (SELECT COUNT(*) FROM Comments WHERE post_id = p.post_id) as comment_count,
 			       (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = 1) as like_count,
+				   	(SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = -1) as dislike_count,
+
 			       i.image_url, i.thumbnail_url
 			FROM Posts p 
 			JOIN Users u ON p.user_id = u.user_id
@@ -131,6 +139,7 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 			SELECT p.post_id, p.title, p.content, u.username, p.creation_date,
 			       (SELECT COUNT(*) FROM Comments WHERE post_id = p.post_id) as comment_count,
 			       (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = 1) as like_count,
+				   	(SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = -1) as dislike_count,
 			       i.image_url, i.thumbnail_url
 			FROM Posts p 
 			JOIN Users u ON p.user_id = u.user_id
@@ -151,7 +160,7 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		var creationDate time.Time
 		var imageURL, thumbnailURL sql.NullString
 
-		err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Author, &creationDate, &p.Comments, &p.Likes, &imageURL, &thumbnailURL)
+		err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Author, &creationDate, &p.Comments, &p.Likes, &p.Dislikes, &imageURL, &thumbnailURL)
 		if err != nil {
 			continue
 		}
@@ -166,6 +175,16 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if thumbnailURL.Valid {
 			p.ThumbnailURL = thumbnailURL.String
+		}
+
+		// Get user's vote status if logged in
+		if currentUserID > 0 {
+			var userVote int
+			err := db.QueryRow("SELECT vote FROM LikesDislikes WHERE post_id = ? AND user_id = ?", p.ID, currentUserID).Scan(&userVote)
+			if err != nil {
+				userVote = 0 // No vote
+			}
+			p.UserVote = userVote
 		}
 
 		posts = append(posts, p)
@@ -394,6 +413,7 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
         SELECT p.post_id, p.title, p.content, u.username, p.creation_date,
                (SELECT COUNT(*) FROM Comments WHERE post_id = p.post_id) as comment_count,
                (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = 1) as like_count,
+			   (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = -1) as dislike_count,
                i.image_url, i.thumbnail_url
         FROM Posts p 
         JOIN Users u ON p.user_id = u.user_id
@@ -403,10 +423,11 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 	var post database.PostResponse
 	var creationDate time.Time
 	var imageURL, thumbnailURL *string
+	var dislikeCount int
 
 	err = db.QueryRow(query, postID).Scan(
 		&post.ID, &post.Title, &post.Content, &post.Author,
-		&creationDate, &post.Comments, &post.Likes,
+		&creationDate, &post.Comments, &post.Likes, &dislikeCount,
 		&imageURL, &thumbnailURL,
 	)
 
@@ -432,17 +453,32 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get user's vote status if logged in
+	var userVote int
 	if currentUserID > 0 {
 		var userVote int
 		err := db.QueryRow("SELECT vote FROM LikesDislikes WHERE post_id = ? AND user_id = ?", postID, currentUserID).Scan(&userVote)
 		if err == nil {
-			// Add userVote to response (you might need to extend PostResponse struct)
-			// For now, we'll add it as a separate field
+			userVote = 0
 		}
 	}
 
+	response := map[string]interface{}{
+		"id":           post.ID,
+		"title":        post.Title,
+		"content":      post.Content,
+		"author":       post.Author,
+		"timeAgo":      post.TimeAgo,
+		"tags":         post.Tags,
+		"comments":     post.Comments,
+		"likes":        post.Likes,
+		"dislikes":     dislikeCount,
+		"imageUrl":     post.ImageURL,
+		"thumbnailUrl": post.ThumbnailURL,
+		"userVote":     userVote,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(post)
+	json.NewEncoder(w).Encode(response)
 }
 
 // GetUserImagesHandler returns images uploaded by a user

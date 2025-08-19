@@ -65,9 +65,11 @@ type PostResponse struct {
 	Tags         []string `json:"tags"`
 	Comments     int      `json:"comments"`
 	Likes        int      `json:"likes"`
+	Dislikes     int      `json:"dislikes"` 
 	Excerpt      string   `json:"excerpt"`
 	ImageURL     string   `json:"imageUrl,omitempty"`
 	ThumbnailURL string   `json:"thumbnailUrl,omitempty"`
+	UserVote     int      `json:"userVote,omitempty"` 
 }
 
 // New Image struct
