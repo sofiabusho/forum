@@ -40,7 +40,7 @@
         <div id="post-container" class="d-none">
             <div class="row">
                 <!-- Main Post Content -->
-                <div class="col-12 col-lg-8">
+                <div class="col-12 col-lg-10">
                     <div class="post-content p-4">
                         <!-- Post Header -->
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -84,15 +84,22 @@
                 </div>
 
                 <!-- Voting Sidebar -->
-                <div class="col-12 col-lg-4">
+                <div class="col-12 col-lg-2">
                     <div class="post-content p-3 text-center">
                         <div class="vote-buttons mx-auto">
                             <button id="like-btn" class="vote-btn" onclick="votePost(1)">
-                                <i class="bi bi-arrow-up-circle"></i>
+                                <i class="bi bi-and-thumbs-up"></i>
                             </button>
-                            <span id="like-count" class="fw-bold text-white fs-5">0</span>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-white">Likes:</span>
+                                <span id="like-count" class="fw-bold text-white fs-5">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-white">Dislikes:</span>
+                                <span id="dislike-count" class="fw-bold text-white fs-5">0</span>
+                            </div>
                             <button id="dislike-btn" class="vote-btn" onclick="votePost(-1)">
-                                <i class="bi bi-arrow-down-circle"></i>
+                                <i class="bi bi-hand-thumbs-down"></i>
                             </button>
                         </div>
                     </div>
@@ -253,6 +260,7 @@
             document.getElementById('post-time').textContent = post.timeAgo;
             document.getElementById('post-content').innerHTML = post.content.replace(/\n/g, '<br>');
             document.getElementById('like-count').textContent = post.likes || 0;
+            document.getElementById('dislike-count').textContent = post.dislikes || 0;
             document.getElementById('comment-count').textContent = post.comments || 0;
 
             // Display tags
@@ -320,11 +328,11 @@
                             <div class="d-flex align-items-center gap-2">
                                 <button class="btn btn-sm btn-outline-light vote-comment-btn ${comment.userVote === 1 ? 'active-like' : ''}" 
                                     onclick="voteComment(${comment.id}, 1)">
-                                    <i class="bi bi-arrow-up"></i> ${comment.likeCount || 0}
+                                    <i class="bi bi-hand-thumbs-up"></i> ${comment.likeCount || 0}
                                 </button>
                                 <button class="btn btn-sm btn-outline-light vote-comment-btn ${comment.userVote === -1 ? 'active-dislike' : ''}" 
                                     onclick="voteComment(${comment.id}, -1)">
-                                    <i class="bi bi-arrow-down"></i> ${comment.dislikeCount || 0}
+                                    <i class="bi bi-hand-thumbs-down"></i> ${comment.dislikeCount || 0}
                                 </button>
                             </div>
                         </div>
@@ -336,7 +344,7 @@
         // Vote on post
         async function votePost(vote) {
             if (!isLoggedIn) {
-                alert('Please login to vote on posts');
+                alert('Please login to like/dislike posts');
                 return;
             }
 
@@ -349,21 +357,29 @@
                     body: `post_id=${currentPostId}&vote=${vote}`
                 });
 
+                if (!response.ok) {
+                    throw new Error('Failed to like/dislike post');
+                }
+
                 const result = await response.json();
                 if (result.success) {
                     document.getElementById('like-count').textContent = result.likeCount;
+                    document.getElementById('dislike-count').textContent = result.dislikeCount;
                     updateVoteButtons(result.userVote);
+                } else {
+                    throw new Error('Like/Dislike failed');
                 }
 
             } catch (error) {
                 console.error('Error voting on post:', error);
+                alert('Failed to like/dislike. Please try again.');
             }
         }
 
         // Vote on comment
         async function voteComment(commentId, vote) {
             if (!isLoggedIn) {
-                alert('Please login to vote on comments');
+                alert('Please login to like/dislike comments');
                 return;
             }
 
@@ -383,7 +399,7 @@
                 }
 
             } catch (error) {
-                console.error('Error voting on comment:', error);
+                console.error('Error liking/disliking comment:', error);
             }
         }
 

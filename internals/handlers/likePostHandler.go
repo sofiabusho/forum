@@ -29,7 +29,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse Rquest
+	// Parse Request
 	postIDStr := r.FormValue("post_id")
 	voteStr := r.FormValue("vote") // "like" is 1 and "dislike is -1"
 
@@ -51,11 +51,11 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check if user already voted on this post
 	var existingVote int
-	err = db.QueryRow("SELECT vote FROM PostVotes WHERE post_id = ? AND user_id = ?", postID, userID).Scan(&existingVote)
+	err = db.QueryRow("SELECT vote FROM LikesDislikes WHERE post_id = ? AND user_id = ?", postID, userID).Scan(&existingVote)
 
 	var isNewLike bool = false
 
-	if err != nil {
+	if err == nil {
 		// User already voted
 		if existingVote == vote {
 			// Same vote - remove it (toggle off)
@@ -93,6 +93,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
 
 // LikeCommentHandler handles liking/disliking comments
 func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
