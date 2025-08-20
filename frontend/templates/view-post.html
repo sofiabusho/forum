@@ -329,12 +329,14 @@
                             <div class="d-flex align-items-center gap-2">
                                 <button class="btn btn-sm btn-outline-light vote-comment-btn ${comment.userVote === 1 ? 'active-like' : ''}" 
                                     onclick="voteComment(${comment.id}, 1)">
-                                    <i class="bi bi-hand-thumbs-up"></i> ${comment.likeCount || 0}
+                                    <i class="bi bi-hand-thumbs-up"></i> 
                                 </button>
+                                <span class="vote-count like-count">${comment.likeCount || 0}</span>
                                 <button class="btn btn-sm btn-outline-light vote-comment-btn ${comment.userVote === -1 ? 'active-dislike' : ''}" 
                                     onclick="voteComment(${comment.id}, -1)">
-                                    <i class="bi bi-hand-thumbs-down"></i> ${comment.dislikeCount || 0}
+                                    <i class="bi bi-hand-thumbs-down"></i> 
                                 </button>
+                                <span class="vote-count like-count">${comment.dislikeCount || 0}</span>
                             </div>
                         </div>
                     </div>

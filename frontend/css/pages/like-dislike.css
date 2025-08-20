@@ -12,7 +12,7 @@
 .vote-btn-sm {
     background: none;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    color: rgb(255, 255, 255);
     border-radius: 50%;
     width: 32px;
     height: 32px;
@@ -33,15 +33,14 @@
 }
 
 .vote-btn-sm.active-like {
-    background-color: #28a745;
-    border-color: #28a745;
-    color: white;
-}
+    background-color: #ffffffc4;
+    border-color: #ffffffc4;
+    color: rgb(109, 214, 40);}
 
 .vote-btn-sm.active-dislike {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
+    background-color: #ffffffc4;
+    border-color: #ffffffc4;
+    color: rgb(192, 36, 82);
 }
 
 .vote-count {
@@ -50,8 +49,7 @@
     color: rgba(255, 255, 255, 0.8);
     min-width: 20px;
     text-align: center;
-    pointer-events: none;
-    /* Count shouldn't be clickable */
+    pointer-events: none; /* Count shouldn't be clickable */
 }
 
 .post-card {
@@ -74,10 +72,6 @@
     gap: 15px;
     align-items: center;
 }
-
-/* .clickable-area {
-    /* No special styles needed, just for identification */
-/* } */ 
 
 /* Ensure vote buttons have higher z-index */
 .post-voting * {
