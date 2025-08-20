@@ -310,7 +310,10 @@
         }
 
         const result = await response.json();
-        if (result.success) {
+
+        console.log('Vote response:', result); // Debug
+
+        if (result.success !== false) {
           // Update the counts in the UI
           updatePostVoteCounts(postId, result.likeCount, result.dislikeCount, result.userVote);
         } else {
@@ -325,20 +328,24 @@
 
     // Update vote counts and button states for a specific post
     function updatePostVoteCounts(postId, likeCount, dislikeCount, userVote) {
-      const postCard = document.querySelector(`[data-post-id="${postId}"]`);
-      if (!postCard) return;
+        // Find the post card by looking for buttons with the specific post ID
+        const likeBtn = document.querySelector(`[data-post-id="${postId}"].like-btn`);
+        const dislikeBtn = document.querySelector(`[data-post-id="${postId}"].dislike-btn`);
 
-      // Update counts
-      const likeCountElement = postCard.querySelector('.like-count');
-      const dislikeCountElement = postCard.querySelector('.dislike-count');
-      const likeBtn = postCard.querySelector('.like-btn');
-      const dislikeBtn = postCard.querySelector('.dislike-btn');
+        if (!likeBtn || !dislikeBtn) {
+          console.error(`Could not find vote buttons for post ${postId}`);
+          return;
+        }
 
-      if (likeCountElement) likeCountElement.textContent = likeCount;
-      if (dislikeCountElement) dislikeCountElement.textContent = dislikeCount;
+        // Find the count elements (they should be siblings of the buttons)
+        const likeCountElement = likeBtn.parentElement.querySelector('.like-count');
+        const dislikeCountElement = dislikeBtn.parentElement.querySelector('.dislike-count');
 
-      // Update button states
-      if (likeBtn && dislikeBtn) {
+        // Update counts
+        if (likeCountElement) likeCountElement.textContent = likeCount || 0;
+        if (dislikeCountElement) dislikeCountElement.textContent = dislikeCount || 0;
+
+        // Update button states
         likeBtn.classList.remove('active-like');
         dislikeBtn.classList.remove('active-dislike');
 
@@ -347,8 +354,9 @@
         } else if (userVote === -1) {
           dislikeBtn.classList.add('active-dislike');
         }
+
+        console.log(`Updated post ${postId}: likes=${likeCount}, dislikes=${dislikeCount}, userVote=${userVote}`);
       }
-    }
 
   function viewPost(postId) {
     window.location.href = `/view-post?id=${postId}`;
