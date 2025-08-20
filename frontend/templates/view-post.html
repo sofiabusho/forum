@@ -42,7 +42,6 @@
         <div id="post-container" class="d-none">
             <div class="row">
                 <!-- Main Post Content -->
-                <div class="col-12 col-lg-10">
                     <div class="post-content p-4">
                         <!-- Post Header -->
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -77,6 +76,21 @@
                                 <span class="text-muted">
                                     <i class="bi bi-chat"></i> <span id="comment-count">0</span> comments
                                 </span>
+                                    <button id="like-btn" class="vote-btn" onclick="votePost(1)">
+                                        <i class="bi bi-hand-thumbs-up"></i>
+                                    </button>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-white"></span>
+                                        <span id="like-count" class="fw-bold text-white fs-5">0</span>
+                                    </div>
+                                    <button id="dislike-btn" class="vote-btn" onclick="votePost(-1)">
+                                        <i class="bi bi-hand-thumbs-down"></i>
+                                    </button>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-white"></span>
+                                        <span id="dislike-count" class="fw-bold text-white fs-5">0</span>
+                                    </div>
+                                    
                             </div>
                             <a href="/" class="btn btn-outline-light btn-sm">
                                 <i class="bi bi-arrow-left"></i> Back to Posts
@@ -85,8 +99,7 @@
                     </div>
                 </div>
 
-                <!-- Voting Sidebar -->
-                <div class="col-12 col-lg-2">
+                <!-- Voting Sidebar
                     <div class="post-content p-3 text-center">
                         <div class="vote-buttons mx-auto">
                             <button id="like-btn" class="vote-btn" onclick="votePost(1)">
@@ -104,9 +117,7 @@
                                 <i class="bi bi-hand-thumbs-down"></i>
                             </button>
                         </div>
-                    </div>
-                </div>
-            </div>
+                    </div> -->
 
             <!-- Comments Section -->
             <div class="comment-section p-4 mt-4">
