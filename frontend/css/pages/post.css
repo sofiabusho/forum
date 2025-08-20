@@ -30,7 +30,17 @@
             gap: 0.25rem;
         }
 
-        .vote-btn {
+                .vote-count {
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    color: rgba(255, 255, 255, 0.8);
+                    min-width: 20px;
+                    text-align: center;
+                    pointer-events: none;
+                    /* Count shouldn't be clickable */
+                }
+
+        .vote-btn, .vote-comment-btn  {
             background: none;
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
@@ -43,21 +53,22 @@
             transition: all 0.2s ease;
         }
 
-        .vote-btn:hover {
+        .vote-btn:hover, .vote-comment-btn:hover {
             background-color: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.5);
         }
 
-        .vote-btn.active-like {
-            background-color: #28a745;
-            border-color: #28a745;
-            color: white;
+        .vote-btn.active-like, .vote-comment-btn.active-like {
+            background-color: #ffffffc4;
+            border-color: #ffffffc4;
+            color: rgb(109, 214, 40);
         }
+        
 
-        .vote-btn.active-dislike {
-            background-color: #dc3545;
-            border-color: #dc3545;
-            color: white;
+        .vote-btn.active-dislike, .vote-comment-btn.active-dislike {
+            background-color: #ffffffc4;
+            border-color: #ffffffc4;
+            color: rgb(192, 36, 82);
         }
 
         #post-image-container {
