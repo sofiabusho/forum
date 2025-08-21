@@ -34,25 +34,45 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse form data
+	err = r.ParseMultipartForm(32 << 20) // 32MB max memory
+	if err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
+
 	title := strings.TrimSpace(r.FormValue("title"))
 	content := strings.TrimSpace(r.FormValue("content"))
-	categoryName := r.FormValue("categories")
+
+	categoryNames := r.Form["categories[]"]
 	imageIDStr := r.FormValue("image_id")
 
-	if title == "" || content == "" || categoryName == "" {
+	if title == "" || content == "" {
 		utils.FileService("new-post.html", w, map[string]interface{}{"Error": "All fields are required"})
 		return
 	}
 
-	// Get category ID from name
+	if len(categoryNames) == 0 {
+		utils.FileService("new-post.html", w, map[string]interface{}{
+			"Error": "Please select at least one category",
+		})
+		return
+	}
+
+	// Validate categories and get their IDs
 	db := database.CreateTable()
 	defer db.Close()
 
-	var categoryID int
-	err = db.QueryRow("SELECT category_id FROM Categories WHERE name = ?", categoryName).Scan(&categoryID)
-	if err != nil {
-		utils.FileService("new-post.html", w, map[string]interface{}{"Error": "Invalid category selected"})
-		return
+	var categoryIDs []int
+	for _, categoryName := range categoryNames {
+		var categoryID int
+		err = db.QueryRow("SELECT category_id FROM Categories WHERE name = ?", categoryName).Scan(&categoryID)
+		if err != nil {
+			utils.FileService("new-post.html", w, map[string]interface{}{
+				"Error": fmt.Sprintf("Invalid category: %s", categoryName),
+			})
+			return
+		}
+		categoryIDs = append(categoryIDs, categoryID)
 	}
 
 	// Validate image ID if provided
@@ -79,6 +99,14 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Start transaction for post creation
+	tx, err := db.Begin()
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer tx.Rollback()
+
 	// Insert post into database with optional image
 	var result sql.Result
 	if imageID != nil {
@@ -94,17 +122,56 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	postID, _ := result.LastInsertId()
 
-	// Associate post with category
-	db.Exec("INSERT INTO PostCategories (post_id, category_id) VALUES (?, ?)", postID, categoryID)
+	// Associate post with all selected categories
+	for _, categoryID := range categoryIDs {
+		_, err = tx.Exec("INSERT INTO PostCategories (post_id, category_id) VALUES (?, ?)",
+			postID, categoryID)
+		if err != nil {
+			http.Error(w, "Failed to associate categories", http.StatusInternalServerError)
+			return
+		}
+	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// Commit transaction
+	err = tx.Commit()
+	if err != nil {
+		http.Error(w, "Failed to save post", http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect to the new post or home page
+	http.Redirect(w, r, fmt.Sprintf("/view-post?id=%d", postID), http.StatusSeeOther)
+}
+
+// RemovePostFromCategories removes all category associations for a post
+func RemovePostFromCategories(db *sql.DB, postID int) error {
+	_, err := db.Exec("DELETE FROM PostCategories WHERE post_id = ?", postID)
+	return err
+}
+
+// ValidateCategories checks if all provided category names exist in the database
+func ValidateCategories(db *sql.DB, categoryNames []string) ([]int, error) {
+	var categoryIDs []int
+
+	for _, name := range categoryNames {
+		var categoryID int
+		err := db.QueryRow("SELECT category_id FROM Categories WHERE name = ?", name).Scan(&categoryID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, fmt.Errorf("category '%s' does not exist", name)
+			}
+			return nil, fmt.Errorf("database error while validating category '%s': %v", name, err)
+		}
+		categoryIDs = append(categoryIDs, categoryID)
+	}
+
+	return categoryIDs, nil
 }
 
 // PostsAPIHandler returns posts as JSON for dynamic loading
 func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.CreateTable()
 	defer db.Close()
-
 
 	var currentUserID int
 	if cookie, err := r.Cookie("session"); err == nil && utils.IsValidSession(cookie.Value) {
