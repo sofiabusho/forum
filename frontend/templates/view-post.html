@@ -206,6 +206,7 @@
     </script>
 
     <script>
+        let currentPost = null;
         let currentPostId = null;
         let isLoggedIn = false;
         let currentUserId = null;
@@ -248,6 +249,8 @@
 
         // Display post data
         function displayPost(post) {
+            currentPost = post;
+
             document.getElementById('post-title').textContent = post.title;
             document.getElementById('post-author').textContent = post.author;
             document.getElementById('post-time').textContent = post.timeAgo;
@@ -272,6 +275,11 @@
                 imageContainer.classList.remove('d-none');
             }
 
+            // Add edit/delete buttons if user is the author
+            if (isLoggedIn && post.isAuthor) {
+                addPostActionButtons();
+            }
+
             // Update vote buttons
             updateVoteButtons(post.userVote || 0);
 
@@ -281,6 +289,245 @@
             // Set share URL
             document.getElementById('share-url').value = window.location.href;
         }
+
+        // Add post action buttons
+            function addPostActionButtons() {
+                const postHeader = document.querySelector('.post-content .d-flex.justify-content-between');
+                if (postHeader && !document.getElementById('post-actions-dropdown')) {
+                    const actionsHTML = `
+            <div class="dropdown" id="post-actions-dropdown">
+                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <button class="dropdown-item" onclick="editCurrentPost()">
+                            <i class="bi bi-pencil me-2"></i>Edit Post
+                        </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <button class="dropdown-item text-danger" onclick="deleteCurrentPost()">
+                            <i class="bi bi-trash me-2"></i>Delete Post
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        `;
+                    postHeader.insertAdjacentHTML('beforeend', actionsHTML);
+                }
+            }
+
+            // Edit current post
+            function editCurrentPost() {
+                if (!currentPost) return;
+
+                const newTitle = prompt('Enter new title:', currentPost.title);
+                if (newTitle === null) return; // User cancelled
+
+                const newContent = prompt('Enter new content:', currentPost.content);
+                if (newContent === null) return; // User cancelled
+
+                if (newTitle.trim() && newContent.trim()) {
+                    editPost(currentPostId, newTitle.trim(), newContent.trim());
+                }
+            }
+
+            // Delete current post
+            function deleteCurrentPost() {
+                if (!currentPost) return;
+
+                if (confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+                    deletePost(currentPostId);
+                }
+            }
+
+            // Edit post API call
+            async function editPost(postId, title, content) {
+                try {
+                    const response = await fetch('/api/posts/edit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `post_id=${postId}&title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}`
+                    });
+
+                    if (response.ok) {
+                        // Update the current display
+                        currentPost.title = title;
+                        currentPost.content = content;
+                        document.getElementById('post-title').textContent = title;
+                        document.getElementById('post-content').innerHTML = content.replace(/\n/g, '<br>');
+                        alert('Post updated successfully!');
+                    } else {
+                        alert('Failed to edit post');
+                    }
+                } catch (error) {
+                    console.error('Error editing post:', error);
+                    alert('Error editing post');
+                }
+            }
+
+            // Delete post API call
+            async function deletePost(postId) {
+                try {
+                    const response = await fetch('/api/posts/delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `post_id=${postId}`
+                    });
+
+                    if (response.ok) {
+                        alert('Post deleted successfully!');
+                        window.location.href = '/'; // Redirect to home
+                    } else {
+                        alert('Failed to delete post');
+                    }
+                } catch (error) {
+                    console.error('Error deleting post:', error);
+                    alert('Error deleting post');
+                }
+            }
+
+            // Update displayComments function to include edit/delete for comment authors
+            function displayComments(comments) {
+                const commentsList = document.getElementById('comments-list');
+
+                const commentCount = comments ? comments.length : 0;
+                const commentText = commentCount === 1 ? 'Comment' : 'Comments';
+
+                const commentsHeader = document.querySelector('.comment-section h4');
+                if (commentsHeader) {
+                    commentsHeader.innerHTML = `<i class="bi bi-chat-left-text"></i> ${commentCount} ${commentText}`;
+                }
+
+                if (!comments || comments.length === 0) {
+                    document.getElementById('no-comments').classList.remove('d-none');
+                    return;
+                }
+
+                commentsList.innerHTML = comments.map(comment => {
+                    // Check if current user is the comment author
+                    const isCommentAuthor = isLoggedIn && comment.isAuthor;
+
+                    const actionsDropdown = isCommentAuthor ? `
+            <div class="dropdown">
+                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <button class="dropdown-item" onclick="editComment(${comment.id}, '${comment.content.replace(/'/g, "\\'")}')">
+                            <i class="bi bi-pencil me-2"></i>Edit Comment
+                        </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <button class="dropdown-item text-danger" onclick="deleteComment(${comment.id})">
+                            <i class="bi bi-trash me-2"></i>Delete Comment
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        ` : '';
+
+                    return `
+            <div class="comment-item p-3" id="comment-${comment.id}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-2">
+                            <strong class="text-white">${comment.author}</strong>
+                            <small class="text-muted ms-2">${comment.timeAgo}</small>
+                        </div>
+                        <p class="text-white mb-2" id="comment-content-${comment.id}">${comment.content.replace(/\n/g, '<br>')}</p>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-sm btn-outline-light vote-comment-btn ${comment.userVote === 1 ? 'active-like' : ''}" 
+                                onclick="voteComment(${comment.id}, 1)">
+                                <i class="bi bi-hand-thumbs-up"></i> 
+                            </button>
+                            <span class="vote-count like-count">${comment.likeCount || 0}</span>
+                            <button class="btn btn-sm btn-outline-light vote-comment-btn ${comment.userVote === -1 ? 'active-dislike' : ''}" 
+                                onclick="voteComment(${comment.id}, -1)">
+                                <i class="bi bi-hand-thumbs-down"></i> 
+                            </button>
+                            <span class="vote-count like-count">${comment.dislikeCount || 0}</span>
+                        </div>
+                    </div>
+                    ${actionsDropdown}
+                </div>
+            </div>
+        `;
+                }).join('');
+            }
+
+            // Edit comment function
+            function editComment(commentId, currentContent) {
+                const newContent = prompt('Edit your comment:', currentContent);
+
+                if (newContent !== null && newContent.trim() && newContent !== currentContent) {
+                    editCommentAPI(commentId, newContent.trim());
+                }
+            }
+
+            // Edit comment API call
+            async function editCommentAPI(commentId, content) {
+                try {
+                    const response = await fetch('/api/comments/edit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `comment_id=${commentId}&content=${encodeURIComponent(content)}`
+                    });
+
+                    if (response.ok) {
+                        // Update the comment display
+                        document.getElementById(`comment-content-${commentId}`).innerHTML = content.replace(/\n/g, '<br>');
+                        alert('Comment updated successfully!');
+                    } else {
+                        alert('Failed to edit comment');
+                    }
+                } catch (error) {
+                    console.error('Error editing comment:', error);
+                    alert('Error editing comment');
+                }
+            }
+
+            // Delete comment function
+            async function deleteComment(commentId) {
+                if (confirm('Are you sure you want to delete this comment?')) {
+                    try {
+                        const response = await fetch('/api/comments/delete', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `comment_id=${commentId}`
+                        });
+
+                        if (response.ok) {
+                            // Remove comment from display
+                            document.getElementById(`comment-${commentId}`).remove();
+
+                            // Update comment count
+                            const currentCount = parseInt(document.getElementById('comment-count').textContent);
+                            document.getElementById('comment-count').textContent = Math.max(0, currentCount - 1);
+
+                            alert('Comment deleted successfully!');
+                        } else {
+                            alert('Failed to delete comment');
+                        }
+                    } catch (error) {
+                        console.error('Error deleting comment:', error);
+                        alert('Error deleting comment');
+                    }
+                }
+            }
 
         // Load comments
         async function loadComments() {

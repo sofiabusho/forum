@@ -5,6 +5,43 @@
             box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
         }
 
+                /* Action buttons styling */
+                .post-actions-dropdown {
+                    position: relative;
+                }
+        
+                .dropdown-toggle::after {
+                    display: none;
+                    /* Hide default dropdown arrow */
+                }
+        
+                .dropdown-menu {
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    background-color: rgba(0, 0, 0, 0.8);
+                    backdrop-filter: blur(10px);
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                }
+        
+                .dropdown-item {
+                    color: white;
+                    transition: all 0.2s ease;
+                }
+        
+                .dropdown-item:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                    color: white;
+                }
+        
+                .dropdown-item.text-danger:hover {
+                    background-color: rgba(220, 53, 69, 0.2);
+                    color: #ff6b6b;
+                }
+        
+                .dropdown-item i {
+                    width: 16px;
+                    text-align: center;
+                }
+
         .comment-section {
             background-color: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(6px);
@@ -13,6 +50,7 @@
         }
 
         .comment-item {
+                position: relative;
             background-color: rgba(255, 255, 255, 0.05);
             border-radius: 0.375rem;
             margin-bottom: 0.75rem;

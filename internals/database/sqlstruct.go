@@ -70,6 +70,7 @@ type PostResponse struct {
 	ImageURL     string   `json:"imageUrl,omitempty"`
 	ThumbnailURL string   `json:"thumbnailUrl,omitempty"`
 	UserVote     int      `json:"userVote,omitempty"` 
+	IsAuthor     bool     `json:"isAuthor,omitempty"`
 }
 
 // New Image struct
@@ -119,6 +120,7 @@ type CommentResponse struct {
 	LikeCount    int    `json:"likeCount"`
 	DislikeCount int    `json:"dislikeCount"`
 	UserVote     int    `json:"userVote"`
+	IsAuthor     bool   `json:"isAuthor"`
 }
 
 type Category struct {
