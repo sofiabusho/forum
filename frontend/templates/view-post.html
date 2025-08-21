@@ -99,25 +99,6 @@
                     </div>
                 </div>
 
-                <!-- Voting Sidebar
-                    <div class="post-content p-3 text-center">
-                        <div class="vote-buttons mx-auto">
-                            <button id="like-btn" class="vote-btn" onclick="votePost(1)">
-                                <i class="bi bi-hand-thumbs-up"></i>
-                            </button>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-white">Likes:</span>
-                                <span id="like-count" class="fw-bold text-white fs-5">0</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="text-white">Dislikes:</span>
-                                <span id="dislike-count" class="fw-bold text-white fs-5">0</span>
-                            </div>
-                            <button id="dislike-btn" class="vote-btn" onclick="votePost(-1)">
-                                <i class="bi bi-hand-thumbs-down"></i>
-                            </button>
-                        </div>
-                    </div> -->
 
             <!-- Comments Section -->
             <div class="comment-section p-4 mt-4">
@@ -322,6 +303,14 @@
         // Display comments
         function displayComments(comments) {
             const commentsList = document.getElementById('comments-list');
+
+            const commentCount = comments ? comments.length : 0;
+            const commentText = commentCount === 1 ? 'Comment' : 'Comments';
+
+            const commentsHeader = document.querySelector('.comment-section h4');
+            if (commentsHeader) {
+                commentsHeader.innerHTML = `<i class="bi bi-chat-left-text"></i> ${commentCount} ${commentText}`;
+            }
 
             if (!comments || comments.length === 0) {
                 document.getElementById('no-comments').classList.remove('d-none');

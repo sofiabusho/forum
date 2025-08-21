@@ -18,6 +18,105 @@ main {
     
 }
 
+.form-card {
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
+    border-radius: 0.5rem;
+    box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+/* Category Selection Styles */
+.category-selection {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.category-selection:hover {
+    border-color: rgb(109, 214, 40);
+    background-color: rgba(59, 145, 2, 0.1);
+}
+
+.category-bubbles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.category-bubble {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.category-bubble:hover {
+    background-color: rgba(109, 214, 40, 0.3);
+    border-color: rgba(109, 214, 40, 0.6);
+    transform: translateY(-1px);
+}
+
+.category-bubble.selected {
+    background-color: rgba(109, 214, 40, 0.8);
+    border-color: rgb(109, 214, 40);
+    color: white;
+    font-weight: 500;
+}
+
+.category-bubble.selected:hover {
+    background-color: rgba(109, 214, 40, 0.9);
+}
+
+.category-bubble i {
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.selected-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    min-height: 2rem;
+}
+
+.selected-category-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    background-color: rgba(109, 214, 40, 0.8);
+    color: white;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.selected-category-tag .remove-btn {
+    margin-left: 0.5rem;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.selected-category-tag .remove-btn:hover {
+    opacity: 1;
+}
+
+.category-help-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
 .container-fluid.flex-grow-1 {
     max-height: calc(100vh - 120px);
     overflow: hidden;
