@@ -494,7 +494,7 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Query for single post with image information
 	query := `
-        SELECT p.post_id, p.title, p.content, u.username, p.creation_date,
+        SELECT p.post_id, p.title, p.content, u.username, p.creation_date, p.user_id,
                (SELECT COUNT(*) FROM Comments WHERE post_id = p.post_id) as comment_count,
                (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = 1) as like_count,
 			   (SELECT COUNT(*) FROM LikesDislikes WHERE post_id = p.post_id AND vote = -1) as dislike_count,
