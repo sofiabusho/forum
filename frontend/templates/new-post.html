@@ -21,91 +21,108 @@
     <div id="shared-header"></div>
 
     <!-- Main Content - Improved Layout -->
-    <main class="flex-fill py-1">
-        <div class="container-fluid px-1 px-md-3">
+    <!-- Main Content -->
+    <main>
+        <div class="container-fluid px-3">
             <div class="row justify-content-center">
-                <div class="col-12 col-lg-10 col-xl-5">
-                    <div class="card shadow-sm"
-                        style="background-color: rgba(227, 227, 227, 0.482); backdrop-filter: blur(6px); max-width: 100%;">
-                        <div class="card-body p-1">
-                            <h2 class="card-title mb-1 text-center">Create Post</h2>
-                            <form id="postForm" action="/new-post" method="POST" enctype="multipart/form-data">
-                                <!-- Categories -->
-                                <div class="mb-1">
-                                    <label for="categories" class="form-label">Choose categories</label>
-                                    <select id="categories" name="categories" class="form-select" required>
-                                        <option value="">Select a category...</option>
-                                        <!-- Categories will be loaded dynamically -->
-                                    </select>
-                                </div>
-
-                                <!-- Title -->
-                                <div class="mb-1">
-                                    <label for="title" class="form-label">Title</label>
-                                    <input type="text" id="title" name="title" class="form-control"
-                                        placeholder="Type your title" required>
-                                </div>
-
-                                <!-- Content -->
-                                <div class="mb-1">
-                                    <label for="content" class="form-label">Content</label>
-                                    <textarea id="content" name="content" class="form-control" rows="6"
-                                        placeholder="What's on your mind?" required></textarea>
-                                </div>
-
-                                <!-- Image Upload -->
-                                <div class="mb-1">
-                                    <label class="form-label">Image (Optional)</label>
-                                    <div class="image-upload-area" id="imageUploadArea">
-                                        <i class="bi bi-cloud-upload fs-1 text-muted"></i>
-                                        <div class="mt-1">
-                                            <strong>Click to upload</strong> or drag and drop
-                                        </div>
-                                        <div class="image-upload-info">
-                                            JPEG, PNG, GIF up to 20MB
+                <div class="col-12 col-lg-8 col-xl-6">
+                    <div class="form-card p-4">
+                        <h2 class="mb-4 text-center">Create New Post</h2>
+    
+                        <form id="postForm" method="POST" enctype="multipart/form-data">
+                            <!-- Categories Selection -->
+                            <div class="mb-3">
+                                <label class="form-label">Choose Categories</label>
+                                <div class="category-selection">
+                                    <div class="category-bubbles" id="categoryBubbles">
+                                        <!-- Categories will be loaded here -->
+                                        <div class="text-center w-100">
+                                            <div class="spinner-border spinner-border-sm text-light" role="status">
+                                                <span class="visually-hidden">Loading categories...</span>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <!-- Hidden File Input -->
-                                    <input type="file" id="imageInput" name="image"
-                                        accept="image/jpeg,image/png,image/gif" style="display: none;">
-
-                                    <!-- Image Preview -->
-                                    <div id="imagePreview" style="display: none;">
-                                        <img id="previewImg" class="image-preview" alt="Preview">
-                                        <div class="d-flex justify-content-between align-items-center mt-2">
-                                            <span id="imageInfo" class="image-upload-info"></span>
-                                            <button type="button" id="removeImage"
-                                                class="btn btn-outline-danger btn-sm">
-                                                <i class="bi bi-x"></i> Remove
-                                            </button>
+    
+                                    <div class="selected-categories" id="selectedCategories">
+                                        <!-- Selected categories will appear here -->
+                                    </div>
+    
+                                    <div class="category-help-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Click on categories to select them. You can choose multiple categories for your
+                                        post.
+                                    </div>
+                                </div>
+    
+                                <!-- Hidden inputs for selected categories -->
+                                <div id="categoryInputs"></div>
+                            </div>
+    
+                            <!-- Title -->
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" id="title" name="title" class="form-control"
+                                    placeholder="What's your post about?" required>
+                            </div>
+    
+                            <!-- Content -->
+                            <div class="mb-3">
+                                <label for="content" class="form-label">Content</label>
+                                <textarea id="content" name="content" class="form-control" rows="6"
+                                    placeholder="Share your thoughts, tips, or questions..." required></textarea>
+                            </div>
+    
+                            <!-- Image Upload -->
+                            <div class="mb-3">
+                                <label class="form-label">Image (Optional)</label>
+                                <div class="image-upload-area" id="imageUploadArea">
+                                    <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                                    <div class="mt-2">
+                                        <strong>Click to upload</strong> or drag and drop
+                                    </div>
+                                    <div class="image-upload-info">
+                                        JPEG, PNG, GIF up to 20MB
+                                    </div>
+                                </div>
+    
+                                <!-- Hidden File Input -->
+                                <input type="file" id="imageInput" name="image" accept="image/jpeg,image/png,image/gif"
+                                    style="display: none;">
+    
+                                <!-- Image Preview -->
+                                <div id="imagePreview" style="display: none;">
+                                    <img id="previewImg" class="image-preview" alt="Preview">
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <span id="imageInfo" class="image-upload-info"></span>
+                                        <button type="button" id="removeImage" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-x"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+    
+                                <!-- Upload Progress -->
+                                <div id="uploadProgress" class="upload-progress" style="display: none;">
+                                    <div class="progress">
+                                        <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%">
                                         </div>
                                     </div>
-
-                                    <!-- Upload Progress -->
-                                    <div id="uploadProgress" class="upload-progress" style="display: none;">
-                                        <div class="progress">
-                                            <div id="progressBar" class="progress-bar" role="progressbar"
-                                                style="width: 0%"></div>
-                                        </div>
-                                        <small class="text-muted">Uploading image...</small>
-                                    </div>
-
-                                    <!-- Hidden field to store uploaded image ID -->
-                                    <input type="hidden" id="imageId" name="image_id" value="">
+                                    <small class="text-muted">Uploading image...</small>
                                 </div>
-
-                                <!-- Submit Buttons -->
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <button type="button" class="btn btn-outline-light" onclick="history.back()">
-                                        <i class="bi bi-arrow-left me-1"></i>Cancel
-                                    </button>
-                                    <button type="submit" class="btn btn-outline-light" disabled id="btn-publish">
-                                        <i class="bi bi-send-fill me-1"></i>Publish
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+    
+                                <!-- Hidden field to store uploaded image ID -->
+                                <input type="hidden" id="imageId" name="image_id" value="">
+                            </div>
+    
+                            <!-- Submit Buttons -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="button" class="btn btn-outline-light" onclick="history.back()">
+                                    <i class="bi bi-arrow-left me-1"></i>Cancel
+                                </button>
+                                <button type="submit" class="btn btn-outline-light" disabled id="btnPublish">
+                                    <i class="bi bi-send-fill me-1"></i>Publish Post
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -139,33 +156,125 @@
 
     <!-- Image Upload Script -->
     <script>
+        let selectedCategories = new Set();
+        let allCategories = [];
         let uploadedImageId = null;
 
         // Load categories from API
         async function loadCategories() {
             try {
                 const response = await fetch('/api/categories');
-                const categories = await response.json();
-                const select = document.getElementById('categories');
-
-                categories.forEach(category => {
-                    const option = document.createElement('option');
-                    option.value = category.name;
-                    option.textContent = category.name;
-                    select.appendChild(option);
-                });
+                allCategories = await response.json();
+                renderCategoryBubbles();
             } catch (error) {
                 console.error('Failed to load categories:', error);
+                document.getElementById('categoryBubbles').innerHTML =
+                    '<div class="text-danger">Failed to load categories</div>';
             }
         }
 
-        // Form validation
-        const form = document.getElementById('postForm');
-        const btn = document.getElementById('btn-publish');
 
-        form.addEventListener('input', () => {
-            btn.disabled = !form.checkValidity();
-        });
+        // Render category bubbles
+        function renderCategoryBubbles() {
+            const container = document.getElementById('categoryBubbles');
+            container.innerHTML = '';
+
+            allCategories.forEach(category => {
+                const bubble = document.createElement('div');
+                bubble.className = 'category-bubble';
+                bubble.dataset.categoryName = category.name;
+                bubble.innerHTML = `
+                    <span>${category.name}</span>
+                    <i class="bi bi-plus-circle" data-action="add"></i>
+                `;
+                
+                bubble.addEventListener('click', () => toggleCategory(category.name));
+                container.appendChild(bubble);
+            });
+        }
+
+        // Toggle category selection
+        function toggleCategory(categoryName) {
+            if (selectedCategories.has(categoryName)) {
+                selectedCategories.delete(categoryName);
+            } else {
+                selectedCategories.add(categoryName);
+            }
+            
+            updateCategoryDisplay();
+            updateCategoryInputs();
+            validateForm();
+        }
+
+        // Update visual display of categories
+        function updateCategoryDisplay() {
+            // Update bubbles
+            document.querySelectorAll('.category-bubble').forEach(bubble => {
+                const categoryName = bubble.dataset.categoryName;
+                const icon = bubble.querySelector('i');
+                
+                if (selectedCategories.has(categoryName)) {
+                    bubble.classList.add('selected');
+                    icon.className = 'bi bi-check-circle';
+                    icon.dataset.action = 'remove';
+                } else {
+                    bubble.classList.remove('selected');
+                    icon.className = 'bi bi-plus-circle';
+                    icon.dataset.action = 'add';
+                }
+            });
+
+            // Update selected categories display
+            const selectedContainer = document.getElementById('selectedCategories');
+            selectedContainer.innerHTML = '';
+
+            if (selectedCategories.size === 0) {
+                selectedContainer.innerHTML = '<div class="category-help-text">No categories selected</div>';
+                return;
+            }
+
+            selectedCategories.forEach(categoryName => {
+                const tag = document.createElement('div');
+                tag.className = 'selected-category-tag';
+                tag.innerHTML = `
+                    <span>#${categoryName}</span>
+                    <i class="bi bi-x remove-btn" onclick="removeCategory('${categoryName}')"></i>
+                `;
+                selectedContainer.appendChild(tag);
+            });
+        }
+
+        // Remove category from selection
+        function removeCategory(categoryName) {
+            selectedCategories.delete(categoryName);
+            updateCategoryDisplay();
+            updateCategoryInputs();
+            validateForm();
+        }
+
+        // Update hidden form inputs for categories
+        function updateCategoryInputs() {
+            const container = document.getElementById('categoryInputs');
+            container.innerHTML = '';
+
+            selectedCategories.forEach(categoryName => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'categories[]';
+                input.value = categoryName;
+                container.appendChild(input);
+            });
+        }
+
+        // Form validation
+        function validateForm() {
+            const title = document.getElementById('title').value.trim();
+            const content = document.getElementById('content').value.trim();
+            const hasCategories = selectedCategories.size > 0;
+            
+            const publishBtn = document.getElementById('btnPublish');
+            publishBtn.disabled = !(title && content && hasCategories);
+        }
 
         // Image upload functionality
         const imageUploadArea = document.getElementById('imageUploadArea');
@@ -353,8 +462,29 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // Load categories when page loads
-        document.addEventListener('DOMContentLoaded', loadCategories);
+        // Form submission
+            document.getElementById('postForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (selectedCategories.size === 0) {
+                    alert('Please select at least one category.');
+                    return;
+                }
+
+                // Submit the form
+                e.target.action = '/new-post';
+                e.target.submit();
+            });
+
+            // Event listeners for form validation
+            document.getElementById('title').addEventListener('input', validateForm);
+            document.getElementById('content').addEventListener('input', validateForm);
+
+            // Initialize page
+            document.addEventListener('DOMContentLoaded', () => {
+                loadCategories();
+                validateForm();
+            });
     </script>
 
 </body>
