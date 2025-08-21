@@ -247,6 +247,11 @@ func insertDefaultCategories(db *sql.DB) {
 		}
 	}
 }
+func setupEditDeleteRoutes() {
+    wrapHandler("/api/posts/edit", handlers.EditPostHandler)
+    wrapHandler("/api/posts/delete", handlers.DeletePostHandler)
+    wrapHandler("/api/comments/edit", handlers.EditCommentHandler)
+}
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the session cookie

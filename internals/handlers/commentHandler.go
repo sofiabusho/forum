@@ -119,8 +119,9 @@ func CommentsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var c database.CommentResponse
 		var creationDate time.Time
+		var commentAuthorID int
 
-		err := rows.Scan(&c.ID, &c.PostID, &c.Content, &creationDate, &c.Author)
+		err := rows.Scan(&c.ID, &c.PostID, &c.Content, &creationDate, &commentAuthorID, &c.Author)
 		if err != nil {
 			continue
 		}
@@ -133,12 +134,16 @@ func CommentsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		c.DislikeCount = likeStats.DislikeCount
 		c.UserVote = likeStats.UserVote
 
+		// Check if current user is the comment author
+        c.IsAuthor = currentUserID > 0 && currentUserID == commentAuthorID
+
 		comments = append(comments, c)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(comments)
 }
+
 
 // DeleteCommentHandler handles comment deletion (for comment author or admin)
 func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {

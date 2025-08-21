@@ -314,15 +314,24 @@ func EditPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Verify ownership again
-		cookie, _ := r.Cookie("session")
+		cookie, err := r.Cookie("session")
+		if err != nil || !utils.IsValidSession(cookie.Value) {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
 		userID := utils.GetUserIDFromSession(cookie.Value)
 
 		db := database.CreateTable()
 		defer db.Close()
 
 		var authorID int
-		err := db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&authorID)
+		err = db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&authorID)
 		if err != nil || authorID != userID {
+			http.Error(w, "Unauthorized", http.StatusForbidden)
+			return
+		}
+
+		if authorID != userID {
 			http.Error(w, "Unauthorized", http.StatusForbidden)
 			return
 		}
@@ -334,7 +343,15 @@ func EditPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		http.Redirect(w, r, fmt.Sprintf("/view-post?id=%s", postID), http.StatusSeeOther)
+		// Check if this is an API call (JSON response expected)
+		if r.Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
+			// Return JSON response for API calls
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]bool{"success": true})
+		} else {
+			// Redirect for form submissions
+			http.Redirect(w, r, fmt.Sprintf("/view-post?id=%s", postID), http.StatusSeeOther)
+		}
 	}
 }
 
@@ -491,10 +508,11 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 	var creationDate time.Time
 	var imageURL, thumbnailURL *string
 	var dislikeCount int
+	var postAuthorID int
 
 	err = db.QueryRow(query, postID).Scan(
 		&post.ID, &post.Title, &post.Content, &post.Author,
-		&creationDate, &post.Comments, &post.Likes, &dislikeCount,
+		&creationDate, &postAuthorID, &post.Comments, &post.Likes, &dislikeCount,
 		&imageURL, &thumbnailURL,
 	)
 
@@ -529,6 +547,9 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Check if current user is the author
+	isAuthor := currentUserID > 0 && currentUserID == postAuthorID
+
 	response := map[string]interface{}{
 		"id":           post.ID,
 		"title":        post.Title,
@@ -542,6 +563,7 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 		"imageUrl":     post.ImageURL,
 		"thumbnailUrl": post.ThumbnailURL,
 		"userVote":     userVote,
+		"isAuthor":     isAuthor,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
