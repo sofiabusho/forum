@@ -78,8 +78,10 @@ CREATE TABLE IF NOT EXISTS Notifications (
 );
 
 SELECT notification_id, user_id, type, title, is_read FROM Notifications;
+SELECT post_id, title, user_id FROM Posts LIMIT 5;
+SELECT comment_id, post_id, user_id, content FROM Comments LIMIT 5;
 
--- Images Table: stores uploaded image information
+-- Images Table: stores uploaded image informationf
 CREATE TABLE IF NOT EXISTS Images (
     image_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,

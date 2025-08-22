@@ -102,7 +102,7 @@ func CommentsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	query := `
-		SELECT c.comment_id, c.post_id, c.content, c.creation_date, u.username
+		SELECT c.comment_id, c.post_id, c.content, c.creation_date, u.username, c.user_id
 		FROM Comments c
 		JOIN Users u ON c.user_id = u.user_id
 		WHERE c.post_id = ?
@@ -121,7 +121,7 @@ func CommentsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		var creationDate time.Time
 		var commentAuthorID int
 
-		err := rows.Scan(&c.ID, &c.PostID, &c.Content, &creationDate, &commentAuthorID, &c.Author)
+		err := rows.Scan(&c.ID, &c.PostID, &c.Content, &creationDate, &c.Author, &commentAuthorID)
 		if err != nil {
 			continue
 		}
