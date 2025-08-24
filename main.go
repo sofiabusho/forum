@@ -28,6 +28,8 @@ func main() {
 	wrapHandler("/new-post", handlers.CreatePostHandler)
 	wrapHandler("/new-post.html", handlers.CreatePostHandler)
 	wrapHandler("/api/posts", handlers.PostsAPIHandler)
+	wrapHandler("/api/posts/edit", handlers.EditPostHandler)
+	wrapHandler("/api/posts/delete", handlers.DeletePostHandler)
 
 	// Single post view
 	wrapHandler("/view-post", func(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +43,7 @@ func main() {
 	// Comment routes
 	wrapHandler("/api/comments/create", handlers.CreateCommentHandler)
 	wrapHandler("/api/comments", handlers.CommentsAPIHandler)
+	wrapHandler("/api/comments/edit", handlers.EditCommentHandler)
 	wrapHandler("/api/comments/delete", handlers.DeleteCommentHandler)
 
 	// Like/Dislike routes
@@ -247,11 +250,7 @@ func insertDefaultCategories(db *sql.DB) {
 		}
 	}
 }
-func setupEditDeleteRoutes() {
-    wrapHandler("/api/posts/edit", handlers.EditPostHandler)
-    wrapHandler("/api/posts/delete", handlers.DeletePostHandler)
-    wrapHandler("/api/comments/edit", handlers.EditCommentHandler)
-}
+
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the session cookie
