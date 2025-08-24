@@ -104,12 +104,12 @@ func MarkNotificationReadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if isRead {
-		if _, err := db.Exec("UPDATE Notifications SET is_read = 1 WHERE notification_id = ?", notificationID); err != nil {
-			http.Error(w, "Failed to mark read", http.StatusInternalServerError)
-			return
-		}
-	}
+	if !isRead {
+        if _, err := db.Exec("UPDATE Notifications SET is_read = 1 WHERE notification_id = ?", notificationID); err != nil {
+            http.Error(w, "Failed to mark read", http.StatusInternalServerError)
+            return
+        }
+    }
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]bool{"success": true})
@@ -197,7 +197,7 @@ func CreateNotification(userID int, notificationType, title, message string, rel
 		return nil
 	}
 
-	_, err := execWithRetry(db,`
+	_, err := execWithRetry(db, `
 		INSERT INTO Notifications (user_id, type, title, message, related_post_id, related_comment_id, related_user_id)
 		VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		userID, notificationType, title, message, relatedPostID, relatedCommentID, relatedUserID)
@@ -264,14 +264,14 @@ func CreateCommentLikeNotification(commentID, likerID int, likerUsername, postTi
 func CreateFollowupCommentNotifications(postID, commentID, commenterID int, commenterUsername, postTitle string) {
 	db := database.CreateTable()
 	defer db.Close()
-	
+
 	// 1) Find the post author (they don't get notified here, they get separate notification)
 	var postAuthorID int
 	if err := db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&postAuthorID); err != nil {
 		fmt.Printf("[FollowupNotify] post=%d: cannot load postAuthorID: %v\n", postID, err)
 		return
 	}
-	
+
 	// 2) Find DISTINCT previous commenters on this post:
 	//    - Same post
 	//    - NOT the current commenter
@@ -289,18 +289,18 @@ func CreateFollowupCommentNotifications(postID, commentID, commenterID int, comm
 		return
 	}
 	defer rows.Close()
-	
+
 	title := "New activity on a post you commented"
 	msg := fmt.Sprintf("%s also commented on '%s'", commenterUsername, truncateText(postTitle, 50))
 	var count int
-	
+
 	for rows.Next() {
 		var watcherID int
 		if err := rows.Scan(&watcherID); err != nil {
 			fmt.Printf("[FollowupNotify] post=%d: scan watcher err: %v\n", postID, err)
 			continue
 		}
-		
+
 		// 3) Send notification to each watcher
 		//    related_post_id = postID
 		//    related_comment_id = the NEW comment (for anti-spam uniqueness)
@@ -323,7 +323,7 @@ func CreateFollowupCommentNotifications(postID, commentID, commenterID int, comm
 		fmt.Printf("[FollowupNotify] post=%d newComment=%d -> notify watcher=%d by=%d (OK)\n",
 			postID, commentID, watcherID, commenterID)
 	}
-	
+
 	if count == 0 {
 		fmt.Printf("[FollowupNotify] post=%d newComment=%d -> no previous commenters to notify\n", postID, commentID)
 	}
@@ -333,22 +333,21 @@ func CreateFollowupCommentNotifications(postID, commentID, commenterID int, comm
 func CreateDirectReplyNotification(parentCommentID, newCommentID, replierID int, replierUsername, postTitle string, postID int) {
 	db := database.CreateTable()
 	defer db.Close()
-	
+
 	var parentAuthorID int
 	if err := db.QueryRow("SELECT user_id FROM Comments WHERE comment_id = ?", parentCommentID).Scan(&parentAuthorID); err != nil {
 		return
 	}
-	
+
 	// Don't notify yourself
 	if parentAuthorID == replierID {
 		return
 	}
-	
+
 	title := "New reply to your comment"
 	message := fmt.Sprintf("%s replied to your comment on '%s'", replierUsername, truncateText(postTitle, 50))
 	_ = CreateNotification(parentAuthorID, "comment", title, message, &postID, &newCommentID, &replierID)
 }
-
 
 // Helper function to get notifications from database
 func getNotificationsWithPagination(db *sql.DB, userID int, isRead bool, page, limit int) []database.Notification {
@@ -456,7 +455,6 @@ func NotificationCountHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]int{"count": count})
 }
-
 
 // Delete old notifications older than 30 days
 func DeleteOldNotifications() {
