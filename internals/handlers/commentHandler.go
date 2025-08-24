@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"forum/internals/database"
 	"forum/internals/utils"
@@ -34,6 +35,11 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	postIDStr := r.FormValue("post_id")
 	content := strings.TrimSpace(r.FormValue("content"))
 
+	parentStr := r.FormValue("parent_comment_id")
+	if parentStr == "" {
+		parentStr = r.FormValue("parent_id")
+	}
+
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		http.Error(w, "Invalid post ID", http.StatusBadRequest)
@@ -43,6 +49,13 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	if content == "" {
 		http.Error(w, "Comment content cannot be empty", http.StatusBadRequest)
 		return
+	}
+
+	var parentCommentID *int
+	if parentStr != "" {
+		if pid, err := strconv.Atoi(parentStr); err == nil && pid > 0 {
+			parentCommentID = &pid
+		}
 	}
 
 	// Insert comment into database
@@ -64,19 +77,42 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var res sql.Result
+	if parentCommentID != nil {
+		// try with parent_comment_id
+		res, err = db.Exec("INSERT INTO Comments (post_id, user_id, content, parent_comment_id) VALUES (?, ?, ?, ?)",
+			postID, userID, content, *parentCommentID)
+		if err != nil {
+			// fallback χωρίς parent (σε περιπτώσεις που δεν υπάρχει η στήλη)
+			res, err = db.Exec("INSERT INTO Comments (post_id, user_id, content) VALUES (?, ?, ?)",
+				postID, userID, content)
+			if err != nil {
+				http.Error(w, "Failed to create comment", http.StatusInternalServerError)
+				return
+			}
+		}
+	} else {
+		res, err = db.Exec("INSERT INTO Comments (post_id, user_id, content) VALUES (?, ?, ?)",
+			postID, userID, content)
+		if err != nil {
+			http.Error(w, "Failed to create comment", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	lastID, _ := res.LastInsertId()
+	commentID := int(lastID)
+
 	// Create notification for the post author if the comment is not by the author
 	if postAuthorID != userID {
 		commenterUsername := utils.GetUsernameFromSession(cookie.Value)
-		CreateCommentNotification(postID, userID, commenterUsername, postTitle)
+		CreateCommentNotification(postID, commentID, userID, commenterUsername, postTitle)
 	}
 
 	// Return success response
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+	_ = json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }
-
-
-
 
 // CommentsAPIHandler returns comments for a specific post
 func CommentsAPIHandler(w http.ResponseWriter, r *http.Request) {
@@ -135,15 +171,14 @@ func CommentsAPIHandler(w http.ResponseWriter, r *http.Request) {
 		c.UserVote = likeStats.UserVote
 
 		// Check if current user is the comment author
-        c.IsAuthor = currentUserID > 0 && currentUserID == commentAuthorID
+		c.IsAuthor = currentUserID > 0 && currentUserID == commentAuthorID
 
 		comments = append(comments, c)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(comments)
+	_ = json.NewEncoder(w).Encode(comments)
 }
-
 
 // DeleteCommentHandler handles comment deletion (for comment author or admin)
 func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
@@ -199,5 +234,5 @@ func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+	_ = json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }

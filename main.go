@@ -220,6 +220,13 @@ func initializeDatabase() {
 		return
 	}
 
+	// Makes reads/writes not block each other
+	db.Exec("PRAGMA journal_mode=WAL;")
+	// Waits a bit before returning 'database is locked
+	db.Exec("PRAGMA busy_timeout=5000;")
+	// Good balance of performance/safety for WAL
+	db.Exec("PRAGMA synchronous=NORMAL;")
+
 	// Execute SQL commands
 	_, err = db.Exec(string(sqlContent))
 	if err != nil {

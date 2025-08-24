@@ -3,11 +3,14 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"forum/internals/database"
 	"forum/internals/utils"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 )
 
 // NotificationsAPIHandler returns real user notifications from database
@@ -41,13 +44,16 @@ func NotificationsAPIHandler(w http.ResponseWriter, r *http.Request) {
 	// Get read notifications
 	readNotifications := getNotificationsWithPagination(db, userID, true, page, limit)
 
-	response := database.NotificationResponse{
-		Unread: unreadNotifications,
-		Read:   readNotifications,
+	if unreadNotifications == nil {
+		unreadNotifications = make([]database.Notification, 0)
+	}
+	if readNotifications == nil {
+		readNotifications = make([]database.Notification, 0)
 	}
 
+	response := database.NotificationResponse{Unread: unreadNotifications, Read: readNotifications}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 // MarkNotificationReadHandler marks a notification as read
@@ -99,17 +105,10 @@ func MarkNotificationReadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isRead {
-		// Already read, just return success
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]bool{"success": true})
-		return
-	}
-
-	// Mark as read
-	_, err = db.Exec("UPDATE Notifications SET is_read = 1 WHERE notification_id = ?", notificationID)
-	if err != nil {
-		http.Error(w, "Failed to mark notification as read", http.StatusInternalServerError)
-		return
+		if _, err := db.Exec("UPDATE Notifications SET is_read = 1 WHERE notification_id = ?", notificationID); err != nil {
+			http.Error(w, "Failed to mark read", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -136,43 +135,49 @@ func MarkAllNotificationsReadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notificationIDStr := r.FormValue("notification_id")
-	notificationID, err := strconv.Atoi(notificationIDStr)
-	if err != nil {
-		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
-		return
-	}
-
 	db := database.CreateTable()
 	defer db.Close()
 
-	// Get count of unread notifications before marking as read
-	var existingUserID int
-	var isRead bool
-	err = db.QueryRow("SELECT user_id, is_read FROM Notifications WHERE notification_id = ?", notificationID).Scan(&existingUserID, &isRead)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "Notification not found", http.StatusNotFound)
-		} else {
-			http.Error(w, "Database error", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	if existingUserID != userID {
-		http.Error(w, "Unauthorized to modify this notification", http.StatusForbidden)
-		return
-	}
-
-	// Mark all notifications as read for this user
-	_, err = db.Exec("UPDATE Notifications SET is_read = 1 WHERE notification_id = ?", notificationID)
-	if err != nil {
-		http.Error(w, "Failed to mark notification as read", http.StatusInternalServerError)
+	if _, err := db.Exec("UPDATE Notifications SET is_read = 1 WHERE user_id = ? AND (is_read = 0 OR is_read IS NULL)", userID); err != nil {
+		http.Error(w, "Failed to mark all as read", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+	_ = json.NewEncoder(w).Encode(map[string]bool{"success": true})
+}
+
+func setBusyTimeout(db *sql.DB) {
+	_, _ = db.Exec("PRAGMA busy_timeout=5000;")
+}
+
+func execWithRetry(db *sql.DB, query string, args ...any) (sql.Result, error) {
+	var lastErr error
+	for i := 0; i < 5; i++ {
+		res, err := db.Exec(query, args...)
+		if err == nil {
+			return res, nil
+		}
+		msg := err.Error()
+		if strings.Contains(msg, "database is locked") || strings.Contains(msg, "busy") {
+			// exponential-ish backoff: 100ms, 200ms, 400ms, 800ms, 1200ms
+			time.Sleep(time.Duration(100*(1<<min(i, 3))) * time.Millisecond)
+			lastErr = err
+			continue
+		}
+		return nil, err
+	}
+	if lastErr == nil {
+		lastErr = errors.New("execWithRetry: unknown error")
+	}
+	return nil, lastErr
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // CreateNotification creates a new notification for a user
@@ -185,34 +190,37 @@ func CreateNotification(userID int, notificationType, title, message string, rel
 	db := database.CreateTable()
 	defer db.Close()
 
+	setBusyTimeout(db)
+
 	//Check if notification already exists
 	if skipDuplicateNotification(db, userID, notificationType, relatedPostID, relatedCommentID, relatedUserID) {
-
+		return nil
 	}
 
-	_, err := db.Exec(`
+	_, err := execWithRetry(db,`
 		INSERT INTO Notifications (user_id, type, title, message, related_post_id, related_comment_id, related_user_id)
 		VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		userID, notificationType, title, message, relatedPostID, relatedCommentID, relatedUserID)
-
 	return err
 }
 
-func CreateCommentNotification(postID int, commenterID int, commenterUsername string, postTitle string) {
+func CreateCommentNotification(postID int, commentID int, commenterID int, commenterUsername string, postTitle string) {
 	db := database.CreateTable()
 	defer db.Close()
 
 	//Get the author of the post
 	var postAuthorID int
-	err := db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&postAuthorID)
-	if err != nil || postAuthorID == commenterID {
-		return // Do not notify the commenter about their own comment
+	if err := db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&postAuthorID); err != nil {
+		return
+	}
+	if postAuthorID == commenterID {
+		return
 	}
 
 	title := "New Comment!"
 	message := fmt.Sprintf("%s commented on your post '%s'", commenterUsername, truncateText(postTitle, 50))
 
-	CreateNotification(postAuthorID, "comment", title, message, &postID, nil, &commenterID)
+	_ = CreateNotification(postAuthorID, "comment", title, message, &postID, &commentID, &commenterID)
 }
 
 func CreateLikeNotification(postID int, likerID int, likerUsername string, postTitle string) {
@@ -221,39 +229,169 @@ func CreateLikeNotification(postID int, likerID int, likerUsername string, postT
 
 	// Get the author of the post
 	var postAuthorID int
-	err := db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&postAuthorID)
-	if err != nil || postAuthorID == likerID {
-		return // Do not notify the liker about their own like
+	if err := db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&postAuthorID); err != nil {
+		return
+	}
+	if postAuthorID == likerID {
+		return
 	}
 
 	title := "New Like!"
 	message := fmt.Sprintf("%s liked your post '%s'", likerUsername, truncateText(postTitle, 50))
 
-	CreateNotification(postAuthorID, "like", title, message, &postID, nil, &likerID)
+	_ = CreateNotification(postAuthorID, "like", title, message, &postID, nil, &likerID)
 }
+
+func CreateCommentLikeNotification(commentID, likerID int, likerUsername, postTitle string, postID int) {
+	db := database.CreateTable()
+	defer db.Close()
+
+	var commentAuthorID int
+	if err := db.QueryRow("SELECT user_id FROM Comments WHERE comment_id = ?", commentID).Scan(&commentAuthorID); err != nil {
+		return
+	}
+	if commentAuthorID == likerID {
+		return
+	}
+
+	title := "Your comment got a like!"
+	message := fmt.Sprintf("%s liked your comment on '%s'", likerUsername, truncateText(postTitle, 50))
+	_ = CreateNotification(commentAuthorID, "like", title, message, &postID, &commentID, &likerID)
+}
+
+// CreateFollowupCommentNotifications notifies ALL previous commenters on a post (except author & current commenter)
+// This implements "watching" functionality - once you comment on a post, you follow that discussion
+func CreateFollowupCommentNotifications(postID, commentID, commenterID int, commenterUsername, postTitle string) {
+	db := database.CreateTable()
+	defer db.Close()
+	
+	// 1) Find the post author (they don't get notified here, they get separate notification)
+	var postAuthorID int
+	if err := db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&postAuthorID); err != nil {
+		fmt.Printf("[FollowupNotify] post=%d: cannot load postAuthorID: %v\n", postID, err)
+		return
+	}
+	
+	// 2) Find DISTINCT previous commenters on this post:
+	//    - Same post
+	//    - NOT the current commenter
+	//    - NOT the post author
+	//    DISTINCT ensures 1 notification per user even if they have multiple comments
+	rows, err := db.Query(`
+		SELECT DISTINCT c.user_id
+		FROM Comments AS c
+		WHERE c.post_id = ?
+		  AND c.user_id != ?
+		  AND c.user_id != ?
+	`, postID, commenterID, postAuthorID)
+	if err != nil {
+		fmt.Printf("[FollowupNotify] post=%d: query watchers failed: %v\n", postID, err)
+		return
+	}
+	defer rows.Close()
+	
+	title := "New activity on a post you commented"
+	msg := fmt.Sprintf("%s also commented on '%s'", commenterUsername, truncateText(postTitle, 50))
+	var count int
+	
+	for rows.Next() {
+		var watcherID int
+		if err := rows.Scan(&watcherID); err != nil {
+			fmt.Printf("[FollowupNotify] post=%d: scan watcher err: %v\n", postID, err)
+			continue
+		}
+		
+		// 3) Send notification to each watcher
+		//    related_post_id = postID
+		//    related_comment_id = the NEW comment (for anti-spam uniqueness)
+		//    related_user_id = commenterID (who made the new comment)
+		err := CreateNotification(
+			watcherID,
+			"comment",
+			title,
+			msg,
+			&postID,
+			&commentID,
+			&commenterID,
+		)
+		if err != nil {
+			fmt.Printf("[FollowupNotify] post=%d newComment=%d -> watcher=%d ERROR sending: %v\n",
+				postID, commentID, watcherID, err)
+			continue
+		}
+		count++
+		fmt.Printf("[FollowupNotify] post=%d newComment=%d -> notify watcher=%d by=%d (OK)\n",
+			postID, commentID, watcherID, commenterID)
+	}
+	
+	if count == 0 {
+		fmt.Printf("[FollowupNotify] post=%d newComment=%d -> no previous commenters to notify\n", postID, commentID)
+	}
+}
+
+// CreateDirectReplyNotification notifies the author of a parent comment when someone replies directly to them
+func CreateDirectReplyNotification(parentCommentID, newCommentID, replierID int, replierUsername, postTitle string, postID int) {
+	db := database.CreateTable()
+	defer db.Close()
+	
+	var parentAuthorID int
+	if err := db.QueryRow("SELECT user_id FROM Comments WHERE comment_id = ?", parentCommentID).Scan(&parentAuthorID); err != nil {
+		return
+	}
+	
+	// Don't notify yourself
+	if parentAuthorID == replierID {
+		return
+	}
+	
+	title := "New reply to your comment"
+	message := fmt.Sprintf("%s replied to your comment on '%s'", replierUsername, truncateText(postTitle, 50))
+	_ = CreateNotification(parentAuthorID, "comment", title, message, &postID, &newCommentID, &replierID)
+}
+
 
 // Helper function to get notifications from database
 func getNotificationsWithPagination(db *sql.DB, userID int, isRead bool, page, limit int) []database.Notification {
-	var notifications []database.Notification
+	list := make([]database.Notification, 0, limit)
 
-	query := `
-		SELECT notification_id, user_id, type, title, message, 
-		       related_post_id, related_comment_id, related_user_id, 
-		       is_read, creation_date
-		FROM Notifications 
-		WHERE user_id = ? AND is_read = ?
-		ORDER BY creation_date DESC
-		LIMIT ?`
+	offset := (page - 1) * limit
+	if offset < 0 {
+		offset = 0
+	}
 
-	rows, err := db.Query(query, userID, isRead, limit)
+	var rows *sql.Rows
+	var err error
+
+	if isRead {
+		rows, err = db.Query(`
+            SELECT notification_id, user_id, type, title, message,
+                   related_post_id, related_comment_id, related_user_id,
+                   COALESCE(is_read, 0) AS is_read, creation_date
+            FROM Notifications
+            WHERE user_id = ? AND is_read = 1
+            ORDER BY creation_date DESC
+            LIMIT ? OFFSET ?`,
+			userID, limit, offset)
+	} else {
+		rows, err = db.Query(`
+            SELECT notification_id, user_id, type, title, message,
+                   related_post_id, related_comment_id, related_user_id,
+                   COALESCE(is_read, 0) AS is_read, creation_date
+            FROM Notifications
+            WHERE user_id = ? AND (is_read = 0 OR is_read IS NULL)
+            ORDER BY creation_date DESC
+            LIMIT ? OFFSET ?`,
+			userID, limit, offset)
+	}
+
 	if err != nil {
-		return notifications
+		return list
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var n database.Notification
-		err := rows.Scan(
+		if err := rows.Scan(
 			&n.NotificationID,
 			&n.UserID,
 			&n.Type,
@@ -264,17 +402,13 @@ func getNotificationsWithPagination(db *sql.DB, userID int, isRead bool, page, l
 			&n.RelatedUserID,
 			&n.IsRead,
 			&n.CreationDate,
-		)
-		if err != nil {
+		); err != nil {
 			continue
 		}
-
-		// Format time ago
-		n.TimeAgo = formatTimeAgo(n.CreationDate)
-		notifications = append(notifications, n)
+		n.TimeAgo = utils.FormatTimeAgo(n.CreationDate)
+		list = append(list, n)
 	}
-
-	return notifications
+	return list
 }
 
 func skipDuplicateNotification(db *sql.DB, userID int, notificationType string, relatedPostID, relatedCommentID, relatedUserID *int) bool {
@@ -312,7 +446,7 @@ func NotificationCountHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session")
 	if err != nil || !utils.IsValidSession(cookie.Value) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]int{"count": 0})
+		_ = json.NewEncoder(w).Encode(map[string]int{"count": 0})
 		return
 	}
 
@@ -320,8 +454,9 @@ func NotificationCountHandler(w http.ResponseWriter, r *http.Request) {
 	count := GetUnreadNotificationCount(userID)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]int{"count": count})
+	_ = json.NewEncoder(w).Encode(map[string]int{"count": count})
 }
+
 
 // Delete old notifications older than 30 days
 func DeleteOldNotifications() {

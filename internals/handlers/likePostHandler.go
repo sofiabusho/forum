@@ -94,7 +94,6 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-
 // LikeCommentHandler handles liking/disliking comments
 func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -138,6 +137,8 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	var existingVote int
 	err = db.QueryRow("SELECT vote FROM CommentLikes WHERE comment_id = ? AND user_id = ?", commentID, userID).Scan(&existingVote)
 
+	isNewLike := false
+
 	if err == nil {
 		// User already voted
 		if existingVote == vote {
@@ -150,6 +151,19 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// No existing vote - create new one
 		db.Exec("INSERT INTO CommentLikes (comment_id, user_id, vote) VALUES (?, ?, ?)", commentID, userID, vote)
+	}
+
+	// Create notification for NEW like on a comment
+	if isNewLike {
+		// get post_id from comment
+		var postID int
+		if err := db.QueryRow("SELECT post_id FROM Comments WHERE comment_id = ?", commentID).Scan(&postID); err == nil {
+			var postTitle string
+			_ = db.QueryRow("SELECT title FROM Posts WHERE post_id = ?", postID).Scan(&postTitle)
+
+			likerUsername := utils.GetUsernameFromSession(cookie.Value)
+			CreateCommentLikeNotification(commentID, userID, likerUsername, postTitle, postID)
+		}
 	}
 
 	// Get updated counts
