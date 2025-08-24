@@ -7,6 +7,37 @@
     z-index:1000;
 }
 
+#header-profile-image {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 0 !important;
+        /* Remove Bootstrap img-thumbnail padding */
+        background: transparent !important;
+        /* Remove Bootstrap img-thumbnail background */
+    transition: border-color 0.2s ease;
+}
+
+#header-profile-image:hover {
+    border-color: rgba(109, 214, 40, 0.8);
+}
+
+/* Profile page image */
+.profile-box img {
+    width: 150px !important;
+    height: 150px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    transition: border-color 0.2s ease;
+}
+
+.profile-box img:hover {
+    border-color: rgba(109, 214, 40, 0.8);
+}
+
 .logo-text {
     font-family: 'BebasNeue-Regular', sans-serif;
     color: rgb(109, 214, 40);
