@@ -246,14 +246,20 @@
     }
 
     // Handle notification click (navigate to related content)
-    function handleNotificationClick(notificationId, postId) {
-        if (postId) {
-            // Mark as read when clicking
-            markAsRead(notificationId);
-            // Navigate to post
-            window.location.href = `/view-post?id=${postId}`;
+    async function handleNotificationClick(notificationId, postId) {
+            if (postId) {
+                try {
+                    // Mark as read when clicking and wait for completion
+                    await markAsRead(notificationId);
+                    // Navigate to post after marking as read
+                    window.location.href = `/view-post?id=${postId}`;
+                } catch (error) {
+                    console.error('Error marking notification as read:', error);
+                    // Navigate anyway, even if mark-as-read failed
+                    window.location.href = `/view-post?id=${postId}`;
+                }
+            }
         }
-    }
 
     // Mark a single notification as read
     async function markAsRead(notificationId, event) {

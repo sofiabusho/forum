@@ -71,33 +71,19 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO Comments (post_id, user_id, content) VALUES (?, ?, ?)", postID, userID, content)
-	if err != nil {
-		http.Error(w, "Failed to create comment", http.StatusInternalServerError)
-		return
-	}
-
+	// Single comment insertion based on whether it has a parent
 	var res sql.Result
 	if parentCommentID != nil {
-		// try with parent_comment_id
 		res, err = db.Exec("INSERT INTO Comments (post_id, user_id, content, parent_comment_id) VALUES (?, ?, ?, ?)",
 			postID, userID, content, *parentCommentID)
-		if err != nil {
-			// fallback χωρίς parent (σε περιπτώσεις που δεν υπάρχει η στήλη)
-			res, err = db.Exec("INSERT INTO Comments (post_id, user_id, content) VALUES (?, ?, ?)",
-				postID, userID, content)
-			if err != nil {
-				http.Error(w, "Failed to create comment", http.StatusInternalServerError)
-				return
-			}
-		}
 	} else {
 		res, err = db.Exec("INSERT INTO Comments (post_id, user_id, content) VALUES (?, ?, ?)",
 			postID, userID, content)
-		if err != nil {
-			http.Error(w, "Failed to create comment", http.StatusInternalServerError)
-			return
-		}
+	}
+
+	if err != nil {
+		http.Error(w, "Failed to create comment", http.StatusInternalServerError)
+		return
 	}
 
 	lastID, _ := res.LastInsertId()
