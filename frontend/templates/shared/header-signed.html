@@ -26,8 +26,8 @@
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle p-0" id="profileMenu"
                     data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="/frontend/css/images/avatar.png" alt="Profile" width="32" height="32"
-                        class="rounded-circle img-thumbnail">
+                    <img id="header-profile-image" src="/frontend/css/images/avatar.png" alt="Profile" width="32" height="32"
+                        class="rounded-circle img-thumbnail" style="object-fit: cover;">
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
                     <li><a class="dropdown-item" href="/profile">Profile</a></li>
@@ -43,27 +43,71 @@
 
 <script>
     // Simple red dot notification system
-    function updateNotificationDot() {
-        fetch('/api/notifications/count')
-            .then(response => response.json())
-            .then(data => {
-                const dot = document.getElementById('notification-dot');
-                if (dot) {
-                    dot.style.display = data.count > 0 ? 'block' : 'none';
-                    console.log('Red dot:', data.count > 0 ? 'visible' : 'hidden', '(count:', data.count + ')');
-                }
-            })
-            .catch(error => console.error('Notification dot error:', error));
-    }
+    (function () {
+            console.log('📋 Header script executing...');
 
-    // Initialize when DOM loads
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(updateNotificationDot, 500);
-    });
+            // Simple red dot notification system
+            window.updateNotificationDot = function () {
+                console.log('🔔 updateNotificationDot called');
+                fetch('/api/notifications/count')
+                    .then(response => {
+                        console.log('🔔 Notification count response:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('🔔 Notification count data:', data);
+                        const dot = document.getElementById('notification-dot');
+                        if (dot) {
+                            dot.style.display = data.count > 0 ? 'block' : 'none';
+                            console.log('🔔 Red dot:', data.count > 0 ? 'visible' : 'hidden', '(count:', data.count + ')');
+                        } else {
+                            console.error('🔔 notification-dot element not found');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('🔔 Notification dot error:', error);
+                    });
+            };
 
-    // Auto-refresh every 30 seconds
-    setInterval(updateNotificationDot, 30000);
+            // Load user profile image for header
+            window.loadHeaderProfileImage = function () {
+                console.log('👤 loadHeaderProfileImage called');
+                fetch('/api/user/profile')
+                    .then(response => {
+                        console.log('👤 Profile response:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('👤 Profile data:', data);
+                        const headerImg = document.getElementById('header-profile-image');
+                        if (headerImg) {
+                            if (data.profileImage && data.profileImage.trim() !== '') {
+                                console.log('👤 Setting header image to:', data.profileImage);
+                                headerImg.src = data.profileImage;
+                                headerImg.onerror = function () {
+                                    console.log('👤 Profile image failed to load, using default avatar');
+                                    this.src = '/frontend/css/images/avatar.png';
+                                };
+                            } else {
+                                console.log('👤 No profile image found, using default avatar');
+                            }
+                        } else {
+                            console.error('👤 header-profile-image element not found');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('👤 Error loading header profile image:', error);
+                    });
+            };
 
-    // Expose globally
-    window.updateNotificationDot = updateNotificationDot;
+            console.log('📋 Header functions exported to window object');
+            console.log('📋 updateNotificationDot available:', typeof window.updateNotificationDot);
+            console.log('📋 loadHeaderProfileImage available:', typeof window.loadHeaderProfileImage);
+        })();
 </script>

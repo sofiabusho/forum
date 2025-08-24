@@ -39,7 +39,7 @@
 
 <!-- Load shared partials -->
 <script>
-    fetch('/frontend/templates/shared/header.html')
+    fetch('/frontend/templates/shared/header-error.html')
         .then(r => r.text())
         .then(html => document.getElementById('shared-header').innerHTML = html)
         .catch(err => {
