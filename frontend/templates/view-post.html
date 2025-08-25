@@ -198,11 +198,39 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Categories Selection -->
+                    <div class="mb-3">
+                        <label class="form-label text-white">Choose Categories</label>
+                        <div class="category-selection">
+                            <div class="category-bubbles" id="editCategoryBubbles">
+                                <!-- Categories will be loaded here -->
+                                <div class="text-center w-100">
+                                    <div class="spinner-border spinner-border-sm text-light" role="status">
+                                        <span class="visually-hidden">Loading categories...</span>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <div class="selected-categories mt-2" id="editSelectedCategories">
+                                <!-- Selected categories will appear here -->
+                            </div>
+    
+                            <div class="category-help-text mt-2"
+                                style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.7);">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Click on categories to select them. You can choose multiple categories for your post.
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Title -->
                     <div class="mb-3">
                         <label for="edit-post-title" class="form-label text-white">Title</label>
                         <input type="text" id="edit-post-title" class="form-control"
                             style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: white;">
                     </div>
+    
+                    <!-- Content -->
                     <div class="mb-3">
                         <label for="edit-post-content" class="form-label text-white">Content</label>
                         <textarea id="edit-post-content" class="form-control" rows="6"
@@ -211,7 +239,7 @@
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
                     <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-outline-light" id="save-post-btn">Save Changes</button>
+                    <button type="button" class="btn btn-outline-light" id="save-post-btn" disabled>Save Changes</button>
                 </div>
             </div>
         </div>
@@ -288,54 +316,7 @@
 
     <!-- Load shared partials -->
     <script>
-    // Load header based on auth status
-    // fetch('/frontend/templates/shared/header-signed.html')
-    //     .then(r => r.text())
-    //     .then(html => {
-    //         document.getElementById('shared-header').innerHTML = html;
-
-    //         // Wait a moment, then directly call the functions
-    //         setTimeout(() => {
-    //             // Update notifications
-    //             fetch('/api/notifications/count')
-    //                 .then(response => response.json())
-    //                 .then(data => {
-    //                     const dot = document.getElementById('notification-dot');
-    //                     if (dot) {
-    //                         dot.style.display = data.count > 0 ? 'block' : 'none';
-    //                         console.log('🔔 Red dot updated:', data.count > 0 ? 'visible' : 'hidden');
-    //                     }
-    //                 })
-    //                 .catch(error => console.error('🔔 Notification error:', error));
-
-    //             // Update profile image 
-    //             fetch('/api/user/profile')  
-    //                 .then(response => {
-    //                     if (response.ok) {
-    //                         return response.json();
-    //                     }
-    //                     throw new Error(`HTTP ${response.status}`);
-    //                 })
-    //                 .then(data => {
-    //                     console.log('👤 Profile data received:', data);
-    //                     const headerImg = document.getElementById('header-profile-image');
-    //                     if (headerImg && data.profileImage && data.profileImage.trim() !== '') {
-    //                         console.log('👤 Setting header image to:', data.profileImage);
-    //                         headerImg.src = data.profileImage;
-    //                         headerImg.onerror = function () {
-    //                             console.log('👤 Image failed to load, using default');
-    //                             this.src = '/frontend/css/images/avatar.png';
-    //                         };
-    //                     } else {
-    //                         console.log('👤 No profile image found or element missing');
-    //                     }
-    //                 })
-    //                 .catch(error => console.error('👤 Profile image error:', error));
-
-    //         }, 300);
-    //     })
-    //     .catch(error => console.error('❌ Header loading error:', error));
-
+        // Load header based on authentication status
     async function loadHeaderBasedOnAuth() {
             try {
                 // First check authentication status
@@ -362,7 +343,6 @@
                                 const dot = document.getElementById('notification-dot');
                                 if (dot) {
                                     dot.style.display = data.count > 0 ? 'block' : 'none';
-                                    console.log('🔔 Red dot updated:', data.count > 0 ? 'visible' : 'hidden');
                                 }
                             })
                             .catch(error => console.error('🔔 Notification error:', error));
@@ -376,7 +356,6 @@
                                 throw new Error(`HTTP ${response.status}`);
                             })
                             .then(data => {
-                                console.log('👤 Profile data received:', data);
                                 const headerImg = document.getElementById('header-profile-image');
                                 if (headerImg && data.profileImage && data.profileImage.trim() !== '') {
                                     console.log('👤 Setting header image to:', data.profileImage);
@@ -393,7 +372,6 @@
                     }, 300);
                 }
             } catch (error) {
-                console.error('❌ Header loading error:', error);
                 // Fallback to unsigned header
                 fetch('/frontend/templates/shared/header.html')
                     .then(r => r.text())
@@ -417,6 +395,8 @@
         let isLoggedIn = false;
         let currentUserId = null;
         let currentEditingCommentId = null;
+        let editAllCategories = [];
+        let editSelectedCategories = new Set();
 
         // Get post ID from URL
         function getPostIdFromUrl() {
@@ -528,13 +508,127 @@
 
             // Edit current post
             function editCurrentPost() {
-                if (!currentPost) return;
+                    if (!currentPost) return;
 
-                document.getElementById('edit-post-title').value = currentPost.title;
-                document.getElementById('edit-post-content').value = currentPost.content;
-                const modal = new bootstrap.Modal(document.getElementById('editPostModal'));
-                modal.show();
-            }
+                    // Reset selected categories
+                    editSelectedCategories.clear();
+
+                    // Pre-populate form fields
+                    document.getElementById('edit-post-title').value = currentPost.title;
+                    document.getElementById('edit-post-content').value = currentPost.content;
+
+                    // Load categories and show modal
+                    loadEditCategories().then(() => {
+                        const modal = new bootstrap.Modal(document.getElementById('editPostModal'));
+                        modal.show();
+                    });
+                }
+
+
+                async function loadEditCategories() {
+                        try {
+                            const response = await fetch('/api/categories');
+                            const categories = await response.json();
+                            editAllCategories = categories;
+
+                            // Pre-select current post categories
+                            if (currentPost && currentPost.tags) {
+                                currentPost.tags.forEach(tag => editSelectedCategories.add(tag));
+                            }
+
+                            renderEditCategories();
+                            updateEditCategoryDisplay();
+                            validateEditForm();
+                        } catch (error) {
+                            console.error('Error loading categories for edit:', error);
+                            document.getElementById('editCategoryBubbles').innerHTML =
+                                '<div class="text-danger">Failed to load categories</div>';
+                        }
+                    }
+
+                    // Render category bubbles for edit modal
+                    function renderEditCategories() {
+                        const container = document.getElementById('editCategoryBubbles');
+                        container.innerHTML = '';
+
+                        editAllCategories.forEach(category => {
+                            const isSelected = editSelectedCategories.has(category.name);
+                            const bubble = document.createElement('div');
+                            bubble.className = `category-bubble ${isSelected ? 'selected' : ''}`;
+                            bubble.dataset.categoryName = category.name;
+                            bubble.innerHTML = `
+            <span class="category-name">${category.name}</span>
+            <i class="bi ${isSelected ? 'bi-check-circle' : 'bi-plus-circle'} ms-1"></i>
+        `;
+                            bubble.addEventListener('click', () => toggleEditCategory(category.name));
+                            container.appendChild(bubble);
+                        });
+                    }
+
+                    // Toggle category selection for edit modal
+                    function toggleEditCategory(categoryName) {
+                        if (editSelectedCategories.has(categoryName)) {
+                            editSelectedCategories.delete(categoryName);
+                        } else {
+                            editSelectedCategories.add(categoryName);
+                        }
+
+                        updateEditCategoryDisplay();
+                        validateEditForm();
+                    }
+
+                    // Update visual display of categories for edit modal
+                    function updateEditCategoryDisplay() {
+                        // Update bubbles
+                        document.querySelectorAll('#editCategoryBubbles .category-bubble').forEach(bubble => {
+                            const categoryName = bubble.dataset.categoryName;
+                            const icon = bubble.querySelector('i');
+
+                            if (editSelectedCategories.has(categoryName)) {
+                                bubble.classList.add('selected');
+                                icon.className = 'bi bi-check-circle ms-1';
+                            } else {
+                                bubble.classList.remove('selected');
+                                icon.className = 'bi bi-plus-circle ms-1';
+                            }
+                        });
+
+                        // Update selected categories display
+                        const selectedContainer = document.getElementById('editSelectedCategories');
+                        selectedContainer.innerHTML = '';
+
+                        if (editSelectedCategories.size === 0) {
+                            selectedContainer.innerHTML = '<div class="category-help-text" style="color: rgba(255, 255, 255, 0.7);">No categories selected</div>';
+                            return;
+                        }
+
+                        editSelectedCategories.forEach(categoryName => {
+                            const tag = document.createElement('div');
+                            tag.className = 'selected-category-tag';
+                            tag.innerHTML = `
+            <span>#${categoryName}</span>
+            <i class="bi bi-x remove-btn" onclick="removeEditCategory('${categoryName}')"></i>
+        `;
+                            selectedContainer.appendChild(tag);
+                        });
+                    }
+
+                    // Remove category from selection in edit modal
+                    function removeEditCategory(categoryName) {
+                        editSelectedCategories.delete(categoryName);
+                        updateEditCategoryDisplay();
+                        validateEditForm();
+                    }
+
+                    // Validate edit form
+                    function validateEditForm() {
+                        const title = document.getElementById('edit-post-title').value.trim();
+                        const content = document.getElementById('edit-post-content').value.trim();
+                        const hasCategories = editSelectedCategories.size > 0;
+
+                        const saveBtn = document.getElementById('save-post-btn');
+                        saveBtn.disabled = !(title && content && hasCategories);
+                    }
 
             // Delete current post
             function deleteCurrentPost() {
@@ -546,30 +640,51 @@
 
             // Edit post API call
             async function editPost(title, content) {
-                try {
-                    const response = await fetch('/api/posts/edit', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: `post_id=${currentPostId}&title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}`
-                    });
+                    try {
+                        // Create form data with categories
+                        const formData = new FormData();
+                        formData.append('post_id', currentPostId);
+                        formData.append('title', title);
+                        formData.append('content', content);
 
-                    if (response.ok) {
-                        // Update the current display
-                        currentPost.title = title;
-                        currentPost.content = content;
-                        document.getElementById('post-title').textContent = title;
-                        document.getElementById('post-content').innerHTML = content.replace(/\n/g, '<br>');
-                        showSuccessMessage('Post updated successfully!');
-                    } else {
-                        showErrorMessage('Failed to edit post');
+                        // Add categories
+                        editSelectedCategories.forEach(category => {
+                            formData.append('categories[]', category);
+                        });
+
+                        const response = await fetch('/api/posts/edit', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            // Update the current display
+                            currentPost.title = title;
+                            currentPost.content = content;
+                            currentPost.tags = Array.from(editSelectedCategories);
+
+                            document.getElementById('post-title').textContent = title;
+                            document.getElementById('post-content').innerHTML = content.replace(/\n/g, '<br>');
+
+                            // Update tags display
+                            const tagsContainer = document.getElementById('post-tags');
+                            if (currentPost.tags && currentPost.tags.length > 0) {
+                                tagsContainer.innerHTML = currentPost.tags.map(tag =>
+                                    `<span class="tag-badge">#${tag}</span>`
+                                ).join('');
+                            } else {
+                                tagsContainer.innerHTML = '';
+                            }
+
+                            showSuccessMessage('Post updated successfully!');
+                        } else {
+                            showErrorMessage('Failed to edit post');
+                        }
+                    } catch (error) {
+                        console.error('Error editing post:', error);
+                        showErrorMessage('Error editing post');
                     }
-                } catch (error) {
-                    console.error('Error editing post:', error);
-                    showErrorMessage('Error editing post');
                 }
-            }
 
             // Delete post API call
             async function deletePost() {
@@ -959,6 +1074,10 @@
             // Setup comment form
             document.getElementById('comment-form').addEventListener('submit', submitComment);
 
+            document.getElementById('edit-post-title').addEventListener('input', validateEditForm);
+            document.getElementById('edit-post-content').addEventListener('input', validateEditForm);
+
+
             // Setup share button
             document.getElementById('share-btn').addEventListener('click', () => {
                 const modal = new bootstrap.Modal(document.getElementById('shareModal'));
@@ -987,10 +1106,14 @@
             document.getElementById('save-post-btn').addEventListener('click', async () => {
                 const newTitle = document.getElementById('edit-post-title').value.trim();
                 const newContent = document.getElementById('edit-post-content').value.trim();
-                if (newTitle && newContent) {
-                    await editPost(newTitle, newContent);
-                    bootstrap.Modal.getInstance(document.getElementById('editPostModal')).hide();
+
+                if (!newTitle || !newContent || editSelectedCategories.size === 0) {
+                    alert('Please fill in all fields and select at least one category.');
+                    return;
                 }
+
+                await editPost(newTitle, newContent);
+                bootstrap.Modal.getInstance(document.getElementById('editPostModal')).hide();
             });
 
             document.getElementById('confirm-delete-post-btn').addEventListener('click', async () => {
