@@ -50,6 +50,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Cleanup old sessions for this user
+	_, err = db.Exec("DELETE FROM Sessions WHERE user_id = ?", userID)
+	if err != nil {
+		fmt.Printf("Warning: Failed to cleanup old sessions for user %d: %v\n", userID, err)
+		// Continue anyway - this is not a critical error
+	} else {
+		fmt.Printf("Cleaned up existing sessions for user %d\n", userID)
+	}
+
 	// Create secure session cookie
 	cookieValue := utils.GenerateCookieValue()
 	expiration := time.Now().Add(24 * time.Hour)
@@ -68,8 +77,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	database.Insert(db, "Sessions", "(user_id, cookie_value, expiration_date)", userID, cookieValue, expiration)
 
 	// Debug output
-	fmt.Println("Login successful for user_id:", userID)
-	fmt.Println("Session cookie set:", cookieValue)
+	// fmt.Println("Login successful for user_id:", userID)
+	// fmt.Println("Session cookie set:", cookieValue)
 
 	// Redirect to home
 	http.Redirect(w, r, "/", http.StatusSeeOther)
