@@ -540,9 +540,8 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 	// Get user's vote status if logged in
 	var userVote int
 	if currentUserID > 0 {
-		var userVote int
 		err := db.QueryRow("SELECT vote FROM LikesDislikes WHERE post_id = ? AND user_id = ?", postID, currentUserID).Scan(&userVote)
-		if err == nil {
+		if err != nil {
 			userVote = 0
 		}
 	}
@@ -559,7 +558,7 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 		"tags":         post.Tags,
 		"comments":     post.Comments,
 		"likes":        post.Likes,
-		"dislikes":     dislikeCount,
+		"dislikes":     post.Dislikes,
 		"imageUrl":     post.ImageURL,
 		"thumbnailUrl": post.ThumbnailURL,
 		"userVote":     userVote,
