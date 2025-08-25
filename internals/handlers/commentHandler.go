@@ -95,6 +95,15 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 		CreateCommentNotification(postID, commentID, userID, commenterUsername, postTitle)
 	}
 
+	// Notify previous commenters (followup notifications)
+	commenterUsername := utils.GetUsernameFromSession(cookie.Value)
+	CreateFollowupCommentNotifications(postID, commentID, userID, commenterUsername, postTitle)
+
+	// If this is a reply to a specific comment, notify the parent comment author
+	if parentCommentID != nil {
+		CreateDirectReplyNotification(*parentCommentID, commentID, userID, commenterUsername, postTitle, postID)
+	}
+
 	// Return success response
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]bool{"success": true})
