@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS CommentLikes (
 CREATE TABLE IF NOT EXISTS Notifications (
     notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('like', 'comment', 'system')),
+    type TEXT NOT NULL CHECK (type IN ('like', 'dislike', 'comment', 'system')),
     title TEXT NOT NULL,
     message TEXT NOT NULL,
     related_post_id INTEGER,
