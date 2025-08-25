@@ -148,7 +148,7 @@ func CommentsAPIHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		c.TimeAgo = formatTimeAgo(creationDate)
+		c.TimeAgo = utils.FormatTimeAgo(creationDate)
 
 		// Get like/dislike counts and user's vote
 		likeStats := getCommentLikeStats(db, c.ID, currentUserID)

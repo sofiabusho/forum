@@ -262,3 +262,13 @@ func FormatTimeAgo(t time.Time) string {
 		return fmt.Sprintf("%d years ago", int(duration.Hours()/(24*365)))
 	}
 }
+
+// truncateText shortens text to a maximum length and adds "..." if truncated
+func TruncateText(text string, maxLength int) string {
+	if len(text) <= maxLength {
+		return text
+	}
+	return text[:maxLength] + "..."
+}
+
+

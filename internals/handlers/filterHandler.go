@@ -77,8 +77,8 @@ func FilteredPostsHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		p.TimeAgo = formatTimeAgo(creationDate)
-		p.Excerpt = truncateText(p.Content, 150)
+		p.TimeAgo = utils.FormatTimeAgo(creationDate)
+		p.Excerpt = utils.TruncateText(p.Content, 150)
 		p.Tags = getPostTags(db, p.ID)
 
 		posts = append(posts, p)
