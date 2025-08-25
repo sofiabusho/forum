@@ -45,9 +45,10 @@
         <!-- Email Login Form -->
         <form action="/login" method="POST" novalidate>
         <!-- Error message -->
-        {{if .Messagelg}}
+        {{if .ErrorMessage}}
         <div class="alert alert-danger text-center py-2" role="alert">
-            {{.Messagelg}}
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            {{.ErrorMessage}}
         </div>
         {{end}}
 

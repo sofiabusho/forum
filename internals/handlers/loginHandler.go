@@ -17,14 +17,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		successType := r.URL.Query().Get("success")
 		message := r.URL.Query().Get("message")
 		
+
 		data := make(map[string]interface{})
-		
+
 		if successType == "registration" {
 			data["SuccessMessage"] = "Registration successful! Please log in with your new account."
 		} else if message != "" {
 			data["SuccessMessage"] = message
 		}
-		
+
 		utils.FileService("login.html", w, data)
 		return
 	}
@@ -34,6 +35,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	emailOrUsername := strings.TrimSpace(r.FormValue("email"))
 	password := r.FormValue("password")
+
+	if emailOrUsername == "" || password == "" {
+		utils.FileService("login.html", w, map[string]interface{}{
+			"ErrorMessage": "Email/Username and password cannot be empty",
+		})
+		return
+	}
 
 	var userID int
 	var passwordHash string
@@ -70,7 +78,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		Expires:  expiration,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode, 
+		SameSite: http.SameSiteLaxMode,
 	})
 
 	// Store session in database
