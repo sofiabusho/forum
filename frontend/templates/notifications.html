@@ -236,14 +236,15 @@
 
     // Get appropriate icon for notification type
     function getNotificationIcon(type) {
-        const icons = {
-            like: { icon: 'bi-heart-fill', color: '#dc3545' },
-            comment: { icon: 'bi-chat-fill', color: '#0d6efd' },
-            system: { icon: 'bi-info-circle-fill', color: '#198754' }
-        };
+            const icons = {
+                like: { icon: 'bi-heart-fill', color: '#dc3545' },
+                dislike: { icon: 'bi-heartbreak-fill', color: '#6c757d' }, // NEW: Add dislike icon
+                comment: { icon: 'bi-chat-fill', color: '#0d6efd' },
+                system: { icon: 'bi-info-circle-fill', color: '#198754' }
+            };
 
-        return icons[type] || icons.system;
-    }
+            return icons[type] || icons.system;
+        }
 
     // Handle notification click (navigate to related content)
     async function handleNotificationClick(notificationId, postId) {

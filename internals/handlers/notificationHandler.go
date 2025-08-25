@@ -218,7 +218,7 @@ func CreateCommentNotification(postID int, commentID int, commenterID int, comme
 	}
 
 	title := "New Comment!"
-	message := fmt.Sprintf("%s commented on your post '%s'", commenterUsername, truncateText(postTitle, 50))
+	message := fmt.Sprintf("%s commented on your post '%s'", commenterUsername, utils.TruncateText(postTitle, 50))
 
 	_ = CreateNotification(postAuthorID, "comment", title, message, &postID, &commentID, &commenterID)
 }
@@ -237,9 +237,29 @@ func CreateLikeNotification(postID int, likerID int, likerUsername string, postT
 	}
 
 	title := "New Like!"
-	message := fmt.Sprintf("%s liked your post '%s'", likerUsername, truncateText(postTitle, 50))
+	message := fmt.Sprintf("%s liked your post '%s'", likerUsername, utils.TruncateText(postTitle, 50))
 
 	_ = CreateNotification(postAuthorID, "like", title, message, &postID, nil, &likerID)
+}
+
+// CreateDislikeNotification creates notification for post dislikes
+func CreateDislikeNotification(postID int, dislikerID int, dislikerUsername string, postTitle string) {
+	db := database.CreateTable()
+	defer db.Close()
+
+	// Get the author of the post
+	var postAuthorID int
+	if err := db.QueryRow("SELECT user_id FROM Posts WHERE post_id = ?", postID).Scan(&postAuthorID); err != nil {
+		return
+	}
+	if postAuthorID == dislikerID {
+		return
+	}
+
+	title := "Someone disagreed with your post"
+	message := fmt.Sprintf("%s disliked your post '%s'", dislikerUsername, utils.TruncateText(postTitle, 50))
+
+	_ = CreateNotification(postAuthorID, "dislike", title, message, &postID, nil, &dislikerID)
 }
 
 func CreateCommentLikeNotification(commentID, likerID int, likerUsername, postTitle string, postID int) {
@@ -255,8 +275,26 @@ func CreateCommentLikeNotification(commentID, likerID int, likerUsername, postTi
 	}
 
 	title := "Your comment got a like!"
-	message := fmt.Sprintf("%s liked your comment on '%s'", likerUsername, truncateText(postTitle, 50))
+	message := fmt.Sprintf("%s liked your comment on '%s'", likerUsername, utils.TruncateText(postTitle, 50))
 	_ = CreateNotification(commentAuthorID, "like", title, message, &postID, &commentID, &likerID)
+}
+
+// CreateCommentDislikeNotification creates notification for comment dislikes  
+func CreateCommentDislikeNotification(commentID, dislikerID int, dislikerUsername, postTitle string, postID int) {
+	db := database.CreateTable()
+	defer db.Close()
+
+	var commentAuthorID int
+	if err := db.QueryRow("SELECT user_id FROM Comments WHERE comment_id = ?", commentID).Scan(&commentAuthorID); err != nil {
+		return
+	}
+	if commentAuthorID == dislikerID {
+		return
+	}
+
+	title := "Someone disagreed with your comment"
+	message := fmt.Sprintf("%s disliked your comment on '%s'", dislikerUsername, utils.TruncateText(postTitle, 50))
+	_ = CreateNotification(commentAuthorID, "dislike", title, message, &postID, &commentID, &dislikerID)
 }
 
 // CreateFollowupCommentNotifications notifies ALL previous commenters on a post (except author & current commenter)
@@ -291,7 +329,7 @@ func CreateFollowupCommentNotifications(postID, commentID, commenterID int, comm
 	defer rows.Close()
 
 	title := "New activity on a post you commented"
-	msg := fmt.Sprintf("%s also commented on '%s'", commenterUsername, truncateText(postTitle, 50))
+	msg := fmt.Sprintf("%s also commented on '%s'", commenterUsername, utils.TruncateText(postTitle, 50))
 	var count int
 
 	for rows.Next() {
@@ -345,7 +383,7 @@ func CreateDirectReplyNotification(parentCommentID, newCommentID, replierID int,
 	}
 
 	title := "New reply to your comment"
-	message := fmt.Sprintf("%s replied to your comment on '%s'", replierUsername, truncateText(postTitle, 50))
+	message := fmt.Sprintf("%s replied to your comment on '%s'", replierUsername, utils.TruncateText(postTitle, 50))
 	_ = CreateNotification(parentAuthorID, "comment", title, message, &postID, &newCommentID, &replierID)
 }
 
@@ -512,3 +550,6 @@ func SystemNotification(userIDs []int, title, message string) error {
 
 	return tx.Commit()
 }
+
+
+

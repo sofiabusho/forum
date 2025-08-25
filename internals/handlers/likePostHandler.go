@@ -31,7 +31,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse Request
 	postIDStr := r.FormValue("post_id")
-	voteStr := r.FormValue("vote") // "like" is 1 and "dislike is -1"
+	voteStr := r.FormValue("vote")
 
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
@@ -43,7 +43,6 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil || (vote != 1 && vote != -1) {
 		http.Error(w, "Invalid vote", http.StatusBadRequest)
 		return
-
 	}
 
 	db := database.CreateTable()
@@ -53,7 +52,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	var existingVote int
 	err = db.QueryRow("SELECT vote FROM LikesDislikes WHERE post_id = ? AND user_id = ?", postID, userID).Scan(&existingVote)
 
-	var isNewLike bool = false
+	var isNewVote bool = false // RENAMED from isNewLike
 
 	if err == nil {
 		// User already voted
@@ -63,27 +62,32 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			// Different vote - update it
 			db.Exec("UPDATE LikesDislikes SET vote = ? WHERE post_id = ? AND user_id = ?", vote, postID, userID)
-			if vote == 1 {
-				isNewLike = true
-			}
+			isNewVote = true // FIXED: Set flag for vote change
 		}
 	} else {
 		// No existing vote - create new one
 		db.Exec("INSERT INTO LikesDislikes (post_id, user_id, vote) VALUES (?, ?, ?)", postID, userID, vote)
-		if vote == 1 {
-			isNewLike = true
-		}
+		isNewVote = true // FIXED: Set flag for new vote
 	}
 
-	// Create notification for new likes only
-	if isNewLike {
+	// Create notification for new votes (BOTH likes and dislikes)
+	if isNewVote {
 		var postAuthorID int
 		var postTitle string
 		err := db.QueryRow("SELECT user_id, title FROM Posts WHERE post_id = ?", postID).Scan(&postAuthorID, &postTitle)
 
-		if err == nil && postAuthorID != userID { // Don't notify yourself
+		if err == nil && postAuthorID != userID {
 			likerUsername := utils.GetUsernameFromSession(cookie.Value)
-			CreateLikeNotification(postID, userID, likerUsername, postTitle)
+
+			// Use switch instead of if/else
+			switch vote {
+			case 1:
+				CreateLikeNotification(postID, userID, likerUsername, postTitle)
+			case -1:
+				CreateDislikeNotification(postID, userID, likerUsername, postTitle)
+			default:
+				// Invalid vote - should not reach here due to earlier validation
+			}
 		}
 	}
 
@@ -137,7 +141,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	var existingVote int
 	err = db.QueryRow("SELECT vote FROM CommentLikes WHERE comment_id = ? AND user_id = ?", commentID, userID).Scan(&existingVote)
 
-	isNewLike := false
+	isNewVote := false // RENAMED and FIXED
 
 	if err == nil {
 		// User already voted
@@ -147,25 +151,34 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			// Different vote - update it
 			db.Exec("UPDATE CommentLikes SET vote = ? WHERE comment_id = ? AND user_id = ?", vote, commentID, userID)
+			isNewVote = true // FIXED: Set flag for vote change
 		}
 	} else {
 		// No existing vote - create new one
 		db.Exec("INSERT INTO CommentLikes (comment_id, user_id, vote) VALUES (?, ?, ?)", commentID, userID, vote)
+		isNewVote = true // FIXED: Set flag for new vote
 	}
 
-	// Create notification for NEW like on a comment
-	if isNewLike {
-		// get post_id from comment
+	// Create notification for NEW votes (BOTH likes and dislikes)
+	if isNewVote {
 		var postID int
 		if err := db.QueryRow("SELECT post_id FROM Comments WHERE comment_id = ?", commentID).Scan(&postID); err == nil {
 			var postTitle string
 			_ = db.QueryRow("SELECT title FROM Posts WHERE post_id = ?", postID).Scan(&postTitle)
 
 			likerUsername := utils.GetUsernameFromSession(cookie.Value)
-			CreateCommentLikeNotification(commentID, userID, likerUsername, postTitle, postID)
+
+			// Use switch instead of if/else
+			switch vote {
+			case 1:
+				CreateCommentLikeNotification(commentID, userID, likerUsername, postTitle, postID)
+			case -1:
+				CreateCommentDislikeNotification(commentID, userID, likerUsername, postTitle, postID)
+			default:
+				// Invalid vote - should not reach here due to earlier validation
+			}
 		}
 	}
-
 	// Get updated counts
 	response := getCommentLikeStats(db, commentID, userID)
 
