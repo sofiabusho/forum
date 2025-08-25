@@ -136,6 +136,48 @@
                 .comment-item .dropdown-toggle:hover .bi-three-dots-vertical {
                     color: white;
                 }
+
+                                .modal .category-bubble {
+                                    display: inline-block;
+                                    background-color: rgba(255, 255, 255, 0.1);
+                                    border: 1px solid rgba(255, 255, 255, 0.3);
+                                    border-radius: 20px;
+                                    padding: 8px 12px;
+                                    margin: 4px;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    font-size: 0.9rem;
+                                    color: rgba(255, 255, 255, 0.9);
+                                }
+                
+                                .modal .category-bubble:hover {
+                                    border-color: rgb(109, 214, 40);
+                                        background-color: rgba(59, 145, 2, 0.1);
+                                }
+                
+                                .modal .category-bubble.selected {
+                                    border-color: rgb(109, 214, 40);
+                                        background-color: rgba(59, 145, 2, 0.1);
+                                }
+                
+                                .modal .selected-category-tag {
+                                    display: inline-block;
+                                    border-color: rgb(109, 214, 40);
+                                        background-color: rgba(59, 145, 2, 0.1);
+                                    border-radius: 15px;
+                                    padding: 4px 8px;
+                                    margin: 2px;
+                                    font-size: 0.8rem;
+                                }
+                
+                                .modal .selected-category-tag .remove-btn {
+                                    margin-left: 5px;
+                                    cursor: pointer;
+                                }
+                
+                                .modal .selected-category-tag .remove-btn:hover {
+                                    color: #ff6b6b;
+                                }
                 
         .vote-buttons {
             display: flex;
