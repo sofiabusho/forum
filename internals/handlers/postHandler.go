@@ -170,6 +170,7 @@ func ValidateCategories(db *sql.DB, categoryNames []string) ([]int, error) {
 
 // PostsAPIHandler returns posts as JSON for dynamic loading (index.html)
 func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
+
 	db := database.CreateTable()
 	defer db.Close()
 
@@ -263,6 +264,7 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 // SinglePostAPIHandler returns a single post by ID (view-post.html)
 func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
+	
 	// Extract post ID from URL path or query parameter
 	postIDStr := r.URL.Query().Get("id")
 	if postIDStr == "" {
@@ -566,7 +568,6 @@ func EditCommentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }
-
 
 // GetUserImagesHandler returns images uploaded by a user
 func GetUserImagesHandler(w http.ResponseWriter, r *http.Request) {

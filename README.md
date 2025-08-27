@@ -1,29 +1,90 @@
-FORUM PROJECTPlant Talk Forum
-A modern web forum for plant enthusiasts built with Go, SQLite, and vanilla JavaScript.
-🌱 Features
+# FORUM PROJECT 
 
-User Authentication: Secure registration and login with bcrypt password hashing
-Posts & Comments: Create, view, and comment on plant-related discussions
-Categories: Organize posts by plant types (Succulents, Tropical, etc.)
-Like/Dislike System: React to posts and comments
-Filtering: Filter posts by categories, your own posts, or liked posts
-Responsive Design: Works on desktop and mobile devices
-Docker Ready: Containerized for easy deployment
+🪴🌵🌱🌷🌿 Plant Talk Forum 🪴🌵🌱🌷🌿
 
-🚀 Quick Start
-Option 1: Using Docker (Recommended)
+A web forum for plant enthusiasts to connect, share knowledge, and build community. built with Go, SQLite, and vanilla JavaScript.
 
-Clone the repository
-bashgit clone https://github.com/yourorg/plant-talk.git
-cd plant-talk
+--- 
 
+**Forum,** 
+**Forum-Authentication,**
+**Forum-Image-Upload, and** 
+**Forum-Advanced-Features** 
+
+## 🌱 Features
+
+**- User Authentication & Authorization:** Secure registration and login with bcrypt password hashing
+**- Posts & Comments System:** Create, view, edit, and delete posts and comments
+**- Multi-Category Support:** Organize posts by plant types (Succulents, Tropical Plants, etc.)
+**- Like/Dislike System:** React to both posts and comments with voting functionality
+**- Advanced Filtering:** Filter posts by categories, user's own posts, or liked posts
+**- Session Management:** Secure cookie-based sessions with expiration dates
+
+---
+
+### Authentication Methods (OAuth Integration)
+
+Traditional Registration: Email, username, and password registration
+Google OAuth: Sign in with Google account
+GitHub OAuth: Sign in with GitHub account
+Password Recovery: Forgot password functionality with secure reset tokens
+Session Security: UUID-based session tokens with automatic expiration
+
+### Image Upload System
+
+Multi-Format Support: JPEG, PNG, and GIF image uploads
+Size Validation: 20MB maximum file size with proper error handling
+Thumbnail Generation: Automatic thumbnail creation for optimized display
+Image Management: Users can upload, view, and delete their own images
+Post Integration: Attach images to posts with preview functionality
+
+### Advanced Features 
+
+Real-time Notifications: Notify users when their content is liked/disliked or commented on
+Activity Tracking: Comprehensive user activity page showing:
+
+User's created posts
+Posts where user left likes/dislikes
+Comments made by the user with context
+
+
+Content Management: Edit and delete posts and comments
+Notification Management: Mark notifications as read, view notification history
+
+### Technical Features
+
+Responsive Design: Mobile-friendly interface using Bootstrap 5.3.2
+Docker Ready: Containerized application with Docker Compose support
+Database Optimization: Comprehensive indexing for performance
+Error Handling: Proper HTTP status codes and user-friendly error messages
+Security Best Practices: CSRF protection, input validation, and secure session management
+
+## Usage
+
+*** Option 1: Using Docker (Recommended) ***
+
+
+
+1. Clone the repository
+ ```bash
+ clone https://platform.zone01.gr/git/ttarara/forum
+
+cd forum
+```
+
+2.  
+```bash
 Build and run with Docker Compose
 bashdocker-compose up --build
+```
 
-Access the forum
+3. Access the forum
+```bash
 Open your browser and visit: http://localhost:8080
 
-Option 2: Local Development
+```
+
+*** Option 2: Local Development ***
 
 Prerequisites
 
@@ -31,152 +92,178 @@ Go 1.21 or higher
 SQLite3
 
 
-Install dependencies
+1. Install dependencies
 bashgo mod tidy
 
-Run the application
-bashgo run main.go
-
-Access the forum
+2. Run the application
+```bash 
+go run .
+```
+```bash 
+3. Access the forum
 Open your browser and visit: http://localhost:8080
+```
 
-📁 Project Structure
-plant-talk/
-├── main.go                     # Main application entry point
-├── go.mod                      # Go module dependencies
-├── go.sum                      # Go module checksums
-├── Dockerfile                  # Docker container configuration
-├── docker-compose.yml          # Docker Compose setup
+## 📁 Project Structure
+forum/
+├── main.go                          # Main application entry point
+├── go.mod                           # Go module dependencies
+├── go.sum                           # Go module checksums
+├── Dockerfile                       # Docker container configuration
+├── docker-compose.yml               # Docker Compose setup
+├── forum.db                         # SQLite database (auto-generated)
+│
 ├── internals/
 │   ├── database/
-│   │   ├── database.go         # Database connection
-│   │   ├── sqlstruct.go        # Database structures
-│   │   ├── scanfunc.go         # Row scanning functions
-│   │   └── table.sql           # Database schema
+│   │   ├── database.go              # Database connection & utilities
+│   │   ├── sqlstruct.go             # Database structures & models
+│   │   ├── scanfunc.go              # Row scanning functions
+│   │   └── table.sql                # Complete database schema
+│   │
 │   ├── handlers/
-│   │   ├── loginHandler.go     # User login
-│   │   ├── registerHandler.go  # User registration
-│   │   ├── postHandler.go      # Post creation & display
-│   │   ├── commentHandler.go   # Comment management
-│   │   ├── likeHandler.go      # Like/dislike functionality
-│   │   └── filterHandler.go    # Post filtering
+│   │   ├── loginHandler.go          # Traditional login/logout
+│   │   ├── registerHandler.go       # User registration
+│   │   ├── googleAuth.go            # Google OAuth implementation
+│   │   ├── githubAuth.go            # GitHub OAuth implementation
+│   │   ├── postHandler.go           # Post creation, editing, deletion
+│   │   ├── commentHandler.go        # Comment management
+│   │   ├── likeHandler.go           # Like/dislike functionality
+│   │   ├── imageHandler.go          # Image upload & management
+│   │   ├── notificationHandler.go   # Notification system
+│   │   ├── activityHandler.go       # User activity tracking
+│   │   └── filterHandler.go         # Post filtering & search
+│   │
 │   └── utils/
-│       └── utils.go            # Utility functions
-└── frontend/
-    ├── templates/              # HTML templates
-    └── css/                    # Stylesheets and images
-🔧 Configuration
-Environment Variables
+│       └── utils.go                 # Utility functions & helpers
+│
+├── frontend/
+│   ├── templates/                   # HTML templates
+│   ├── css/                         # Stylesheets and assets
+│   └── uploads/                     # User uploaded images
+│       ├── images/                  # Original images
+│       └── thumbnails/              # Generated thumbnails
+│
+└── README.md                        # This file
 
-PORT: Server port (default: 8080)
-DB_PATH: SQLite database file path (default: ./forum.db)
+## Database Schema
 
-Database
-The application uses SQLite with the following main tables:
+The application uses SQLite with the following optimized database structure:
 
-Users: User accounts and authentication
-Posts: Forum posts
-Comments: Post comments
-Categories: Post categories
-LikesDislikes: Post reactions
-CommentLikes: Comment reactions
-Sessions: User sessions
+### Core Tables
 
-🛠 API Endpoints
-Authentication
+***Users:*** User accounts, authentication, and profile information
+***Posts:*** Forum posts with image references
+***Comments:*** Post comments and replies
+***Categories:*** Available post categories
+***PostCategories:*** Many-to-many relationship for post categorization
 
-POST /login - User login
-POST /register - User registration
-GET /logout - User logout
+### Interaction Tables
 
-Posts
+***LikesDislikes:*** Post voting system
+***CommentLikes:*** Comment voting system
+***Sessions:*** Secure session management
+***Images:*** Image upload metadata and file tracking
+***Notifications:*** User notification system
 
-GET /api/posts - Get all posts (with optional filtering)
-POST /new-post - Create new post
-POST /api/posts/like - Like/dislike a post
+## Performance Features
 
-Comments
+- Comprehensive database indexing for optimal query performance
+- WAL (Write-Ahead Logging) mode for concurrent read/write operations
+- Optimized composite indexes for complex filtering operations
 
-GET /api/comments?post_id=X - Get comments for a post
-POST /api/comments/create - Create new comment
-POST /api/comments/like - Like/dislike a comment
+---
 
-Categories
+**🎨 Frontend Technology**
+The frontend implementation uses:
 
-GET /api/categories - Get all categories
+Bootstrap 5.3.2: Responsive design framework
+Vanilla JavaScript: Dynamic functionality and AJAX requests
+Template System: Reusable HTML components (header, footer)
+Responsive Design: Mobile-first approach with adaptive layouts
 
-Filtering
+Key Frontend Features
 
-GET /api/posts?filter=my-posts - Get user's posts (authenticated)
-GET /api/posts?filter=my-likes - Get user's liked posts (authenticated)
-GET /api/posts?filter=categories&value=CategoryName - Filter by category
+Dynamic post loading with infinite scroll
+Real-time notification updates
+Image upload with drag-and-drop interface
+Responsive navigation with user state management
+Form validation and error handling
+Modal dialogs for confirmations
 
-🎨 Frontend
-The frontend uses:
+--- 
 
-Bootstrap 5.3.2 for responsive design
-Vanilla JavaScript for dynamic functionality
-Template partials for shared components (header, footer)
+**🧪 Testing the Application**
+User Registration & Authentication
 
-Key Features:
+Traditional Registration: Use /register with email, username, and password
+OAuth Login: Test Google and GitHub authentication flows
+Password Recovery: Use forgot password functionality
+Session Management: Verify automatic logout on session expiration
 
-Dynamic post loading with AJAX
-Real-time filtering
-Responsive navigation
-User authentication state management
+Content Creation & Management
 
-🧪 Testing
+Create Posts: Test post creation with categories and images
+Image Upload: Upload JPEG, PNG, and GIF files (test size limits)
+Comment System: Add comments and replies to posts
+Edit/Delete: Modify your own content
+Like/Dislike: React to posts and comments
 
-Register a new account
+Advanced Features
 
-Go to /register
-Fill in username, email, and password
-Confirm registration
+Filtering: Test category filters, "my posts", and "my likes"
+Notifications: Create interactions and check notification system
+Activity Tracking: Review your activity page
+Image Management: Upload, view, and delete images
 
+---
 
-Create posts
+**🚀 Deployment**
 
-Login and click "Create Post"
-Select a category and write your post
-Publish and view on homepage
-
-
-Interact with content
-
-Like/dislike posts and comments
-Add comments to posts
-Filter posts by categories or your activity
-
-
-
-🚀 Deployment
 Docker Deployment
 
-Build the image
-bashdocker build -t plant-talk .
+ ```bash Build the image
+docker build -t forum .
 
-Run the container
-bashdocker run -p 8080:8080 -v plant-talk-data:/app/data plant-talk
+# Run with volume for data persistence
+docker run -p 8080:8080 -v forum-data:/app/data plant-talk-forum
+
+ ```
+
+---
+
+**Production Considerations**
+
+sqlite3 - Database driver
+bcrypt - Password hashing
+google/uuid - UUID generation
+golang.org/x/oauth2 - OAuth2 implementation
+golang.org/x/image - Image processing
+google.golang.org/api - Google API client
+
+---
+
+**📝 Project Requirements Compliance**
+This forum implementation satisfies all requirements from the original project specifications:
+✅ Basic Forum: SQLite database, authentication, posts, comments, likes, filtering
+✅ Forum-Authentication: Google and GitHub OAuth integration
+✅ Forum-Image-Upload: JPEG, PNG, GIF support with 20MB size limit
+✅ Forum-Advanced-Features: Notifications, activity tracking, edit/delete functionality
+✅ Docker: Complete containerization with Docker Compose
+✅ Security: Bcrypt hashing, session management, input validation
+✅ Performance: Database optimization, indexing, efficient queries
 
 
-Production Considerations
-
-Use a reverse proxy (nginx) for SSL termination
-Set up proper logging and monitoring
-Configure backup for the SQLite database
-Consider using PostgreSQL for high-traffic scenarios
-
-🤝 Contributing
-
-Fork the repository
-Create a feature branch (git checkout -b feature/amazing-feature)
-Commit your changes (git commit -m 'Add amazing feature')
-Push to the branch (git push origin feature/amazing-feature)
-Open a Pull Request
-
-📝 License
+**📄 License**
 This project is licensed under the MIT License - see the LICENSE file for details.
-🙏 Acknowledgments
 
-Inspired by the plant-loving community
-Uses Go, SQLite, and modern web technologies
+---
+
+## ✍️ Authors
+
+Theocharoula Tarara 🪴
+
+🌵Sofia Busho
+
+---
+
+## 💃 Enjoy exploring the world of music with Groupie Tracker! 🕺
