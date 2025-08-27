@@ -22,6 +22,8 @@ type UserProfile struct {
 	CommentCount  int    `json:"commentCount"`
 	LikesGiven    int    `json:"likesGiven"`
 	LikesReceived int    `json:"likesReceived"`
+	DislikesGiven    int    `json:"dislikesGiven"`
+	DislikesReceived int    `json:"dislikesReceived"`
 	ProfileImage  string `json:"profileImage,omitempty"`
 	Bio           string `json:"bio"`
 }

@@ -22,7 +22,8 @@
         <button class="list-group-item list-group-item-action active" id="tab-bio"><i class="bi bi-person"></i> My Bio</button>
         <button class="list-group-item list-group-item-action" id="tab-posts"><i class="bi bi-question-circle"></i> My Posts</button>
         <button class="list-group-item list-group-item-action" id="tab-comments"><i class="bi bi-chat-left-text"></i> My Comments</button>
-        <button class="list-group-item list-group-item-action" id="tab-likes"><i class="bi bi-heart"></i> My Likes</button>
+        <button class="list-group-item list-group-item-action" id="tab-likes"><i class="bi bi-hand-thumbs-up"></i> My Likes</button>
+        <button class="list-group-item list-group-item-action" id="tab-dislikes"><i class="bi bi-hand-thumbs-down"></i> My Dislikes</button>
       </div>
 
       <div class="card shadow-sm mt-3">
@@ -35,6 +36,11 @@
           <div class="row text-center">
             <div class="col-6"><h4 id="stat-likes-given" class="text-warning">0</h4><small class="text-muted">Likes Given</small></div>
             <div class="col-6"><h4 id="stat-likes-received" class="text-danger">0</h4><small class="text-muted">Likes Received</small></div>
+          </div><hr>
+          <!-- NEW: Dislikes row -->
+          <div class="row text-center">
+            <div class="col-6"><h4 id="stat-dislikes-given" class="text-secondary">0</h4><small class="text-muted">Dislikes Given</small></div>
+            <div class="col-6"><h4 id="stat-dislikes-received" class="text-secondary">0</h4><small class="text-muted">Dislikes Received</small></div>
           </div>
         </div>
       </div>
@@ -68,6 +74,12 @@
         <h3>My Likes</h3>
         <div id="userLikesContainer" class="list-group list-group-flush"></div>
       </div>
+
+      <!-- DISLIKES -->
+      <div id="dislikesSection" class="section-tab" style="display:none;">
+        <h3>My Dislikes</h3>
+        <div id="userDislikesContainer" class="list-group list-group-flush"></div>
+      </div>
     </section>
 
     <!-- Right box -->
@@ -79,7 +91,7 @@
           <li class="list-group-item">Member Since <strong id="joined-date">...</strong></li>
           <li class="list-group-item">
             <button class="btn btn-outline-light w-100" id="btn-change-name">Change my display name</button>
-            <button class="btn btn-outline-light w-100" id="btn-change-image">Change my profile Image</button>
+            <button class="btn btn-outline-light w-100 mt-2" id="btn-change-image">Change my profile Image</button>
           </li>
         </ul>
       </div>
@@ -151,47 +163,27 @@
     .then(html => {
       document.getElementById('shared-header').innerHTML = html;
 
-      // Wait a moment, then directly call the functions
       setTimeout(() => {
         // Update notifications
         fetch('/api/notifications/count')
           .then(response => response.json())
           .then(data => {
             const dot = document.getElementById('notification-dot');
-            if (dot) {
-              dot.style.display = data.count > 0 ? 'block' : 'none';
-              console.log('🔔 Red dot updated:', data.count > 0 ? 'visible' : 'hidden');
-            }
-          })
-          .catch(error => console.error('🔔 Notification error:', error));
+            if (dot) dot.style.display = data.count > 0 ? 'block' : 'none';
+          });
 
         // Update profile image 
-        fetch('/api/user/profile')  // ← Make sure this is singular "user", not "users"
-          .then(response => {
-            if (response.ok) {
-              return response.json();
-            }
-            throw new Error(`HTTP ${response.status}`);
-          })
+        fetch('/api/user/profile')
+          .then(response => response.ok ? response.json() : Promise.reject(response.status))
           .then(data => {
-            console.log('👤 Profile data received:', data);
             const headerImg = document.getElementById('header-profile-image');
             if (headerImg && data.profileImage && data.profileImage.trim() !== '') {
-              console.log('👤 Setting header image to:', data.profileImage);
               headerImg.src = data.profileImage;
-              headerImg.onerror = function () {
-                console.log('👤 Image failed to load, using default');
-                this.src = '/frontend/css/images/avatar.png';
-              };
-            } else {
-              console.log('👤 No profile image found or element missing');
+              headerImg.onerror = function(){ this.src = '/frontend/css/images/avatar.png'; };
             }
-          })
-          .catch(error => console.error('👤 Profile image error:', error));
-
+          });
       }, 300);
-    })
-    .catch(error => console.error('❌ Header loading error:', error));
+    });
 
   // Shared footer
   fetch('/frontend/templates/shared/footer.html')
@@ -199,10 +191,10 @@
     .then(html => { document.getElementById('shared-footer').innerHTML = html; });
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Cache so δεν ξαναχτυπάμε τα ίδια endpoints
-    const cache = { posts: null, comments: null, likes: null };
+    // Cache
+    const cache = { posts: null, comments: null, likes: null, dislikes: null };
 
-    // Load profile basics
+   // Load profile basics (+ dislikes stats)
     fetch("/api/user/profile")
       .then(res => res.json())
       .then(data => {
@@ -212,6 +204,11 @@
         document.getElementById("stat-comments").textContent = data.commentCount;
         document.getElementById("stat-likes-given").textContent = data.likesGiven;
         document.getElementById("stat-likes-received").textContent = data.likesReceived;
+
+        // NEW: fill dislikes stats (fallback 0)
+        document.getElementById("stat-dislikes-given").textContent = (data.dislikesGiven ?? 0);
+        document.getElementById("stat-dislikes-received").textContent = (data.dislikesReceived ?? 0);
+
         document.getElementById("bioText").textContent = data.bio || "No bio set yet.";
         if (data.profileImage && data.profileImage.trim() !== "") {
           document.querySelector("aside.profile-box img").src = data.profileImage + "?t=" + new Date().getTime();
@@ -295,7 +292,7 @@
       const el = document.getElementById(container);
       el.innerHTML = "";
       if (!list || list.length === 0) {
-        el.innerHTML = `<div class="text-muted px-2">You haven't created any posts yet.</div>`;
+        el.innerHTML = `<div class="text-muted px-2">Nothing here yet.</div>`;
         return;
       }
       list.forEach(p => {
@@ -311,36 +308,6 @@
         `;
         el.appendChild(a);
       });
-    }
-    function renderComments(list) {
-      const el = document.getElementById("userCommentsContainer");
-      el.innerHTML = "";
-      if (!list || list.length === 0) {
-        el.innerHTML = `<div class="text-muted px-2">No comments yet.</div>`;
-        return;
-      }
-      list.forEach(c => {
-        const a = document.createElement("a");
-        a.className = "list-group-item list-group-item-action post-card";
-        a.href = `/view-post?id=${c.postId}`;
-        a.innerHTML = `
-          <div class="d-flex w-100 justify-content-between">
-            <strong class="mb-1">${c.postTitle || "Post"}</strong>
-            <small class="text-muted">${c.timeAgo || ""}</small>
-          </div>
-          <p class="mb-1">${c.content}</p>
-        `;
-        el.appendChild(a);
-      });
-    }
-    function renderLikes(list) {
-      const el = document.getElementById("userLikesContainer");
-      el.innerHTML = "";
-      if (!list || list.length === 0) {
-        el.innerHTML = `<div class="text-muted px-2">No liked posts yet.</div>`;
-        return;
-      }
-      renderPosts(list, "userLikesContainer"); // same layout with posts
     }
 
     // Tabs actions
@@ -370,7 +337,25 @@
           cache.comments = await res.json();
         } catch { cache.comments = []; }
       }
-      renderComments(cache.comments);
+      const el = document.getElementById("userCommentsContainer");
+      el.innerHTML = "";
+      if (!cache.comments || cache.comments.length === 0) {
+        el.innerHTML = `<div class="text-muted px-2">No comments yet.</div>`;
+      } else {
+        cache.comments.forEach(c => {
+          const a = document.createElement("a");
+          a.className = "list-group-item list-group-item-action post-card";
+          a.href = `/view-post?id=${c.postId}`;
+          a.innerHTML = `
+            <div class="d-flex w-100 justify-content-between">
+              <strong class="mb-1">${c.postTitle || "Post"}</strong>
+              <small class="text-muted">${c.timeAgo || ""}</small>
+            </div>
+            <p class="mb-1">${c.content}</p>
+          `;
+          el.appendChild(a);
+        });
+      }
     });
 
     document.getElementById("tab-likes").addEventListener("click", async () => {
@@ -382,15 +367,22 @@
           cache.likes = await res.json();
         } catch { cache.likes = []; }
       }
-      renderLikes(cache.likes);
+      renderPosts(cache.likes, "userLikesContainer");
+    });
+
+    // Dislikes
+    document.getElementById("tab-dislikes").addEventListener("click", async () => {
+      activate("tab-dislikes");
+      showSection("dislikesSection");
+      if (!cache.dislikes) {
+        try {
+          const res = await fetch("/api/user/dislikes");
+          cache.dislikes = await res.json();
+        } catch { cache.dislikes = []; }
+      }
+      renderPosts(cache.dislikes, "userDislikesContainer");
     });
   });
-</script>
-
-<!-- Small local tweaks so τα cards φαίνονται ωραία -->
-<style>
-  .post-card { border-radius: .5rem; margin-bottom: .5rem; }
-  .post-card:hover { transform: translateY(-1px); }
-</style>
+  </script>
 </body>
 </html>

@@ -40,6 +40,8 @@ func SetupRoutes() {
 
 	wrapHandler("/api/user/comments",  UserCommentsHandler)
 	wrapHandler("/api/user/likes",  UserLikesHandler)
+	wrapHandler("/api/user/dislikes", UserDislikesHandler)
+
 
 	// Google OAuth routes
 	http.HandleFunc("/auth/google",  GoogleLogin)

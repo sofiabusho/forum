@@ -43,7 +43,7 @@ func ProfileAPIHandler(w http.ResponseWriter, r *http.Request) {
 	profile := getUserProfile(db, userID)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(profile)
+	_ = json.NewEncoder(w).Encode(profile)
 }
 
 func updateProfile(w http.ResponseWriter, r *http.Request) {
@@ -61,29 +61,26 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 
 	if newUsername != "" {
 		var exists int
-		db.QueryRow("SELECT COUNT(*) FROM Users WHERE username = ? AND user_id != ?", newUsername, userID).Scan(&exists)
+		_ = db.QueryRow("SELECT COUNT(*) FROM Users WHERE username = ? AND user_id != ?", newUsername, userID).Scan(&exists)
 		if exists > 0 {
 			http.Error(w, "Username already taken", http.StatusBadRequest)
 			return
 		}
-
-		_, err := db.Exec("UPDATE Users SET username = ? WHERE user_id = ?", newUsername, userID)
-		if err != nil {
+		if _, err := db.Exec("UPDATE Users SET username = ? WHERE user_id = ?", newUsername, userID); err != nil {
 			http.Error(w, "Failed to update username", http.StatusInternalServerError)
 			return
 		}
 	}
 
 	if newBio != "" {
-		_, err := db.Exec("UPDATE Users SET bio = ? WHERE user_id = ?", newBio, userID)
-		if err != nil {
+		if _, err := db.Exec("UPDATE Users SET bio = ? WHERE user_id = ?", newBio, userID); err != nil {
 			http.Error(w, "Failed to update bio", http.StatusInternalServerError)
 			return
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]any{
+	_ = json.NewEncoder(w).Encode(map[string]any{
 		"success":  true,
 		"username": newUsername,
 		"bio":      newBio,
@@ -92,36 +89,53 @@ func updateProfile(w http.ResponseWriter, r *http.Request) {
 
 func getUserProfile(db *sql.DB, userID int) database.UserProfile {
 	var profile database.UserProfile
-	var registrationDate time.Time
 	var bio string
 
+	// Date from SQL
 	err := db.QueryRow(`
-		SELECT user_id, username, email, registration_date, bio
-		FROM Users 
-		WHERE user_id = ?
-	`, userID).Scan(&profile.UserID, &profile.Username, &profile.Email, &registrationDate, &bio)
+		SELECT 
+			u.user_id,
+			u.username,
+			u.email,
+			COALESCE( strftime('%Y-%m-%d', u.registration_date), '' ) AS join_date,
+			COALESCE(u.bio, '')
+		FROM Users u
+		WHERE u.user_id = ?
+	`, userID).Scan(&profile.UserID, &profile.Username, &profile.Email, &profile.JoinDate, &bio)
 
 	if err != nil {
 		return profile
 	}
-
 	profile.Bio = bio
-	profile.JoinDate = registrationDate.Format("January 2, 2006")
-	db.QueryRow("SELECT COUNT(*) FROM Posts WHERE user_id = ?", userID).Scan(&profile.PostCount)
-	db.QueryRow("SELECT COUNT(*) FROM Comments WHERE user_id = ?", userID).Scan(&profile.CommentCount)
-	db.QueryRow("SELECT COUNT(*) FROM LikesDislikes WHERE user_id = ? AND vote = 1", userID).Scan(&profile.LikesGiven)
-	db.QueryRow(`
-		SELECT COUNT(*) 
+
+	// Counts
+	_ = db.QueryRow(`SELECT COUNT(*) FROM Posts WHERE user_id = ?`, userID).Scan(&profile.PostCount)
+	_ = db.QueryRow(`SELECT COUNT(*) FROM Comments WHERE user_id = ?`, userID).Scan(&profile.CommentCount)
+
+	// Likes Given / Received
+	_ = db.QueryRow(`SELECT COUNT(*) FROM LikesDislikes WHERE user_id = ? AND vote = 1`, userID).Scan(&profile.LikesGiven)
+	_ = db.QueryRow(`
+		SELECT COUNT(*)
 		FROM LikesDislikes ld 
 		JOIN Posts p ON ld.post_id = p.post_id 
 		WHERE p.user_id = ? AND ld.vote = 1
 	`, userID).Scan(&profile.LikesReceived)
 
+		// Dislikes Given / Received 
+	_ = db.QueryRow(`SELECT COUNT(*) FROM LikesDislikes WHERE user_id = ? AND vote = -1`, userID).Scan(&profile.DislikesGiven)
+	_ = db.QueryRow(`
+		SELECT COUNT(*)
+		FROM LikesDislikes ld 
+		JOIN Posts p ON ld.post_id = p.post_id 
+		WHERE p.user_id = ? AND ld.vote = -1
+	`, userID).Scan(&profile.DislikesReceived)
+
+		// Profile image (latest uploaded)
 	var thumbnailURL string
-	db.QueryRow(`
+	_ = db.QueryRow(`
 		SELECT thumbnail_url 
 		FROM Images 
-		WHERE user_id = ? 
+		WHERE user_id = ?
 		ORDER BY upload_date DESC 
 		LIMIT 1
 	`, userID).Scan(&thumbnailURL)
@@ -138,7 +152,7 @@ func getCookieValue(r *http.Request) string {
 	return cookie.Value
 }
 
-// Returns posts the user has made
+// /api/user/posts
 func UserPostsHandler(w http.ResponseWriter, r *http.Request) {
 	userID := utils.GetUserIDFromSession(getCookieValue(r))
 	if userID == 0 {
@@ -165,19 +179,23 @@ func UserPostsHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var post database.PostResponse
 		var created time.Time
-		err := rows.Scan(&post.ID, &post.Title, &post.Content, &created)
-		if err != nil {
+		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &created); err != nil {
 			continue
 		}
 		post.TimeAgo = utils.FormatTimeAgo(created)
+		if len(post.Content) > 160 {
+			post.Excerpt = post.Content[:160] + "…"
+		} else {
+			post.Excerpt = post.Content
+		}
 		posts = append(posts, post)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(posts)
+	_ = json.NewEncoder(w).Encode(posts)
 }
 
-// Returns comments the user has made
+// /api/user/comments
 func UserCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	userID := utils.GetUserIDFromSession(getCookieValue(r))
 	if userID == 0 {
@@ -221,10 +239,10 @@ func UserCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(out)
+	_ = json.NewEncoder(w).Encode(out)
 }
 
-// Returns posts the user has liked
+// /api/user/likes
 func UserLikesHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session")
 	if err != nil || !utils.IsValidSession(cookie.Value) {
@@ -261,7 +279,6 @@ func UserLikesHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		pr.TimeAgo = utils.FormatTimeAgo(created)
-		// Create excerpt
 		if len(pr.Content) > 160 {
 			pr.Excerpt = pr.Content[:160] + "…"
 		} else {
@@ -271,5 +288,54 @@ func UserLikesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(liked)
+	_ = json.NewEncoder(w).Encode(liked)
+}
+
+	// /api/user/dislikes  
+func UserDislikesHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session")
+	if err != nil || !utils.IsValidSession(cookie.Value) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	userID := utils.GetUserIDFromSession(cookie.Value)
+	if userID == 0 {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	db := database.CreateTable()
+	defer db.Close()
+
+	rows, err := db.Query(`
+        SELECT p.post_id, p.title, p.content, p.creation_date
+        FROM LikesDislikes ld
+        JOIN Posts p ON p.post_id = ld.post_id
+        WHERE ld.user_id = ? AND ld.vote = -1
+        ORDER BY p.creation_date DESC
+    `, userID)
+	if err != nil {
+		http.Error(w, "Database query failed", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var disliked []database.PostResponse
+	for rows.Next() {
+		var pr database.PostResponse
+		var created time.Time
+		if err := rows.Scan(&pr.ID, &pr.Title, &pr.Content, &created); err != nil {
+			continue
+		}
+		pr.TimeAgo = utils.FormatTimeAgo(created)
+		if len(pr.Content) > 160 {
+			pr.Excerpt = pr.Content[:160] + "…"
+		} else {
+			pr.Excerpt = pr.Content
+		}
+		disliked = append(disliked, pr)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(disliked)
 }

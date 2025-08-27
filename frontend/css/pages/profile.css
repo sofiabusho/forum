@@ -46,6 +46,15 @@ main {
     margin-right: .5rem;
 }
 
+  .post-card {
+      border-radius: .5rem;
+      margin-bottom: .5rem;
+  }
+
+  .post-card:hover {
+      transform: translateY(-1px);
+  }
+
 #detailPane {
     color: #ffffff;
     flex-grow: 1;
