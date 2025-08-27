@@ -87,14 +87,3 @@ func FilteredPostsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(posts)
 }
-
-// AuthStatusHandler checks if user is authenticated
-func AuthStatusHandler(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("session")
-	isLoggedIn := err == nil && utils.IsValidSession(cookie.Value)
-
-	response := map[string]bool{"loggedIn": isLoggedIn}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}

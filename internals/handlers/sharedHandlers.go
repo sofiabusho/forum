@@ -35,6 +35,8 @@ func isValidSession(cookieValue string) bool {
 	return utils.IsValidSession(cookieValue)
 }
 
+
+
 // checkAuthenticationRequired checks if user is logged in and returns userID
 func checkAuthenticationRequired(cookieValue string) (int, bool) {
 	if !utils.IsValidSession(cookieValue) {

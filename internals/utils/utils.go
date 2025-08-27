@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+
 // TemplateData holds data to pass to templates
 type TemplateData struct {
 	IsLoggedIn bool

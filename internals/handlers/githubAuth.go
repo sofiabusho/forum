@@ -61,7 +61,7 @@ func GitHubCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Εναλλακτική λήψη email αν είναι null
+	// Alternative email fetch if not public
 	if githubUser.Email == "" {
 		emailResp, _ := client.Get("https://api.github.com/user/emails")
 		defer emailResp.Body.Close()
@@ -84,14 +84,14 @@ func GitHubCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// === Βάση δεδομένων ===
+	// Database operations
 	db := database.CreateTable()
 	defer db.Close()
 
 	var userID int
 	err = db.QueryRow("SELECT user_id FROM Users WHERE email = ?", githubUser.Email).Scan(&userID)
 	if err != nil {
-		// Δημιουργία νέου χρήστη
+		// Create new user if not exists
 		res, err := db.Exec("INSERT INTO Users (username, email, password_hash) VALUES (?, ?, ?)",
 			githubUser.Login, githubUser.Email, "")
 		if err != nil {
@@ -102,7 +102,7 @@ func GitHubCallback(w http.ResponseWriter, r *http.Request) {
 		userID = int(lastID)
 	}
 
-	// === Δημιουργία Session ===
+	// Create session
 	cookieValue := utils.GenerateCookieValue()
 	_, err = db.Exec("INSERT INTO Sessions (user_id, cookie_value, expiration_date) VALUES (?, ?, datetime('now', '+7 days'))",
 		userID, cookieValue)
@@ -118,6 +118,6 @@ func GitHubCallback(w http.ResponseWriter, r *http.Request) {
 		MaxAge: 60 * 60 * 24 * 7,
 	})
 
-	// Ανακατεύθυνση στην αρχική
+	// Redirect to homepage
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
