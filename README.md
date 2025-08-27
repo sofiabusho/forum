@@ -105,6 +105,7 @@ Open your browser and visit: http://localhost:8080
 ```
 
 ## 📁 Project Structure
+```bash
 forum/
 ├── main.go                          # Main application entry point
 ├── go.mod                           # Go module dependencies
@@ -144,6 +145,7 @@ forum/
 │       └── thumbnails/              # Generated thumbnails
 │
 └── README.md                        # This file
+```
 
 ## Database Schema
 
