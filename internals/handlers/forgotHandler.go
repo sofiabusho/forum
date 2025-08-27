@@ -42,7 +42,7 @@ func ForgotPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = db.Exec("UPDATE Users SET reset_token = ? WHERE email = ?", token, email)
 
 	// send email (best-effort)
-	_ = utils.SendResetEmail(email, token)
+	_ = SendResetEmail(email, token)
 
 	// redirect to success page
 	http.Redirect(w, r, "/forgot-password.html?sent=1", http.StatusSeeOther)
