@@ -19,9 +19,6 @@ func CategoriesAPIHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Debug: Log the count
-	println("Categories count:", count)
-
 	// Get all categories
 	rows, err := db.Query("SELECT name FROM Categories ORDER BY name")
 	if err != nil {
@@ -48,8 +45,6 @@ func CategoriesAPIHandler(w http.ResponseWriter, r *http.Request) {
 		categories = append(categories, category)
 	}
 
-	// Debug: Log the categories
-	println("Categories found:", len(categories))
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(categories)

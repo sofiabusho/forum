@@ -138,7 +138,7 @@ func getCookieValue(r *http.Request) string {
 	return cookie.Value
 }
 
-// ✅ ΝΕΑ FUNCTION για /api/user/posts
+// Returns posts the user has made
 func UserPostsHandler(w http.ResponseWriter, r *http.Request) {
 	userID := utils.GetUserIDFromSession(getCookieValue(r))
 	if userID == 0 {
@@ -177,7 +177,7 @@ func UserPostsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(posts)
 }
 
-// ✅ /api/user/comments — επιστρέφει τα σχόλιά μου (με τίτλο post & timeAgo)
+// Returns comments the user has made
 func UserCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	userID := utils.GetUserIDFromSession(getCookieValue(r))
 	if userID == 0 {
@@ -224,7 +224,7 @@ func UserCommentsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(out)
 }
 
-// ✅ /api/user/likes — επιστρέφει posts που έχω κάνει like (clickable σε κάθε post)
+// Returns posts the user has liked
 func UserLikesHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session")
 	if err != nil || !utils.IsValidSession(cookie.Value) {
@@ -261,7 +261,7 @@ func UserLikesHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		pr.TimeAgo = utils.FormatTimeAgo(created)
-		// προαιρετικό μικρό απόσπασμα
+		// Create excerpt
 		if len(pr.Content) > 160 {
 			pr.Excerpt = pr.Content[:160] + "…"
 		} else {

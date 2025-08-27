@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS Users (
     password_hash TEXT NOT NULL,
     registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Posts Table: stores user posts
 CREATE TABLE IF NOT EXISTS Posts (
     post_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,6 +96,8 @@ CREATE TABLE IF NOT EXISTS Images (
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
+
+
 -- Sessions Table: manages user sessions (login cookies)
 CREATE TABLE IF NOT EXISTS Sessions (
     session_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,6 +110,7 @@ CREATE TABLE IF NOT EXISTS Sessions (
 
 ALTER TABLE Users ADD COLUMN bio TEXT DEFAULT '';
 ALTER TABLE Users ADD COLUMN reset_token TEXT;
+
 
 -- This will store the reference to uploaded images
 ALTER TABLE Posts ADD COLUMN image_id INTEGER REFERENCES Images(image_id);
