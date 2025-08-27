@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"forum/internals/database"
 	"forum/internals/utils"
+	"html/template"
 	"net/http"
 	"net/smtp"
 	"strings"
@@ -16,8 +18,12 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	// GET: serve the reset form with token from the URL (?token=...)
 	if r.Method == http.MethodGet {
 		token := strings.TrimSpace(r.URL.Query().Get("token"))
-		// Render template and pass token to {{.Token}}
-		// (Assumes utils.FileService uses Go templates.)
+		if token == "" {
+			// Show initial reset request form
+			utils.FileService("request-reset.html", w, nil)
+			return
+		}
+		// Show password reset form with token
 		utils.FileService("add-newpassword.html", w, map[string]interface{}{"Token": token})
 		return
 	}
@@ -71,26 +77,69 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SendResetEmail(toEmail, token string) error {
-	from := "plant.talk2025@gmail.com" 
-	password := "niicnftnethvawxf"    
+	fmt.Printf("DEBUG: Attempting to send email to: %s\n", toEmail)
+	fmt.Printf("DEBUG: Reset token: %s\n", token)
+
+	from := "Plant Talk"
+	password := "niicnftnethvawxf"
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 
-	// reset link
-	resetLink := fmt.Sprintf("http://localhost:8080/add-newpassword.html?token=%s", token)
+	// Reset link
+	resetLink := fmt.Sprintf("http://localhost:8080/reset-password?token=%s", token)
+	fmt.Printf("DEBUG: Reset link: %s\n", resetLink)
 
-	// Email content
-	message := []byte(fmt.Sprintf(
-		"Subject: Reset your password\n\nClick the link below to reset your password:\n%s", resetLink,
-	))
+	// Parse and execute the HTML template
+	tmpl, err := template.ParseFiles("frontend/templates/email-reset.html")
+	if err != nil {
+		fmt.Printf("ERROR: Failed to parse template: %v\n", err)
+		return fmt.Errorf("failed to parse email template: %v", err)
+	}
+	fmt.Println("DEBUG: Template parsed successfully")
+
+	var body bytes.Buffer
+	data := struct {
+		ResetLink string
+	}{
+		ResetLink: resetLink,
+	}
+
+	// Execute template into buffer
+	err = tmpl.Execute(&body, data)
+	if err != nil {
+		fmt.Printf("ERROR: Failed to execute template: %v\n", err)
+		return fmt.Errorf("failed to execute template: %v", err)
+	}
+	fmt.Println("DEBUG: Template executed successfully")
+
+	// Create proper email headers with HTML content
+	headers := make(map[string]string)
+	headers["From"] = from
+	headers["To"] = toEmail
+	headers["Subject"] = "Password Reset Request"
+	headers["MIME-Version"] = "1.0"
+	headers["Content-Type"] = "text/html; charset=\"UTF-8\""
+
+	// Build the email message
+	var message bytes.Buffer
+	for key, value := range headers {
+		message.WriteString(fmt.Sprintf("%s: %s\r\n", key, value))
+	}
+	message.WriteString("\r\n")
+	message.Write(body.Bytes())
+
+	fmt.Printf("DEBUG: Attempting to connect to SMTP server: %s:%s\n", smtpHost, smtpPort)
 
 	// SMTP Auth
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	// send email
-	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, []string{toEmail}, message)
+	// Send email
+	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, []string{toEmail}, message.Bytes())
 	if err != nil {
-		return err
+		fmt.Printf("ERROR: SMTP send failed: %v\n", err)
+		return fmt.Errorf("failed to send email: %v", err)
 	}
+
+	fmt.Println("DEBUG: Email sent successfully!")
 	return nil
 }
