@@ -1,15 +1,15 @@
-# FORUM PROJECT 
+# FORUM PROJECT
 
 🪴🌵🌱🌷🌿 Plant Talk Forum 🪴🌵🌱🌷🌿
 
 A web forum for plant enthusiasts to connect, share knowledge, and build community. built with Go, SQLite, and vanilla JavaScript.
 
---- 
+---
 
-**Forum,** 
+**Forum,**
 **Forum-Authentication,**
-**Forum-Image-Upload, and** 
-**Forum-Advanced-Features** 
+**Forum-Image-Upload, and**
+**Forum-Advanced-Features**
 
 ## 🌱 Features
 
@@ -38,7 +38,7 @@ Thumbnail Generation: Automatic thumbnail creation for optimized display
 Image Management: Users can upload, view, and delete their own images
 Post Integration: Attach images to posts with preview functionality
 
-### Advanced Features 
+### Advanced Features
 
 Real-time Notifications: Notify users when their content is liked/disliked or commented on
 Activity Tracking: Comprehensive user activity page showing:
@@ -46,7 +46,6 @@ Activity Tracking: Comprehensive user activity page showing:
 User's created posts
 Posts where user left likes/dislikes
 Comments made by the user with context
-
 
 Content Management: Edit and delete posts and comments
 Notification Management: Mark notifications as read, view notification history
@@ -61,45 +60,47 @@ Security Best Practices: CSRF protection, input validation, and secure session m
 
 ## Usage
 
-*** Option 1: Using Docker (Recommended) ***
-
-
+**Option 1: Using Docker (Recommended)**
 
 1. Clone the repository
- ```bash
- clone https://platform.zone01.gr/git/ttarara/forum
+
+```bash
+clone https://platform.zone01.gr/git/ttarara/forum
 
 cd forum
 ```
 
-2.  
+2.
+
 ```bash
 Build and run with Docker Compose
 bashdocker-compose up --build
 ```
 
 3. Access the forum
+
 ```bash
 Open your browser and visit: http://localhost:8080
 
 ```
 
-*** Option 2: Local Development ***
+**Option 2: Local Development**
 
 Prerequisites
 
 Go 1.21 or higher
 SQLite3
 
-
 1. Install dependencies
-bashgo mod tidy
+   bashgo mod tidy
 
 2. Run the application
-```bash 
+
+```bash
 go run .
 ```
-```bash 
+
+```bash
 3. Access the forum
 Open your browser and visit: http://localhost:8080
 ```
@@ -110,19 +111,19 @@ The application uses SQLite with the following optimized database structure:
 
 ### Core Tables
 
-***Users:*** User accounts, authentication, and profile information
-***Posts:*** Forum posts with image references
-***Comments:*** Post comments and replies
-***Categories:*** Available post categories
-***PostCategories:*** Many-to-many relationship for post categorization
+**_Users:_** User accounts, authentication, and profile information
+**_Posts:_** Forum posts with image references
+**_Comments:_** Post comments and replies
+**_Categories:_** Available post categories
+**_PostCategories:_** Many-to-many relationship for post categorization
 
 ### Interaction Tables
 
-***LikesDislikes:*** Post voting system
-***CommentLikes:*** Comment voting system
-***Sessions:*** Secure session management
-***Images:*** Image upload metadata and file tracking
-***Notifications:*** User notification system
+**_LikesDislikes:_** Post voting system
+**_CommentLikes:_** Comment voting system
+**_Sessions:_** Secure session management
+**_Images:_** Image upload metadata and file tracking
+**_Notifications:_** User notification system
 
 ## Performance Features
 
@@ -149,7 +150,7 @@ Responsive navigation with user state management
 Form validation and error handling
 Modal dialogs for confirmations
 
---- 
+---
 
 **🧪 Testing the Application**
 User Registration & Authentication
@@ -180,13 +181,13 @@ Image Management: Upload, view, and delete images
 
 Docker Deployment
 
- ```bash Build the image
+```bash Build the image
 docker build -t forum .
 
 # Run with volume for data persistence
 docker run -p 8080:8080 -v forum-data:/app/data plant-talk-forum
 
- ```
+```
 
 ---
 
@@ -204,6 +205,7 @@ google.golang.org/api - Google API client
 **📝 Project Requirements Compliance**
 
 This forum implementation satisfies all requirements from the original project specifications:
+
 ```bash
 ✅ Basic Forum: SQLite database, authentication, posts, comments, likes, filtering
 ✅ Forum-Authentication: Google and GitHub OAuth integration
@@ -213,7 +215,6 @@ This forum implementation satisfies all requirements from the original project s
 ✅ Security: Bcrypt hashing, session management, input validation
 ✅ Performance: Database optimization, indexing, efficient queries
 ```
-
 
 **📄 License**
 This project is licensed under the MIT License - see the LICENSE file for details.
@@ -228,6 +229,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-                   Enjoy being part of the Plant Talk Community! 
+                   Enjoy being part of the Plant Talk Community!
 
                                       🌵
