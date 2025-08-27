@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"forum/internals/database"
 	"forum/internals/utils"
 	"net/http"
+	"net/smtp"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -66,4 +68,29 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/login.html", http.StatusSeeOther)
+}
+
+func SendResetEmail(toEmail, token string) error {
+	from := "plant.talk2025@gmail.com" 
+	password := "niicnftnethvawxf"    
+	smtpHost := "smtp.gmail.com"
+	smtpPort := "587"
+
+	// reset link
+	resetLink := fmt.Sprintf("http://localhost:8080/add-newpassword.html?token=%s", token)
+
+	// Email content
+	message := []byte(fmt.Sprintf(
+		"Subject: Reset your password\n\nClick the link below to reset your password:\n%s", resetLink,
+	))
+
+	// SMTP Auth
+	auth := smtp.PlainAuth("", from, password, smtpHost)
+
+	// send email
+	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, []string{toEmail}, message)
+	if err != nil {
+		return err
+	}
+	return nil
 }
