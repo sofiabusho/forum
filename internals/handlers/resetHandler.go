@@ -77,25 +77,20 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SendResetEmail(toEmail, token string) error {
-	fmt.Printf("DEBUG: Attempting to send email to: %s\n", toEmail)
-	fmt.Printf("DEBUG: Reset token: %s\n", token)
 
-	from := "Plant Talk"
+	from := "plant.talk2025@gmail.com"
 	password := "niicnftnethvawxf"
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 
 	// Reset link
 	resetLink := fmt.Sprintf("http://localhost:8080/reset-password?token=%s", token)
-	fmt.Printf("DEBUG: Reset link: %s\n", resetLink)
 
 	// Parse and execute the HTML template
 	tmpl, err := template.ParseFiles("frontend/templates/email-reset.html")
 	if err != nil {
-		fmt.Printf("ERROR: Failed to parse template: %v\n", err)
 		return fmt.Errorf("failed to parse email template: %v", err)
 	}
-	fmt.Println("DEBUG: Template parsed successfully")
 
 	var body bytes.Buffer
 	data := struct {
@@ -107,10 +102,8 @@ func SendResetEmail(toEmail, token string) error {
 	// Execute template into buffer
 	err = tmpl.Execute(&body, data)
 	if err != nil {
-		fmt.Printf("ERROR: Failed to execute template: %v\n", err)
 		return fmt.Errorf("failed to execute template: %v", err)
 	}
-	fmt.Println("DEBUG: Template executed successfully")
 
 	// Create proper email headers with HTML content
 	headers := make(map[string]string)
@@ -128,18 +121,14 @@ func SendResetEmail(toEmail, token string) error {
 	message.WriteString("\r\n")
 	message.Write(body.Bytes())
 
-	fmt.Printf("DEBUG: Attempting to connect to SMTP server: %s:%s\n", smtpHost, smtpPort)
-
 	// SMTP Auth
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
 	// Send email
 	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, []string{toEmail}, message.Bytes())
 	if err != nil {
-		fmt.Printf("ERROR: SMTP send failed: %v\n", err)
 		return fmt.Errorf("failed to send email: %v", err)
 	}
 
-	fmt.Println("DEBUG: Email sent successfully!")
 	return nil
 }

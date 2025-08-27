@@ -1,6 +1,6 @@
 # FORUM PROJECT
 
-🪴🌵🌱🌷🌿 Plant Talk Forum 🪴🌵🌱🌷🌿
+🪴🌵🌱🌷🌿 Plant Talk Forum 🌿🌷🌱🌵🪴
 
 A web forum for plant enthusiasts to connect, share knowledge, and build community. built with Go, SQLite, and vanilla JavaScript.
 
