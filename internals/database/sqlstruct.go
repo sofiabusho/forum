@@ -83,6 +83,7 @@ type Image struct {
 	OriginalName string    `json:"originalName"`
 	FileSize     int64     `json:"fileSize"`
 	FileType     string    `json:"fileType"`
+	ImageType    string    `json:"imageType"`
 	ImageURL     string    `json:"imageUrl"`
 	ThumbnailURL string    `json:"thumbnailUrl"`
 	UploadDate   time.Time `json:"uploadDate"`

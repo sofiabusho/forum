@@ -118,10 +118,16 @@ func ImageUploadHandler(w http.ResponseWriter, r *http.Request) {
 		thumbnailURL = "/frontend/uploads/thumbnails/" + filename
 	}
 
+	// Get image_type from form data (default to 'post' if not specified)
+	imageType := r.FormValue("image_type")
+	if imageType == "" || (imageType != "profile" && imageType != "post") {
+		imageType = "post" // Default to post image
+	}
+
 	_, err = db.Exec(`
-		INSERT INTO Images (user_id, filename, original_name, file_size, file_type, image_url, thumbnail_url, upload_date)
+		INSERT INTO Images (user_id, filename, original_name, file_size, file_type, image_type, image_url, thumbnail_url, upload_date)
 		VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-	`, userID, filename, fileHeader.Filename, fileHeader.Size, fileType, imageURL, thumbnailURL)
+	`, userID, filename, fileHeader.Filename, fileHeader.Size, fileType, imageType, imageURL, thumbnailURL)
 
 	if err != nil {
 		// Clean up files on database error

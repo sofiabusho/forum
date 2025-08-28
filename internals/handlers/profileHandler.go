@@ -130,12 +130,12 @@ func getUserProfile(db *sql.DB, userID int) database.UserProfile {
 		WHERE p.user_id = ? AND ld.vote = -1
 	`, userID).Scan(&profile.DislikesReceived)
 
-		// Profile image (latest uploaded)
+		// Profile image 
 	var thumbnailURL string
 	_ = db.QueryRow(`
 		SELECT thumbnail_url 
 		FROM Images 
-		WHERE user_id = ?
+		WHERE user_id = ? AND image_type = 'profile'
 		ORDER BY upload_date DESC 
 		LIMIT 1
 	`, userID).Scan(&thumbnailURL)

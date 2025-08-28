@@ -592,7 +592,7 @@ func GetUserImagesHandler(w http.ResponseWriter, r *http.Request) {
 		SELECT image_id, filename, original_name, file_size, file_type, 
 		       image_url, thumbnail_url, upload_date
 		FROM Images 
-		WHERE user_id = ? 
+		WHERE user_id = ? And image_type = 'post'
 		ORDER BY upload_date DESC`, userID)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
