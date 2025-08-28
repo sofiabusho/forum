@@ -125,9 +125,9 @@ func ImageUploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = db.Exec(`
-		INSERT INTO Images (user_id, filename, original_name, file_size, file_type, image_type, image_url, thumbnail_url, upload_date)
-		VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-	`, userID, filename, fileHeader.Filename, fileHeader.Size, fileType, imageType, imageURL, thumbnailURL)
+    INSERT INTO Images (user_id, filename, original_name, file_size, file_type, image_type, image_url, thumbnail_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+`, userID, filename, fileHeader.Filename, fileHeader.Size, fileType, imageType, imageURL, thumbnailURL)
 
 	if err != nil {
 		// Clean up files on database error
