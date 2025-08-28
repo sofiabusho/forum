@@ -1056,6 +1056,7 @@
 
                 if (isLoggedIn) {
                     document.getElementById('comment-form-container').classList.remove('d-none');
+                    recheckPostActions();
                 } else {
                     document.getElementById('login-prompt').classList.remove('d-none');
                 }
@@ -1067,9 +1068,9 @@
         }
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuthStatus();
-            loadPost();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuthStatus();
+            await loadPost();
 
             // Setup comment form
             document.getElementById('comment-form').addEventListener('submit', submitComment);

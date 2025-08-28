@@ -4,7 +4,23 @@ CREATE TABLE IF NOT EXISTS Users (
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    bio TEXT DEFAULT '',
+    reset_token TEXT
+);
+
+-- Images Table: stores uploaded image information (created before Posts to avoid foreign key issues)
+CREATE TABLE IF NOT EXISTS Images (
+    image_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    filename TEXT UNIQUE NOT NULL,
+    original_name TEXT NOT NULL,
+    file_size INTEGER NOT NULL,
+    file_type TEXT NOT NULL CHECK (file_type IN ('JPEG', 'PNG', 'GIF')),
+    image_url TEXT NOT NULL,
+    thumbnail_url TEXT,
+    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
 -- Posts Table: stores user posts
@@ -15,8 +31,11 @@ CREATE TABLE IF NOT EXISTS Posts (
     photo_url TEXT,
     content TEXT NOT NULL,
     creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+    image_id INTEGER,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (image_id) REFERENCES Images(image_id)
 );
+
 -- Comments Table: stores user comments on posts
 CREATE TABLE IF NOT EXISTS Comments (
     comment_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,11 +46,13 @@ CREATE TABLE IF NOT EXISTS Comments (
     FOREIGN KEY (post_id) REFERENCES Posts(post_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
+
 -- Categories Table: defines available categories/tags for posts
 CREATE TABLE IF NOT EXISTS Categories (
     category_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL
 );
+
 -- PostCategories Table: connects posts to multiple categories (many-to-many)
 CREATE TABLE IF NOT EXISTS PostCategories (
     post_id INTEGER NOT NULL,
@@ -40,6 +61,7 @@ CREATE TABLE IF NOT EXISTS PostCategories (
     FOREIGN KEY (post_id) REFERENCES Posts(post_id),
     FOREIGN KEY (category_id) REFERENCES Categories(category_id)
 );
+
 -- LikesDislikes Table: stores user reactions (likes or dislikes) to posts
 CREATE TABLE IF NOT EXISTS LikesDislikes (
     likeDislike_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,6 +72,7 @@ CREATE TABLE IF NOT EXISTS LikesDislikes (
     FOREIGN KEY (post_id) REFERENCES Posts(post_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
+
 -- CommentLikes Table: stores user reactions (likes or dislikes) to comments
 CREATE TABLE IF NOT EXISTS CommentLikes (
     commentlikes_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,6 +83,16 @@ CREATE TABLE IF NOT EXISTS CommentLikes (
     FOREIGN KEY (comment_id) REFERENCES Comments(comment_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
+
+-- Sessions Table: manages user sessions (login cookies)
+CREATE TABLE IF NOT EXISTS Sessions (
+    session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    cookie_value TEXT UNIQUE NOT NULL,
+    expiration_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+);
+
 -- Notifications Table: stores user notifications
 CREATE TABLE IF NOT EXISTS Notifications (
     notification_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,43 +110,6 @@ CREATE TABLE IF NOT EXISTS Notifications (
     FOREIGN KEY (related_comment_id) REFERENCES Comments(comment_id),
     FOREIGN KEY (related_user_id) REFERENCES Users(user_id)
 );
-
-SELECT notification_id, user_id, type, title, is_read FROM Notifications;
-SELECT post_id, title, user_id FROM Posts LIMIT 5;
-SELECT comment_id, post_id, user_id, content FROM Comments LIMIT 5;
-
--- Images Table: stores uploaded image informationf
-CREATE TABLE IF NOT EXISTS Images (
-    image_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    filename TEXT UNIQUE NOT NULL,
-    original_name TEXT NOT NULL,
-    file_size INTEGER NOT NULL,
-    file_type TEXT NOT NULL CHECK (file_type IN ('JPEG', 'PNG', 'GIF')),
-    image_url TEXT NOT NULL,
-    thumbnail_url TEXT,
-    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
-);
-
-
-
--- Sessions Table: manages user sessions (login cookies)
-CREATE TABLE IF NOT EXISTS Sessions (
-    session_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    cookie_value TEXT UNIQUE NOT NULL,
-    expiration_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
-);
-
-
-ALTER TABLE Users ADD COLUMN bio TEXT DEFAULT '';
-ALTER TABLE Users ADD COLUMN reset_token TEXT;
-
-
--- This will store the reference to uploaded images
-ALTER TABLE Posts ADD COLUMN image_id INTEGER REFERENCES Images(image_id);
 
 -- Create indexes for performance
 
@@ -148,12 +144,11 @@ CREATE INDEX IF NOT EXISTS idx_comment_likes_comment_id ON CommentLikes(comment_
 CREATE INDEX IF NOT EXISTS idx_comment_likes_user_id ON CommentLikes(user_id);
 CREATE INDEX IF NOT EXISTS idx_comment_likes_comment_vote ON CommentLikes(comment_id, vote);
 
--- Notifications indexes (already exists, but here for completeness)
+-- Notifications indexes
 CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON Notifications(user_id, is_read, creation_date DESC);
 CREATE INDEX IF NOT EXISTS idx_notifications_type ON Notifications(type);
 CREATE INDEX IF NOT EXISTS idx_notifications_related_post ON Notifications(related_post_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_related_user ON Notifications(related_user_id);
-
 
 -- Sessions indexes (important for authentication)
 CREATE INDEX IF NOT EXISTS idx_sessions_cookie_value ON Sessions(cookie_value);
@@ -182,9 +177,3 @@ INSERT OR IGNORE INTO Categories (name) VALUES
     ('Plant Diseases'),
     ('Propagation'),
     ('Flowering Plants');
-
--- Insert notification types
-INSERT INTO Notifications (user_id, type, title, message)
-VALUES (1, 'like', 'New Like!', 'Someone liked your post! Check it out!'),
-       (1, 'comment', 'New Comment!', 'Someone commented on your post!'),
-       (1, 'system', 'Welcome to the Forum!', 'Thank you for joining our plant community!');
