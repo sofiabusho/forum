@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS Images (
     original_name TEXT NOT NULL,
     file_size INTEGER NOT NULL,
     file_type TEXT NOT NULL CHECK (file_type IN ('JPEG', 'PNG', 'GIF')),
+    image_type TEXT DEFAULT 'post' CHECK (image_type IN ('profile', 'post')),
     image_url TEXT NOT NULL,
     thumbnail_url TEXT,
     upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -163,6 +164,7 @@ CREATE INDEX IF NOT EXISTS idx_user_posts_likes ON Posts(user_id, post_id);
 CREATE INDEX IF NOT EXISTS idx_images_user_id ON Images(user_id);
 CREATE INDEX IF NOT EXISTS idx_images_filename ON Images(filename);
 CREATE INDEX IF NOT EXISTS idx_images_upload_date ON Images(upload_date DESC);
+CREATE INDEX IF NOT EXISTS idx_images_user_type ON Images(user_id, image_type);
 
 -- Index for Posts with images
 CREATE INDEX IF NOT EXISTS idx_posts_image_id ON Posts(image_id);
