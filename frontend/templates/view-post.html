@@ -1047,25 +1047,33 @@
         }
 
         // Check authentication status
-        async function checkAuthStatus() {
-            try {
-                const response = await fetch('/api/auth/status');
-                const data = await response.json();
-                isLoggedIn = data.loggedIn;
-                currentUserId = data.userID;
+            async function checkAuthStatus() {
+                try {
+                    const response = await fetch('/api/auth/status');
+                    const data = await response.json();
+                    isLoggedIn = data.loggedIn;
+                    currentUserId = data.userID;
 
-                if (isLoggedIn) {
-                    document.getElementById('comment-form-container').classList.remove('d-none');
-                    recheckPostActions();
-                } else {
+                    if (isLoggedIn) {
+                        document.getElementById('comment-form-container').classList.remove('d-none');
+                        document.getElementById('login-prompt').classList.add('d-none');
+
+                        // Add post action buttons if user is the author
+                        if (currentPost && currentPost.isAuthor) {
+                            addPostActionButtons();
+                        }
+                    } else {
+                        document.getElementById('login-prompt').classList.remove('d-none');
+                        document.getElementById('comment-form-container').classList.add('d-none');
+                    }
+
+                } catch (error) {
+                    console.error('Error checking auth status:', error);
                     document.getElementById('login-prompt').classList.remove('d-none');
+                    document.getElementById('comment-form-container').classList.add('d-none');
+                    isLoggedIn = false;
                 }
-
-            } catch (error) {
-                console.error('Error checking auth status:', error);
-                document.getElementById('login-prompt').classList.remove('d-none');
             }
-        }
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async () => {
