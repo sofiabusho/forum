@@ -74,7 +74,12 @@ cd forum
 
 ```bash
 Build and run with Docker Compose
-bashdocker-compose up --build
+docker compose up -d --build
+docker images
+docker ps -a
+docker compose down -v
+
+
 ```
 
 3. Access the forum
