@@ -41,8 +41,8 @@ COPY --from=builder /app/internals ./internals
 RUN mkdir -p /app/data
 
 # Create non-root user for security
-RUN addgroup -g 1001 -S appgroup && \
-    adduser -S appuser -u 1001 -G appgroup
+RUN addgroup -g 1000 -S appgroup && \
+    adduser -S appuser -u 1000 -G appgroup
 
 # Change ownership of app directory
 RUN chown -R appuser:appgroup /app
@@ -55,7 +55,7 @@ EXPOSE 8080
 
 # Set environment variables
 ENV PORT=8080
-ENV DB_PATH=/app/data/forum.db
+ENV DB_PATH=/app/forum.db
 
 # Health check to ensure container is running correctly
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
