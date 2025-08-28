@@ -14,10 +14,15 @@ A web forum for plant enthusiasts to connect, share knowledge, and build communi
 ## 🌱 Features
 
 **- User Authentication & Authorization:** Secure registration and login with bcrypt password hashing
+
 **- Posts & Comments System:** Create, view, edit, and delete posts and comments
+
 **- Multi-Category Support:** Organize posts by plant types (Succulents, Tropical Plants, etc.)
+
 **- Like/Dislike System:** React to both posts and comments with voting functionality
+
 **- Advanced Filtering:** Filter posts by categories, user's own posts, or liked posts
+
 **- Session Management:** Secure cookie-based sessions with expiration dates
 
 ---
@@ -25,37 +30,53 @@ A web forum for plant enthusiasts to connect, share knowledge, and build communi
 ### Authentication Methods (OAuth Integration)
 
 Traditional Registration: Email, username, and password registration
+
 Google OAuth: Sign in with Google account
+
 GitHub OAuth: Sign in with GitHub account
+
 Password Recovery: Forgot password functionality with secure reset tokens
+
 Session Security: UUID-based session tokens with automatic expiration
 
 ### Image Upload System
 
 Multi-Format Support: JPEG, PNG, and GIF image uploads
+
 Size Validation: 20MB maximum file size with proper error handling
+
 Thumbnail Generation: Automatic thumbnail creation for optimized display
+
 Image Management: Users can upload, view, and delete their own images
+
 Post Integration: Attach images to posts with preview functionality
 
 ### Advanced Features
 
 Real-time Notifications: Notify users when their content is liked/disliked or commented on
+
 Activity Tracking: Comprehensive user activity page showing:
 
 User's created posts
+
 Posts where user left likes/dislikes
+
 Comments made by the user with context
 
 Content Management: Edit and delete posts and comments
+
 Notification Management: Mark notifications as read, view notification history
 
 ### Technical Features
 
 Responsive Design: Mobile-friendly interface using Bootstrap 5.3.2
+
 Docker Ready: Containerized application with Docker Compose support
+
 Database Optimization: Comprehensive indexing for performance
+
 Error Handling: Proper HTTP status codes and user-friendly error messages
+
 Security Best Practices: CSRF protection, input validation, and secure session management
 
 ## Usage
@@ -65,21 +86,18 @@ Security Best Practices: CSRF protection, input validation, and secure session m
 1. Clone the repository
 
 ```bash
-clone https://platform.zone01.gr/git/ttarara/forum
+git clone https://platform.zone01.gr/git/ttarara/forum
 
 cd forum
 ```
 
-2.
+2. Build and run with Docker Compose
 
 ```bash
-Build and run with Docker Compose
 docker compose up -d --build
 docker images
 docker ps -a
 docker compose down -v
-
-
 ```
 
 3. Access the forum
@@ -97,16 +115,17 @@ Go 1.21 or higher
 SQLite3
 
 1. Install dependencies
-   bashgo mod tidy
+```bash
+mod tidy
+```
 
 2. Run the application
 
 ```bash
 go run .
 ```
-
-```bash
 3. Access the forum
+```bash
 Open your browser and visit: http://localhost:8080
 ```
 
@@ -140,46 +159,47 @@ The application uses SQLite with the following optimized database structure:
 
 **🎨 Frontend Technology**
 The frontend implementation uses:
-
+```bash
 Bootstrap 5.3.2: Responsive design framework
 Vanilla JavaScript: Dynamic functionality and AJAX requests
 Template System: Reusable HTML components (header, footer)
 Responsive Design: Mobile-first approach with adaptive layouts
+```
 
 Key Frontend Features
-
+```bash
 Dynamic post loading with infinite scroll
 Real-time notification updates
 Image upload with drag-and-drop interface
 Responsive navigation with user state management
 Form validation and error handling
 Modal dialogs for confirmations
-
+```
 ---
 
 **🧪 Testing the Application**
 User Registration & Authentication
-
+```bash
 Traditional Registration: Use /register with email, username, and password
 OAuth Login: Test Google and GitHub authentication flows
 Password Recovery: Use forgot password functionality
 Session Management: Verify automatic logout on session expiration
-
+```
 Content Creation & Management
-
+```bash
 Create Posts: Test post creation with categories and images
 Image Upload: Upload JPEG, PNG, and GIF files (test size limits)
 Comment System: Add comments and replies to posts
 Edit/Delete: Modify your own content
 Like/Dislike: React to posts and comments
-
+```
 Advanced Features
-
+```bsh
 Filtering: Test category filters, "my posts", and "my likes"
 Notifications: Create interactions and check notification system
 Activity Tracking: Review your activity page
 Image Management: Upload, view, and delete images
-
+```
 ---
 
 **🚀 Deployment**
@@ -197,14 +217,14 @@ docker run -p 8080:8080 -v forum-data:/app/data plant-talk-forum
 ---
 
 **Production Considerations**
-
+```bash
 sqlite3 - Database driver
 bcrypt - Password hashing
 google/uuid - UUID generation
 golang.org/x/oauth2 - OAuth2 implementation
 golang.org/x/image - Image processing
 google.golang.org/api - Google API client
-
+```
 ---
 
 **📝 Project Requirements Compliance**
