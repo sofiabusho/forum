@@ -51,12 +51,3 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
-// wrapHandler wraps a regular handler function with middleware
-func wrapHandler(pattern string, handler http.HandlerFunc) {
-	http.HandleFunc(pattern, CombinedMiddleware(handler))
-}
-
-// wrapHandlerNoLog wraps a handler without logging (for static files)
-func wrapHandlerNoLog(pattern string, handler http.HandlerFunc) {
-	http.HandleFunc(pattern, ErrorHandlingMiddleware(handler))
-}

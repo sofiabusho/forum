@@ -55,14 +55,14 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	email := userinfo.Email
 	username := userinfo.Name
 
-	// === Εισαγωγή ή εύρεση χρήστη ===
+	// Import or create user in local DB
 	db := database.CreateTable()
 	defer db.Close()
 
 	var userID int
 	err = db.QueryRow("SELECT user_id FROM Users WHERE email = ?", email).Scan(&userID)
 	if err != nil {
-		// Χρήστης δεν υπάρχει, δημιουργούμε
+		// User not found, create new user
 		res, err := db.Exec("INSERT INTO Users (username, email, password_hash) VALUES (?, ?, ?)", username, email, "")
 		if err != nil {
 			http.Error(w, "Failed to create user", http.StatusInternalServerError)
@@ -72,7 +72,7 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		userID = int(lastID)
 	}
 
-	// === Δημιουργία session ===
+	// Create session
 	cookieValue := utils.GenerateCookieValue()
 	_, err = db.Exec("INSERT INTO Sessions (user_id, cookie_value, expiration_date) VALUES (?, ?, datetime('now', '+7 days'))",
 		userID, cookieValue)
@@ -81,7 +81,7 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Αποστολή cookie στον client
+	// Set session cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:   "session",
 		Value:  cookieValue,
@@ -89,6 +89,6 @@ func GoogleCallback(w http.ResponseWriter, r *http.Request) {
 		MaxAge: 60 * 60 * 24 * 7,
 	})
 
-	// Τέλος: redirect στην αρχική
+	
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

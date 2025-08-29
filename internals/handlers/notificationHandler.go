@@ -105,11 +105,11 @@ func MarkNotificationReadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !isRead {
-        if _, err := db.Exec("UPDATE Notifications SET is_read = 1 WHERE notification_id = ?", notificationID); err != nil {
-            http.Error(w, "Failed to mark read", http.StatusInternalServerError)
-            return
-        }
-    }
+		if _, err := db.Exec("UPDATE Notifications SET is_read = 1 WHERE notification_id = ?", notificationID); err != nil {
+			http.Error(w, "Failed to mark read", http.StatusInternalServerError)
+			return
+		}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]bool{"success": true})
@@ -279,7 +279,7 @@ func CreateCommentLikeNotification(commentID, likerID int, likerUsername, postTi
 	_ = CreateNotification(commentAuthorID, "like", title, message, &postID, &commentID, &likerID)
 }
 
-// CreateCommentDislikeNotification creates notification for comment dislikes  
+// CreateCommentDislikeNotification creates notification for comment dislikes
 func CreateCommentDislikeNotification(commentID, dislikerID int, dislikerUsername, postTitle string, postID int) {
 	db := database.CreateTable()
 	defer db.Close()
@@ -358,12 +358,9 @@ func CreateFollowupCommentNotifications(postID, commentID, commenterID int, comm
 			continue
 		}
 		count++
-		fmt.Printf("[FollowupNotify] post=%d newComment=%d -> notify watcher=%d by=%d (OK)\n",
-			postID, commentID, watcherID, commenterID)
 	}
 
 	if count == 0 {
-		fmt.Printf("[FollowupNotify] post=%d newComment=%d -> no previous commenters to notify\n", postID, commentID)
 	}
 }
 
@@ -550,6 +547,3 @@ func SystemNotification(userIDs []int, title, message string) error {
 
 	return tx.Commit()
 }
-
-
-

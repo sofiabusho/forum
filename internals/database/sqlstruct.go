@@ -75,7 +75,6 @@ type PostResponse struct {
 	IsAuthor     bool     `json:"isAuthor,omitempty"`
 }
 
-// New Image struct
 type Image struct {
 	ImageID      int       `json:"id"`
 	UserID       int       `json:"userId"`
@@ -89,7 +88,6 @@ type Image struct {
 	UploadDate   time.Time `json:"uploadDate"`
 }
 
-// ImageResponse struct for API responses
 type ImageResponse struct {
 	ID                int    `json:"id"`
 	Filename          string `json:"filename"`

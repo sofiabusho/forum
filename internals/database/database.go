@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -41,7 +41,7 @@ func InitializeDatabase() {
 	defer db.Close()
 
 	// Read and execute SQL schema
-	sqlContent, err := ioutil.ReadFile("internals/database/table.sql")
+	sqlContent, err := os.ReadFile("internals/database/table.sql")
 	if err != nil {
 		fmt.Printf("Warning: Could not read table.sql: %v\n", err)
 		return

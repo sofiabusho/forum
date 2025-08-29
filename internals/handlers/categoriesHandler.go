@@ -50,7 +50,7 @@ func CategoriesAPIHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(categories)
 }
 
-// CategoryResponse struct (add this to your database structs)
+// CategoryResponse struct
 type CategoryResponse struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`

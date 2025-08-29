@@ -29,12 +29,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		"Email":    email,
 	}
 
-	// DEBUG: Print received values
-	fmt.Printf("\n=== REGISTRATION DEBUG ===\n")
-	fmt.Printf("Username: '%s'\n", username)
-	fmt.Printf("Email: '%s'\n", email)
-	fmt.Printf("Password length: %d\n", len(pass))
-	fmt.Printf("Passwords match: %v\n", pass == confirm)
 
 	if username == "" || email == "" || pass == "" || confirm == "" {
 		formData["Message"] = "All fields are required"
@@ -48,11 +42,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// DEBUG: Test email validation step by step
-	fmt.Printf("\n--- EMAIL VALIDATION DEBUG ---\n")
-	fmt.Printf("Raw email: '%s'\n", email)
-	fmt.Printf("Email length: %d\n", len(email))
-	fmt.Printf("@ count: %d\n", strings.Count(email, "@"))
 	emailValid := utils.IsValidEmail(email)
 
 	if !emailValid {
@@ -62,7 +51,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	
 	}
 	
-	fmt.Printf("\n--- PASSWORD VALIDATION DEBUG ---\n")
 	passValid := utils.IsValidPassword(pass)
 
 	if !passValid {

@@ -52,7 +52,7 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 	var existingVote int
 	err = db.QueryRow("SELECT vote FROM LikesDislikes WHERE post_id = ? AND user_id = ?", postID, userID).Scan(&existingVote)
 
-	var isNewVote bool = false // RENAMED from isNewLike
+	var isNewVote bool = false 
 
 	if err == nil {
 		// User already voted
@@ -62,12 +62,12 @@ func LikePostHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			// Different vote - update it
 			db.Exec("UPDATE LikesDislikes SET vote = ? WHERE post_id = ? AND user_id = ?", vote, postID, userID)
-			isNewVote = true // FIXED: Set flag for vote change
+			isNewVote = true // Set flag for vote change
 		}
 	} else {
 		// No existing vote - create new one
 		db.Exec("INSERT INTO LikesDislikes (post_id, user_id, vote) VALUES (?, ?, ?)", postID, userID, vote)
-		isNewVote = true // FIXED: Set flag for new vote
+		isNewVote = true //  Set flag for new vote
 	}
 
 	// Create notification for new votes (BOTH likes and dislikes)
@@ -141,7 +141,7 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	var existingVote int
 	err = db.QueryRow("SELECT vote FROM CommentLikes WHERE comment_id = ? AND user_id = ?", commentID, userID).Scan(&existingVote)
 
-	isNewVote := false // RENAMED and FIXED
+	isNewVote := false 
 
 	if err == nil {
 		// User already voted
@@ -151,12 +151,12 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			// Different vote - update it
 			db.Exec("UPDATE CommentLikes SET vote = ? WHERE comment_id = ? AND user_id = ?", vote, commentID, userID)
-			isNewVote = true // FIXED: Set flag for vote change
+			isNewVote = true // Set flag for vote change
 		}
 	} else {
 		// No existing vote - create new one
 		db.Exec("INSERT INTO CommentLikes (comment_id, user_id, vote) VALUES (?, ?, ?)", commentID, userID, vote)
-		isNewVote = true // FIXED: Set flag for new vote
+		isNewVote = true //  Set flag for new vote
 	}
 
 	// Create notification for NEW votes (BOTH likes and dislikes)

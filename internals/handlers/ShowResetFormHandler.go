@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-var tmpl = template.Must(template.ParseGlob("frontend/templates/*.html")) // ή προσαρμόστε το path
+var tmpl = template.Must(template.ParseGlob("frontend/templates/*.html")) // Parsed all templates at once
 
 func ShowResetFormHandler(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")

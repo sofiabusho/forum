@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"forum/internals/database"
 	"html/template"
-	"math/rand"
+	"crypto/rand"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
 )
-
 
 // TemplateData holds data to pass to templates
 type TemplateData struct {
@@ -55,64 +54,64 @@ func FileServiceWithAuth(filename string, w http.ResponseWriter, r *http.Request
 func IsValidEmail(email string) bool {
 	// Trim whitespace
 	email = strings.TrimSpace(email)
-	
+
 	// Basic checks
 	if len(email) < 5 || len(email) > 254 {
 		return false
 	}
-	
+
 	// Must contain exactly one @
 	if strings.Count(email, "@") != 1 {
 		return false
 	}
-	
+
 	// Split and check parts exist
 	parts := strings.Split(email, "@")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		return false
 	}
-	
+
 	localPart := parts[0]
 	domainPart := parts[1]
-	
+
 	// Local part length check
 	if len(localPart) > 64 {
 		return false
 	}
-	
+
 	// Domain must contain at least one dot
 	if !strings.Contains(domainPart, ".") {
 		return false
 	}
-	
+
 	// Domain can't start or end with dot or dash
 	if strings.HasPrefix(domainPart, ".") || strings.HasSuffix(domainPart, ".") ||
-	   strings.HasPrefix(domainPart, "-") || strings.HasSuffix(domainPart, "-") {
+		strings.HasPrefix(domainPart, "-") || strings.HasSuffix(domainPart, "-") {
 		return false
 	}
-	
+
 	// Very simple regex - just basic characters
 	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	matched, err := regexp.MatchString(emailRegex, email)
-	
+
 	return err == nil && matched
-		
+
 }
 
 // Test function to verify this works
 func TestBasicEmailValidation() {
 	testEmails := []string{
-		"yuki@gmail.com",           // Should be true
-		"test@example.com",         // Should be true  
-		"user.name@domain.co.uk",   // Should be true
-		"invalid-email",            // Should be false
-		"@invalid.com",             // Should be false
-		"invalid@",                 // Should be false
-		"invalid@@domain.com",      // Should be false
-		"test@domain",              // Should be false (no TLD)
-		"",                         // Should be false
+		"yuki@gmail.com",         // Should be true
+		"test@example.com",       // Should be true
+		"user.name@domain.co.uk", // Should be true
+		"invalid-email",          // Should be false
+		"@invalid.com",           // Should be false
+		"invalid@",               // Should be false
+		"invalid@@domain.com",    // Should be false
+		"test@domain",            // Should be false (no TLD)
+		"",                       // Should be false
 	}
-	
+
 	fmt.Println("=== BASIC EMAIL VALIDATION TEST ===")
 	for _, email := range testEmails {
 		valid := IsValidEmail(email)
@@ -151,14 +150,21 @@ func IsValidPassword(password string) bool {
 
 	return true
 }
+
 func GenerateCookieValue() string {
-	rand.Seed(time.Now().UnixNano())
-	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-	b := make([]rune, 32)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+	bytes := make([]byte, 32)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		panic("crypto/rand failed: " + err.Error())
 	}
-	return string(b)
+
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	result := make([]byte, 32)
+	for i := range result {
+		result[i] = letters[bytes[i]%byte(len(letters))]
+	}
+
+	return string(result)
 }
 
 // IsValidSession returns true if the given session cookie exists and is not expired.
@@ -271,5 +277,3 @@ func TruncateText(text string, maxLength int) string {
 	}
 	return text[:maxLength] + "..."
 }
-
-
