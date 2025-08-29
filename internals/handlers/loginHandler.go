@@ -16,7 +16,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		// Check for success message from registration
 		successType := r.URL.Query().Get("success")
 		message := r.URL.Query().Get("message")
-		
 
 		data := make(map[string]interface{})
 
@@ -62,7 +61,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = db.Exec("DELETE FROM Sessions WHERE user_id = ?", userID)
 	if err != nil {
 		fmt.Printf("Warning: Failed to cleanup old sessions for user %d: %v\n", userID, err)
-		// Continue anyway - this is not a critical error
 	} else {
 		fmt.Printf("Cleaned up existing sessions for user %d\n", userID)
 	}
