@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+
 // NotFoundHandler handles 404 errors
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
@@ -22,8 +23,7 @@ func InternalServerErrorHandler(w http.ResponseWriter, r *http.Request) {
 // BadRequestHandler handles 400 errors
 func BadRequestHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusBadRequest)
-	// You can create a error400.html template or use a generic error page
-	utils.FileService("error500.html", w, map[string]interface{}{
+	utils.FileService("error400.html", w, map[string]interface{}{
 		"Error":   "Bad Request",
 		"Message": "The request could not be processed.",
 	})

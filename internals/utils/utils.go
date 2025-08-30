@@ -1,10 +1,10 @@
 package utils
 
 import (
+	"crypto/rand"
 	"fmt"
 	"forum/internals/database"
 	"html/template"
-	"crypto/rand"
 	"net/http"
 	"regexp"
 	"strings"
@@ -24,8 +24,7 @@ type TemplateData struct {
 func FileService(filename string, w http.ResponseWriter, data any) {
 	tmpl, err := template.ParseFiles("frontend/templates/" + filename)
 	if err != nil {
-		http.Error(w, "Template error: "+err.Error(), 500)
-		return
+		panic("Template error: " + err.Error())
 	}
 	tmpl.Execute(w, data)
 }

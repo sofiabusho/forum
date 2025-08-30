@@ -188,7 +188,7 @@
                                     <i class="bi bi-chat me-1"></i>${post.comments || 0} comments
                                 </small>
                                 <small class="text-light clickable-area" onclick="viewPost(${post.id})" style="cursor: pointer;">
-                                    <i class="bi bi-arrow-right-circle me-1"></i>Read more
+                                    <i class="bi bi-arrow-right-circle me-1"></i>See more
                                 </small>
                             </div>
                         </div>

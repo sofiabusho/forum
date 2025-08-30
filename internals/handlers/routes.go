@@ -96,6 +96,7 @@ func SetupRoutes() {
 	wrapHandler("/terms.html", TermsHandler)
 
 	// Error routes
+	wrapHandler("/400", BadRequestHandler)
 	wrapHandler("/404", NotFoundHandler)
 	wrapHandler("/500", InternalServerErrorHandler)
 
