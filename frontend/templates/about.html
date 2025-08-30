@@ -11,6 +11,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../frontend/css/pages/main.css">
     <link rel="stylesheet" href="../frontend/css/pages/shared.css">
+    <link rel="stylesheet" href="../frontend/css/pages/about.css">
 </head>
 
 <body>
@@ -18,75 +19,54 @@
     <div id="shared-header"></div>
 
     <main class="container flex-grow-1 py-4">
-        <div class="card shadow-sm">
-                <section id="mission">
-                <h2>Our Mission</h2>
-                <p>
-                    Welcome to <strong>Plant Talk</strong>—the go-to community for plant lovers of all kinds.
-                    Whether you’re a beginner nurturing your first succulent or a seasoned gardener with a rainforest of
-                    houseplants,
-                    we’re here to help you grow, share, and learn.
-                </p>
-            </section>
-            
-            <section id="features">
-                <h2>Key Features</h2>
-                <ul>
-                    <li><strong>User Accounts &amp; Authentication:</strong>
-                        Sign up with your email and secure password. Sessions are managed via cookies with configurable expiration.
-                    </li>
-                    <li><strong>Posts &amp; Comments:</strong>
-                        Registered members can start new discussions—share tips on watering schedules, propagation tricks, and
-                        more—and reply to others.</li>
-                    <li><strong>Categories &amp; Filters:</strong>
-                        Browse by plant type (e.g., Succulents, Tropical, Edibles). Filter to see your own posts or posts you’ve
-                        liked.</li>
-                    <li><strong>Reactions:</strong>
-                        Like or dislike posts and comments. Reaction counts show community favorites at a glance.</li>
-                    <li><strong>Image Uploads:</strong>
-                        Share photos of your plant babies in JPEG, PNG, or GIF (up to 20 MB). Show off that new bloom!</li>
-                    <li><strong>Advanced Features:</strong>
-                        Real-time notifications when someone likes or comments on your posts, an activity dashboard, and full
-                        edit/delete controls.</li>
-                    <li><strong>Docker-Ready:</strong>
-                        Containerized for easy deployment—get your own Plant Talk instance up and running in minutes.</li>
-                </ul>
-            </section>
-            
-            <section id="tech-stack">
-                <h2>Technology Stack</h2>
-                <p>
-                    <strong>Backend:</strong> Go (net/http), SQLite<br>
-                    <strong>Auth</strong>
-                    <strong>Containerization:</strong> Docker<br>
-                    <strong>Frontend:</strong> Plain HTML, CSS, and vanilla JS (no frameworks)<br>
-                </p>
-            </section>
-            
-            <section id="getting-started">
-                <h2>Getting Started</h2>
-                <p>To run a local copy of Plant Talk:</p>
-                <ol>
-                    <li>Clone the repo:</li>
-                    <pre><code>git clone https://github.com/yourorg/plant-talk.git</code></pre>
-                    <li>Build the Docker image:</li>
-                    <pre><code>docker build -t plant-talk .</code></pre>
-                    <li>Run the container:</li>
-                    <pre><code>docker run -p 8080:8080 plant-talk</code></pre>
-                    <li>Visit <a href="https://localhost:8080">https://localhost:8080</a> in your browser.</li>
-                </ol>
-            </section>
+        <!-- Developer Cards Container -->
+        <div class="developer-cards">
+            <!-- Charoula Tarara Card -->
+            <div class="developer-card">
+                <div class="developer-card-inner">
+                    <div class="developer-card-front">
+                        <img src="/frontend/css/images/charoula.jpg" alt="Charoula Tarara">
+                    </div>
+                    <div class="developer-card-back">
+                        <h1>Charoula Tarara</h1>
+                        <p>Role: Full Stack Developer
+                            <br>Skills: Go, HTML, CSS, JavaScript,
+                            <br>juggling bugs in her code and
+                            <br>snack requests from her mini-me!
+                        </p>
+                    </div>
+                </div>
             </div>
+        
+            <!-- Sofia Busho Card -->
+            <div class="developer-card">
+                <div class="developer-card-inner">
+                    <div class="developer-card-front">
+                        <img src="/frontend/css/images/sofia.jpg" alt="Sofia Busho">
+                    </div>
+                    <div class="developer-card-back">
+                        <h1>Sofia Busho</h1>
+                        <p>Role: Full Stack Developer
+                            <br>Skills: Go, HTML, CSS, JavaScript,
+                            <br>debugging with her feline companions
+                            <br>and occasional keyboard occupiers!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <!-- Home Button -->
-            <a href="/" class="btn btn-outline-light me-2">
-                <i class="bi bi-house-fill me-1 centered"></i>Home
-            </a>
+
+            <!-- Centered Buttons -->
+            <div class="text-center mt-4">
+                <a href="/" class="btn btn-outline-light me-2">
+                    <i class="bi bi-house-fill me-1"></i>Home
+                </a>
             
-            <!-- Back Button -->
-            <button onclick="history.back()" class="btn btn-outline-light">
-                <i class="bi bi-arrow-left me-1"></i>Go Back
-            </button>
+                <button onclick="history.back()" class="btn btn-outline-light">
+                    <i class="bi bi-arrow-left me-1"></i>Go Back
+                </button>
+            </div>
     </main>
 
 <!-- Shared footer -->

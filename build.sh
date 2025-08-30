@@ -12,3 +12,6 @@ docker images
 
 # Show running containers
 docker compose ps
+
+# Check for unused volumes
+docker volume ls
