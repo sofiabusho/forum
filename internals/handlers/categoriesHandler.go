@@ -15,7 +15,7 @@ func CategoriesAPIHandler(w http.ResponseWriter, r *http.Request) {
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM Categories").Scan(&count)
 	if err != nil {
-		http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+		InternalServerErrorHandler(w, r)
 		return
 	}
 

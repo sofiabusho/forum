@@ -29,14 +29,14 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	// Get user ID from session
 	userID := utils.GetUserIDFromSession(cookie.Value)
 	if userID == 0 {
-		http.Error(w, "Invalid session", http.StatusUnauthorized)
+		UnauthorizedHandler(w, r)
 		return
 	}
 
 	// Parse form data
 	err = r.ParseMultipartForm(32 << 20) // 32MB max memory
 	if err != nil {
-		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		BadRequestHandler(w, r)
 		return
 	}
 
@@ -102,7 +102,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	// Start transaction for post creation
 	tx, err := db.Begin()
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		InternalServerErrorHandler(w, r)
 		return
 	}
 	defer tx.Rollback()
@@ -264,7 +264,7 @@ func PostsAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 // SinglePostAPIHandler returns a single post by ID (view-post.html)
 func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 	// Extract post ID from URL path or query parameter
 	postIDStr := r.URL.Query().Get("id")
 	if postIDStr == "" {
@@ -276,13 +276,13 @@ func SinglePostAPIHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if postIDStr == "" {
-		http.Error(w, "Post ID required", http.StatusBadRequest)
+		BadRequestHandler(w, r)
 		return
 	}
 
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
-		http.Error(w, "Invalid post ID", http.StatusBadRequest)
+		BadRequestHandler(w, r)
 		return
 	}
 
