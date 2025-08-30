@@ -38,8 +38,13 @@ main {
 
 .profile-sidebar .list-group-item.active {
     color: #000;
-    background-color: #ffffff;
+    background-color: #ffffffd2;
     backdrop-filter: blur(6px);
+}
+
+.profile-sidebar .list-group-item:hover {
+    background-color: #ffffff84;
+    color: #000;
 }
 
 .profile-sidebar .list-group-item i {
@@ -55,6 +60,31 @@ main {
       transform: translateY(-1px);
   }
 
+#stat-posts {
+    color: #026018 !important;
+}
+
+#stat-comments {
+    color: #026018 !important;
+}
+
+#stat-likes-given {
+    color: #00a624 !important;
+}
+
+#stat-likes-received {
+    color: #00a624 !important;
+}
+
+#stat-dislikes-given {
+    color: #c02452 !important;
+}
+
+#stat-dislikes-received {
+    color: #c02452!important;
+}
+
+
 #detailPane {
     color: #ffffff;
     flex-grow: 1;
@@ -67,7 +97,7 @@ main {
 }
 
 .profile-box {
-    width: 260px;
+    width: 200px;
     background-color: rgba(227, 227, 227, 0.482);
     backdrop-filter: blur(6px);
     border-radius: .5rem;

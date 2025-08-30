@@ -61,8 +61,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = db.Exec("DELETE FROM Sessions WHERE user_id = ?", userID)
 	if err != nil {
 		fmt.Printf("Warning: Failed to cleanup old sessions for user %d: %v\n", userID, err)
-	} else {
-		fmt.Printf("Cleaned up existing sessions for user %d\n", userID)
 	}
 
 	// Create secure session cookie
