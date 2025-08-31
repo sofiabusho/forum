@@ -39,41 +39,55 @@ func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	confirm := r.FormValue("confirmPassword")
 
 	if token == "" || newPassword == "" || confirm == "" {
-		http.Error(w, "Invalid or missing token/password", http.StatusBadRequest)
+		showErrorOnPage(w, token, "All fields are required")
 		return
 	}
 	if newPassword != confirm {
-		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		showErrorOnPage(w, token, "Passwords do not match")
 		return
 	}
 
 	db := database.CreateTable()
 	defer db.Close()
 
-	// find user by token
+	// find user by token and get current password
 	var userID int
-	err := db.QueryRow("SELECT user_id FROM Users WHERE reset_token = ?", token).Scan(&userID)
+	var currentHashedPassword string
+	err := db.QueryRow("SELECT user_id, password_hash FROM Users WHERE reset_token = ?", token).Scan(&userID, &currentHashedPassword)
 	if err == sql.ErrNoRows {
-		http.Error(w, "Invalid or expired token", http.StatusBadRequest)
+		showErrorOnPage(w, token, "Invalid or expired reset link")
 		return
 	} else if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		showErrorOnPage(w, token, "Database error. Please try again.")
+		return
+	}
+
+	if currentHashedPassword == "" {
+		showErrorOnPage(w, token, "User password not found")
+		return
+	}
+
+	// Check if new password is the same as current password
+	compareErr := bcrypt.CompareHashAndPassword([]byte(currentHashedPassword), []byte(newPassword))
+	if compareErr == nil {
+		// Passwords match - new password is the same as current
+		showErrorOnPage(w, token, "New password cannot be the same as current password")
 		return
 	}
 
 	// hash and store new password; clear token
 	hashed, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
-		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		showErrorOnPage(w, token, "Failed to process password")
 		return
 	}
 	_, err = db.Exec("UPDATE Users SET password_hash = ?, reset_token = NULL WHERE user_id = ?", string(hashed), userID)
 	if err != nil {
-		http.Error(w, "Failed to update password", http.StatusInternalServerError)
+		showErrorOnPage(w, token, "Failed to update password")
 		return
 	}
 
-	http.Redirect(w, r, "/login.html", http.StatusSeeOther)
+	http.Redirect(w, r, "/login.html?message=password_reset_success", http.StatusSeeOther)
 }
 
 func SendResetEmail(toEmail, token string) error {
@@ -131,4 +145,13 @@ func SendResetEmail(toEmail, token string) error {
 	}
 
 	return nil
+}
+
+// Helper function to show errors on the same page
+func showErrorOnPage(w http.ResponseWriter, token, errorMessage string) {
+	data := map[string]interface{}{
+		"Token":        token,
+		"ErrorMessage": errorMessage,
+	}
+	utils.FileService("add-newpassword.html", w, data)
 }
