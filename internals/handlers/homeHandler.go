@@ -9,7 +9,7 @@ import (
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Path != "/" {
-		NotFoundHandler(w, r)
+		http.NotFound(w, r)
 		return
 	}
 

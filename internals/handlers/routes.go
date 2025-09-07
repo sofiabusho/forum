@@ -24,6 +24,9 @@ func SetupRoutes() {
 
 	// Protected routes (require authentication)
 	wrapProtectedHandler("/logout", LogoutHandler)
+	wrapProtectedHandler("/profile", ProfileHandler)
+	wrapProtectedHandler("/profile.html", ProfilePageHandler)
+	wrapProtectedHandler("/api/user/profile", ProfileAPIHandler)
 	wrapProtectedHandler("/new-post", CreatePostHandler)
 	wrapProtectedHandler("/new-post.html", CreatePostHandler)
 	wrapProtectedHandler("/api/posts/edit", EditPostHandler)
@@ -33,7 +36,7 @@ func SetupRoutes() {
 	wrapProtectedHandler("/api/comments/delete", DeleteCommentHandler)
 	wrapProtectedHandler("/api/posts/like", LikePostHandler)
 	wrapProtectedHandler("/api/comments/like", LikeCommentHandler)
-	wrapProtectedHandler("/api/user/posts", UserPostsHandler) 
+	wrapProtectedHandler("/api/user/posts", UserPostsHandler)
 	wrapProtectedHandler("/api/user/comments", UserCommentsHandler)
 	wrapProtectedHandler("/api/user/likes", UserLikesHandler)
 	wrapProtectedHandler("/api/user/dislikes", UserDislikesHandler)
