@@ -26,10 +26,11 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user ID from session
-	userID := utils.GetUserIDFromSession(cookie.Value)
-	if userID == 0 {
-		UnauthorizedHandler(w, r)
+	// Get userID from context
+	userID, ok := r.Context().Value("userID").(int)
+	if !ok {
+		// This shouldn't happen if middleware is working correctly
+		http.Error(w, "Authentication error", http.StatusInternalServerError)
 		return
 	}
 
