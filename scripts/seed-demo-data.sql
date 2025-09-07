@@ -1,6 +1,6 @@
 -- Demo Users (passwords are hashed version of "demo123")
 INSERT INTO Users (username, email, password_hash, registration_date) VALUES 
-('demo_user', 'demo@plantforum.com', '$2a$10$kdxtqkWffXvJ3rcAOKDJbOjBBnSHmuu2GW5wRdQ2gzfD/PPkkXxPa/.og/at2.uheWG/igi', datetime('now')),
+('demo_user', '', '$2a$10$kdxtqkWffXvJ3rcAOKDJbOjBBnSHmuu2GW5wRdQ2gzfD/PPkkXxPa/.og/at2.uheWG/igi', datetime('now')),
 ('plant_expert', 'expert@plantforum.com', '$2a$10$kdxtqkWffXvJ3rcAOKDJbOjBBnSHmuu2GW5wRdQ2gzfD/.og/at2.uheWG/igi', datetime('now')),
 ('garden_lover', 'garden@plantforum.com', '$2a$10$kdxtqkWffXvJ3rcAOKDJbOjBBnSHmuu2GW5wRdQ2gzfD/.og/at2.uheWG/igi', datetime('now'));
 
