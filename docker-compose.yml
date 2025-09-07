@@ -11,3 +11,7 @@ services:
       - PORT=8080
       - DB_PATH=/app/data/forum.db
     restart: unless-stopped
+
+volumes:
+  forum-data:
+    driver: local    

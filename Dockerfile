@@ -37,6 +37,9 @@ COPY --from=builder /app/frontend ./frontend
 # Copy internals directory (contains database schema)
 COPY --from=builder /app/internals ./internals
 
+COPY --from=builder /app/scripts ./scripts
+
+
 # Create directory for database
 RUN mkdir -p /app/data /app/frontend/uploads/images /app/frontend/uploads/thumbnails
 
@@ -55,7 +58,7 @@ EXPOSE 8080
 
 # Set environment variables
 ENV PORT=8080
-ENV DB_PATH=/app/data/forum.db
+ENV DB_PATH=/app/forum.db
 
 # Health check to ensure container is running correctly
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

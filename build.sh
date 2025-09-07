@@ -15,3 +15,5 @@ docker compose ps
 
 # Check for unused volumes
 docker volume ls
+
+echo "Forum ready at http://localhost:8080"

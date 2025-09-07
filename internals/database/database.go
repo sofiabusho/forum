@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -11,10 +12,10 @@ import (
 var dbPath = getDBPath()
 
 func getDBPath() string {
-    if path := os.Getenv("DB_PATH"); path != "" {
-        return path
-    }
-    return "./data/forum.db" 
+	if path := os.Getenv("DB_PATH"); path != "" {
+		return path // Uses /app/data/forum.db from Docker
+	}
+	return "./data/forum.db" // Local development fallback
 }
 
 // Connect with SQLite DB
@@ -44,6 +45,9 @@ func Insert(db *sql.DB, table string, columns string, values ...any) {
 
 // InitializeDatabase sets up the database schema and default data
 func InitializeDatabase() {
+	dataDir := filepath.Dir(dbPath)
+	os.MkdirAll(dataDir, 0755)
+
 	db := CreateTable()
 	defer db.Close()
 
