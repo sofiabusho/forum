@@ -1,0 +1,75 @@
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+forum.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Build artifacts
+forum
+main
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Go specific
+go.sum
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# User upload directories
+frontend/uploads/images/*
+frontend/uploads/thumbnails/*
+
+# Allow specific system/default images
+!frontend/uploads/images/charoula.jpg
+!frontend/uploads/images/sofia.jpg
+
+# Keep directory structure
+!frontend/uploads/images/.gitkeep
+!frontend/uploads/thumbnails/.gitkeep
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Test coverage
+*.out
+coverage.html
+
+# Dependencies
+vendor/
+node_modules/
+
+# Session data
+sessions/
