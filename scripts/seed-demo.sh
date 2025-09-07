@@ -12,8 +12,3 @@ else
 fi
 # Load the seed data
 sqlite3 "$DB_PATH" < /app/scripts/seed-demo-data.sql
-
-echo "Demo data loaded successfully!"
-echo "Demo credentials:"
-echo "  Email: demo@plantforum.com"
-echo "  Password: demo123"

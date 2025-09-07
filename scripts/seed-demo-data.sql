@@ -1,8 +1,8 @@
 -- Demo Users (passwords are hashed version of "demo123")
 INSERT INTO Users (username, email, password_hash, registration_date) VALUES 
-('demo_user', 'demo@plantforum.com', '$2a$10$3IoynDrU6ikqTkmGQhTwcuBvvOj.tIxkDUeTvjj1jgfnytPCjjdYS/.og/at2.uheWG/igi', datetime('now')),
-('plant_expert', 'expert@plantforum.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', datetime('now')),
-('garden_lover', 'garden@plantforum.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', datetime('now'));
+('demo_user', 'demo@plantforum.com', '$2a$10$kdxtqkWffXvJ3rcAOKDJbOjBBnSHmuu2GW5wRdQ2gzfD/PPkkXxPa/.og/at2.uheWG/igi', datetime('now')),
+('plant_expert', 'expert@plantforum.com', '$2a$10$kdxtqkWffXvJ3rcAOKDJbOjBBnSHmuu2GW5wRdQ2gzfD/.og/at2.uheWG/igi', datetime('now')),
+('garden_lover', 'garden@plantforum.com', '$2a$10$kdxtqkWffXvJ3rcAOKDJbOjBBnSHmuu2GW5wRdQ2gzfD/.og/at2.uheWG/igi', datetime('now'));
 
 -- Demo Posts
 INSERT INTO Posts (user_id, title, content, creation_date) VALUES 
