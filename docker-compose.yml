@@ -5,9 +5,9 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./forum.db:/app/forum.db
+      - forum-data:/app/data
       - ./frontend/uploads:/app/frontend/uploads   
     environment:
       - PORT=8080
-      - DB_PATH=/app/forum.db
+      - DB_PATH=/app/data/forum.db
     restart: unless-stopped

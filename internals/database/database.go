@@ -8,7 +8,14 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var dbPath = "./forum.db"
+var dbPath = getDBPath()
+
+func getDBPath() string {
+    if path := os.Getenv("DB_PATH"); path != "" {
+        return path
+    }
+    return "./data/forum.db" 
+}
 
 // Connect with SQLite DB
 func CreateTable() *sql.DB {

@@ -38,7 +38,7 @@ COPY --from=builder /app/frontend ./frontend
 COPY --from=builder /app/internals ./internals
 
 # Create directory for database
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data /app/frontend/uploads/images /app/frontend/uploads/thumbnails
 
 # Create non-root user for security
 RUN addgroup -g 1000 -S appgroup && \
@@ -55,7 +55,7 @@ EXPOSE 8080
 
 # Set environment variables
 ENV PORT=8080
-ENV DB_PATH=/app/forum.db
+ENV DB_PATH=/app/data/forum.db
 
 # Health check to ensure container is running correctly
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

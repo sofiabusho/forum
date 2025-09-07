@@ -5,18 +5,38 @@
 # Documentation
 README.md
 *.md
+LICENSE
 
 # Database files (will be created in container)
 *.db
 *.sqlite
 *.sqlite3
+forum.db
+
+# User uploaded content (mounted as volume)
+frontend/uploads/images/*
+frontend/uploads/thumbnails/*
+
+# Keep system images and directory structure
+!frontend/uploads/images/charoula.jpg
+!frontend/uploads/images/sofia.jpg
+!frontend/uploads/images/.gitkeep
+!frontend/uploads/thumbnails/.gitkeep
+
 
 # Logs
 *.log
+logs/
+
+# Go specific
+go.sum
+vendor/
 
 # OS generated files
 .DS_Store
 Thumbs.db
+.DS_Store?
+._*
 
 # IDE files
 .vscode/
@@ -26,12 +46,36 @@ Thumbs.db
 # Go build artifacts
 forum
 main
+*.exe
 
-# Docker files (not needed in container)
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker files 
 Dockerfile
 docker-compose.yml
 .dockerignore
+build.sh
 
 # Temporary files
 tmp/
 temp/
+*.tmp
+*.bak
+
+# Environment files 
+.env
+.env.local
+.env.development
+
+# Node modules
+node_modules/
+npm-debug.log*
+
+# CI/CD files
+.github/
+.gitlab-ci.yml
+.travis.yml
