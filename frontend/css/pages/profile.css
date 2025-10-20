@@ -1,0 +1,133 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+    padding-top: 56px;
+
+}
+
+.profile-wrapper {
+    max-width: 1140px;
+    margin: 0 auto;
+    display: flex;
+    padding: 2rem 0;
+}
+
+.profile-sidebar {
+    width: 240px;
+}
+
+.profile-sidebar .list-group-item {
+    color: #ffffff;
+    border: none;
+    border-radius: .25rem;
+    margin-bottom: .5rem;
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
+    }
+
+.profile-sidebar .list-group-item.active {
+    color: #000;
+    background-color: #ffffffd2;
+    backdrop-filter: blur(6px);
+}
+
+.profile-sidebar .list-group-item:hover {
+    background-color: #ffffff84;
+    color: #000;
+}
+
+.profile-sidebar .list-group-item i {
+    margin-right: .5rem;
+}
+
+  .post-card {
+      border-radius: .5rem;
+      margin-bottom: .5rem;
+  }
+
+  .post-card:hover {
+      transform: translateY(-1px);
+  }
+
+#stat-posts {
+    color: #026018 !important;
+}
+
+#stat-comments {
+    color: #026018 !important;
+}
+
+#stat-likes-given {
+    color: #00a624 !important;
+}
+
+#stat-likes-received {
+    color: #00a624 !important;
+}
+
+#stat-dislikes-given {
+    color: #c02452 !important;
+}
+
+#stat-dislikes-received {
+    color: #c02452!important;
+}
+
+
+#detailPane {
+    color: #ffffff;
+    flex-grow: 1;
+    margin: 0 2rem;
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
+    border-radius: .5rem;
+    box-shadow: 0 0 .5rem rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.profile-box {
+    width: 200px;
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
+    border-radius: .5rem;
+    box-shadow: 0 0 .5rem rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.profile-box img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-box h5 {
+    color: #ffffff;
+    margin: 1rem 0;
+}
+
+.profile-box .actions .list-group-item {
+    color: #ffffff;
+    background-color: transparent;
+    border-radius: .5rem;
+    border: none;
+    padding: .5rem 0;
+}
+
+.profile-box .actions .btn {
+    width: 100%;
+    text-align: left;
+}
+

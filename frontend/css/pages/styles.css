@@ -1,0 +1,88 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    background: url('../images/background.jpg') no-repeat center center;
+    background-size: cover; /* cover the screen */
+    background-attachment: fixed; /* KEEP IT STILL */
+    display: flex;
+    flex-direction: column;
+}
+
+
+main {
+    flex: 1 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.login-card {
+    width: 600px;
+    max-width: 100%;
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
+}
+
+.register-card {
+    padding: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(6px);
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
+.forgot-password {
+    width: 600px;
+    max-width: 100%;
+    background-color: rgba(227, 227, 227, 0.482);
+    backdrop-filter: blur(6px);
+}
+
+
+
+.login-card h2,
+.register-card h2,
+.forgot-password h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.login-card p,
+.register-card p,
+.forgot-password p {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.login-card .btn,
+.register-card .btn,
+.forgot-password .btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+}
+
+.login-card .form-label,
+.register-card .form-label {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.login-card .form-control,
+.register-card .form-control {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.login-card .btn-primary,
+.register-card .btn-primary {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+}
+
+.login-card hr,
+.register-card hr {
+    margin: 0.5rem 0;
+}

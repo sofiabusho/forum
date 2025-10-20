@@ -1,0 +1,131 @@
+<!-- header.html -->
+<nav class="navbar bg-transparent border-bottom py-2">
+    <div class="container d-flex justify-content-between align-items-center">
+        <!-- Logo / Brand -->
+        <a class="navbar-brand text-dark fw-bold d-flex align-items-center" href="/">
+            <img src="/frontend/css/images/cactus.png" alt="Plant Talk Logo" height="32"
+                class="d-inline-block align-text-top me-2">
+            <span class="logo-text">Plant Talk</span>
+        </a>
+
+        <!-- Unsigned state (default) -->
+        <div id="nav-unsigned" class="d-flex">
+            <a href="/register" class="btn btn-outline-light me-2">Register</a>
+            <a href="/login" class="btn btn-outline-light me-2">Login</a>
+        </div>
+
+        <!-- Signed-in state (hidden by default) -->
+        <div id="nav-signed" class="d-flex d-none align-items-center">
+            <!-- Create Post -->
+            <a href="/new-post" class="btn btn-outline-light me-2">Create Post</a>
+            <!-- Notifications -->
+            <a href="/notifications" class="position-relative me-3 p-0">
+                <!-- notification icon image -->
+                <img src="/frontend/css/images/notification.png" alt="Notifications" width="24" height="24">
+                <span id="notification-badge"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+            </a>
+            <!-- Profile Thumbnail Dropdown -->
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle p-0" id="profileMenu"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <!-- user thumbnail -->
+                    <img src="/frontend/css/images/avatar.png" alt="Profile" width="32" height="32"
+                        class="rounded-circle img-thumbnail">
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
+                    <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Error state (hidden by default) -->
+        <div id="nav-error" class="d-flex d-none text-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>Connection Error</span>
+        </div>
+    </div>
+</nav>
+
+<script>
+    // Check authentication status
+    async function checkAuthStatus() {
+        console.log('🔍 Checking auth status...');
+        try {
+            console.log('📡 Fetching /api/auth/status');
+            const response = await fetch('/api/auth/status');
+            console.log('📡 Response status:', response.status);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('📡 Response data:', data);
+
+            const isLoggedIn = data.loggedIn;
+            console.log('🔐 Is logged in:', isLoggedIn);
+
+
+            // Show/hide appropriate nav sections
+            if (isLoggedIn) {
+                console.log('✅ Showing signed-in navigation');
+
+                document.getElementById('nav-unsigned').classList.add('d-none');
+                document.getElementById('nav-signed').classList.remove('d-none');
+                document.getElementById('nav-error').classList.add('d-none');
+
+                // Load notification count
+                loadNotificationCount();
+            } else {
+                console.log('👤 Showing unsigned navigation');
+
+                document.getElementById('nav-unsigned').classList.remove('d-none');
+                document.getElementById('nav-signed').classList.add('d-none');
+                document.getElementById('nav-error').classList.add('d-none');
+            }
+        } catch (error) {
+            console.error('❌ Error checking auth status:', error);
+            console.log('🚨 Showing error navigation state');
+
+            // Show error state
+            document.getElementById('nav-unsigned').classList.add('d-none');
+            document.getElementById('nav-signed').classList.add('d-none');
+            document.getElementById('nav-error').classList.remove('d-none');
+        }
+    }
+
+    // Load notification count for logged-in users
+    async function loadNotificationCount() {
+        try {
+            console.log('🔔 Loading notification count...');
+
+            const response = await fetch('/api/notifications');
+            if (response.ok) {
+                const data = await response.json();
+                const unreadCount = data.unread ? data.unread.length : 0;
+                console.log('🔔 Unread notifications:', unreadCount);
+
+                document.getElementById('notification-badge').textContent = unreadCount;
+
+                // Hide badge if no notifications
+                if (unreadCount === 0) {
+                    document.getElementById('notification-badge').style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        }
+    }
+
+        // Check auth status when page loads
+        console.log('🚀 Page loaded, setting up auth check...');
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📄 DOM loaded, running auth check...');
+            checkAuthStatus();
+        });
+</script>

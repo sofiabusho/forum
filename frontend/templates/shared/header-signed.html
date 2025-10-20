@@ -1,0 +1,113 @@
+<!-- header-signed.html -->
+<nav class="navbar bg-transparent border-bottom py-2">
+    <div class="container d-flex justify-content-between align-items-center">
+        <!-- Logo / Brand -->
+        <a class="navbar-brand text-dark fw-bold d-flex align-items-center" href="/">
+            <img src="/frontend/css/images/cactus.png" alt="Plant Talk Logo" height="32"
+                class="d-inline-block align-text-top me-2">
+            <span class="logo-text">Plant Talk</span>
+        </a>
+
+        <!-- Static nav links/buttons -->
+        <div class="d-flex">
+            <!-- Create Post -->
+            <a href="/new-post.html" class="btn btn-outline-light me-2">Create Post</a>
+
+            <!-- Notifications with simple red dot -->
+            <a href="/notifications" class="btn btn-link position-relative me-3 p-1" aria-label="Notifications">
+                <img src="/frontend/css/images/notification.png" alt="Notifications" width="24" height="24">
+                <!-- Simple red dot -->
+                <span id="notification-dot"
+                    class="position-absolute top-0 start-100 translate-middle bg-danger rounded-circle"
+                    style="width: 8px; height: 8px; display: none;"></span>
+            </a>
+
+            <!-- Profile Thumbnail Dropdown -->
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle p-0" id="profileMenu"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <img id="header-profile-image" src="/frontend/css/images/avatar.png" alt="Profile" width="32" height="32"
+                        class="rounded-circle img-thumbnail" style="object-fit: cover;">
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
+                    <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    // Simple red dot notification system
+    (function () {
+            console.log('📋 Header script executing...');
+
+            // Simple red dot notification system
+            window.updateNotificationDot = function () {
+                console.log('🔔 updateNotificationDot called');
+                fetch('/api/notifications/count')
+                    .then(response => {
+                        console.log('🔔 Notification count response:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('🔔 Notification count data:', data);
+                        const dot = document.getElementById('notification-dot');
+                        if (dot) {
+                            dot.style.display = data.count > 0 ? 'block' : 'none';
+                            console.log('🔔 Red dot:', data.count > 0 ? 'visible' : 'hidden', '(count:', data.count + ')');
+                        } else {
+                            console.error('🔔 notification-dot element not found');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('🔔 Notification dot error:', error);
+                    });
+            };
+
+            // Load user profile image for header
+            window.loadHeaderProfileImage = function () {
+                console.log('👤 loadHeaderProfileImage called');
+                fetch('/api/user/profile')
+                    .then(response => {
+                        console.log('👤 Profile response:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('👤 Profile data:', data);
+                        const headerImg = document.getElementById('header-profile-image');
+                        if (headerImg) {
+                            if (data.profileImage && data.profileImage.trim() !== '') {
+                                console.log('👤 Setting header image to:', data.profileImage);
+                                headerImg.src = data.profileImage;
+                                headerImg.onerror = function () {
+                                    console.log('👤 Profile image failed to load, using default avatar');
+                                    this.src = '/frontend/css/images/avatar.png';
+                                };
+                            } else {
+                                console.log('👤 No profile image found, using default avatar');
+                            }
+                        } else {
+                            console.error('👤 header-profile-image element not found');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('👤 Error loading header profile image:', error);
+                    });
+            };
+
+            console.log('📋 Header functions exported to window object');
+            console.log('📋 updateNotificationDot available:', typeof window.updateNotificationDot);
+            console.log('📋 loadHeaderProfileImage available:', typeof window.loadHeaderProfileImage);
+        })();
+</script>

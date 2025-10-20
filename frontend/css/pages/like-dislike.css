@@ -1,0 +1,79 @@
+.post-voting {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: auto;
+    /* Ensure voting area can receive clicks */
+    position: relative;
+    z-index: 10;
+    /* Ensure it's above other clickable elements */
+}
+
+.vote-btn-sm {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgb(255, 255, 255);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.vote-btn-sm:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    transform: scale(1.1);
+}
+
+.vote-btn-sm.active-like {
+    background-color: #ffffffc4;
+    border-color: #ffffffc4;
+    color: rgb(109, 214, 40);}
+
+.vote-btn-sm.active-dislike {
+    background-color: #ffffffc4;
+    border-color: #ffffffc4;
+    color: rgb(192, 36, 82);
+}
+
+.vote-count {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    min-width: 20px;
+    text-align: center;
+    pointer-events: none; /* Count shouldn't be clickable */
+}
+
+.post-card {
+    position: relative;
+}
+
+.post-card:hover .post-voting {
+    opacity: 1;
+}
+
+.post-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.5rem;
+}
+
+.post-stats {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* Ensure vote buttons have higher z-index */
+.post-voting * {
+    pointer-events: auto;
+}

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%;">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile - Plant Talk</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="../frontend/css/pages/main.css">
+  <link rel="stylesheet" href="../frontend/css/pages/shared.css">
+  <link rel="stylesheet" href="../frontend/css/pages/profile.css">
+</head>
+<body>
+<div id="shared-header"></div>
+
+<main>
+  <div class="profile-wrapper">
+    <!-- Sidebar -->
+    <aside class="profile-sidebar">
+      <div class="list-group">
+        <button class="list-group-item list-group-item-action active" id="tab-bio"><i class="bi bi-person"></i> My Bio</button>
+        <button class="list-group-item list-group-item-action" id="tab-posts"><i class="bi bi-question-circle"></i> My Posts</button>
+        <button class="list-group-item list-group-item-action" id="tab-comments"><i class="bi bi-chat-left-text"></i> My Comments</button>
+        <button class="list-group-item list-group-item-action" id="tab-likes"><i class="bi bi-hand-thumbs-up"></i> My Likes</button>
+        <button class="list-group-item list-group-item-action" id="tab-dislikes"><i class="bi bi-hand-thumbs-down"></i> My Dislikes</button>
+      </div>
+
+      <div class="card shadow-sm mt-3">
+        <div class="card-header"><h6 class="mb-0">Statistics</h6></div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6"><h4 id="stat-posts" class="text-primary">0</h4><small class="text-muted">Posts</small></div>
+            <div class="col-6"><h4 id="stat-comments" class="text-success">0</h4><small class="text-muted">Comments</small></div>
+          </div><hr>
+          <div class="row text-center">
+            <div class="col-6"><h4 id="stat-likes-given" class="text-warning">0</h4><small class="text-muted">Likes Given</small></div>
+            <div class="col-6"><h4 id="stat-likes-received" class="text-danger">0</h4><small class="text-muted">Likes Received</small></div>
+          </div><hr>
+          <!-- Dislikes row -->
+          <div class="row text-center">
+            <div class="col-6"><h4 id="stat-dislikes-given" class="text-secondary">0</h4><small class="text-muted">Dislikes Given</small></div>
+            <div class="col-6"><h4 id="stat-dislikes-received" class="text-secondary">0</h4><small class="text-muted">Dislikes Received</small></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Detail Pane with persistent sections -->
+    <section id="detailPane" class="flex-fill rounded shadow-sm p-4 position-relative">
+      <!-- BIO -->
+      <div id="bioSection" class="section-tab">
+        <h3>My Bio</h3>
+        <p id="bioText">No bio set yet.</p>
+        <button id="btn-edit-bio" class="btn btn-outline-light position-absolute" style="bottom:1rem; right:1rem;">
+          <i class="bi bi-pencil"></i> Edit Bio
+        </button>
+      </div>
+
+      <!-- POSTS -->
+      <div id="postsSection" class="section-tab" style="display:none;">
+        <h3>My Posts</h3>
+        <div id="userPostsContainer" class="list-group list-group-flush"></div>
+      </div>
+
+      <!-- COMMENTS -->
+      <div id="commentsSection" class="section-tab" style="display:none;">
+        <h3>My Comments</h3>
+        <div id="userCommentsContainer" class="list-group list-group-flush"></div>
+      </div>
+
+      <!-- LIKES -->
+      <div id="likesSection" class="section-tab" style="display:none;">
+        <h3>My Likes</h3>
+        <div id="userLikesContainer" class="list-group list-group-flush"></div>
+      </div>
+
+      <!-- DISLIKES -->
+      <div id="dislikesSection" class="section-tab" style="display:none;">
+        <h3>My Dislikes</h3>
+        <div id="userDislikesContainer" class="list-group list-group-flush"></div>
+      </div>
+    </section>
+
+    <!-- Right box -->
+    <aside class="profile-box bg-transparent ms-4">
+      <img src="/frontend/css/images/avatar.png" alt="Avatar">
+      <h5 class="mt-3" id="username-label">@Username</h5>
+      <div class="actions mt-3">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">Member Since <strong id="joined-date">...</strong></li>
+          <li class="list-group-item">
+            <button class="btn btn-outline-light w-100" id="btn-change-name">Change my display name</button>
+            <button class="btn btn-outline-light w-100 mt-2" id="btn-change-image">Change my profile Image</button>
+          </li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- Modals -->
+<!-- Change name -->
+<div class="modal fade" id="changeNameModal" tabindex="-1" aria-labelledby="changeNameLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="changeNameForm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="changeNameLabel">Change Display Name</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" class="form-control" id="newDisplayName" name="username" placeholder="Enter new display name" required>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Upload image -->
+<div class="modal fade" id="uploadImageModal" tabindex="-1" aria-labelledby="uploadImageLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="uploadImageForm" enctype="multipart/form-data">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadImageLabel">Upload Profile Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="file" name="image" class="form-control" accept="image/png, image/jpeg, image/gif" required />
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Upload</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit bio -->
+<div class="modal fade" id="editBioModal" tabindex="-1" aria-labelledby="editBioLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="editBioForm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editBioLabel">Edit Bio</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <textarea class="form-control" name="bio" id="newBio" rows="4" placeholder="Enter your bio..." required></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="shared-footer"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/frontend/js/header-footer.js"></script>
+<script src="/frontend/js/profile.js"></script>
+</body>
+</html>
